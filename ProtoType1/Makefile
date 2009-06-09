@@ -9,9 +9,14 @@ CFLAGS   = -g -O0
 
 FILES=driver.o compute.o init.o ampi.o ampi_bookKeeping.o
 
-all: driver 
+ADJFILES= driverAdj.o compute.o computeAdj.o init.o ampi.o ampi_bookKeeping.o
+
+all: driver driverAdj
 
 driver: $(FILES)
+	$(CC) $(CFLAGS) -o $@ $^
+
+driverAdj: $(ADJFILES)
 	$(CC) $(CFLAGS) -o $@ $^
 
 %.o : %.c
@@ -19,4 +24,4 @@ driver: $(FILES)
 
 
 clean:
-	rm -f *.o 
+	rm -f *.o driver driverAdj

@@ -16,7 +16,7 @@ void ampi_isend_bk_(void *buf,
 		    MPI_Comm comm, 
 		    MPI_Request *req); 
 
-void ampi_HandleRequest_ (MPI_Request *r);
+void ampi_HandleRequest_ (MPI_Request r);
 
 int ampi_reduce(void* sbuf, 
 		void* rbuf, 

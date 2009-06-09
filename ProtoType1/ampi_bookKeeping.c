@@ -138,7 +138,7 @@ void ampi_isend_bk(void *buf,
    awaitall we need to increment 
    or nullify the buffers associated 
    with each request we were waiting for */
-void ampi_HandleRequest(int *r) { 
+void ampi_HandleRequest(int r) { 
   int done=0;
   double *tBuf;
   double *rBuf;
@@ -148,12 +148,12 @@ void ampi_HandleRequest(int *r) {
   struct sBufAssoc* sAssoc=sBufAssoc_head;
   ierror = MPI_Comm_rank(MPI_COMM_WORLD, &myId);
   while(sAssoc) { 
-    if (*r==sAssoc->req) { 
+    if (r==sAssoc->req) { 
 	memset(sAssoc->addr,0,
 	       sAssoc->length*sizeof(double));
 	sAssoc->req=0; 
 	done=1;
-	printf("%i: handle S request r:%i\n",myId, *r);
+	printf("%i: handle S request r:%i\n",myId, r);
 	break; 
     }
     sAssoc=sAssoc->next;
@@ -161,7 +161,7 @@ void ampi_HandleRequest(int *r) {
   if (done)
     return;
   while(rAssoc) { 
-    if (*r==rAssoc->req) { 
+    if (r==rAssoc->req) { 
       tBuf=(double *)rAssoc->taddr;
       rBuf=(double *)rAssoc->addr;
       for(i=0;i<rAssoc->length;i++) { 
@@ -169,14 +169,14 @@ void ampi_HandleRequest(int *r) {
       }
       free(tBuf);
       rAssoc->req=0;
-      printf("%i: handle R request r:%i\n",myId, *r);
+      printf("%i: handle R request r:%i\n",myId, r);
       done=1;
       break; 
     }
     rAssoc=rAssoc->next;
   }
   if (!done)
-    printf("%i: cannot handle request r:%i\n",myId, *r);
+    printf("%i: cannot handle request r:%i\n",myId, r);
 }
 
 void ampi_reduce_bk(void* sbuf, 

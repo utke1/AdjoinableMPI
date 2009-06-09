@@ -7,13 +7,18 @@ int  AMPI_awaitall (int count,
 		    MPI_Request * requests, 
 		    MPI_Status * statuses) { 
   int i,rc=0;
+  MPI_Request reqCopies[80];
   if (ampi_reverse) { 
+      for (i=0;
+	   i<count;
+	   ++i)
+	reqCopies[i]=requests[i];
     rc=MPI_Waitall(count,requests,statuses);
     if (!rc) { 
       for (i=0;
 	   i<count;
 	   ++i)
-	ampi_HandleRequest(requests[i]);
+	ampi_HandleRequest(reqCopies[i]);
     }
   }
   return rc;
