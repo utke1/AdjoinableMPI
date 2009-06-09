@@ -1,14 +1,14 @@
 #include <malloc.h>
 #include <string.h>
 #include <stdio.h>
-#include "mpi.h"
+#include "ampi_bookKeeping.h"
 
 /* receive buffer info (linked list element) */
 struct rBufAssoc { 
   void * addr; 
   void * taddr;
   int length;
-  int req; /* MPI request id */
+  MPI_Request req; /* MPI request id */
   struct rBufAssoc* next;
 } rBufFirst = {0,0,0,0}; 
 
@@ -16,12 +16,17 @@ struct rBufAssoc {
 struct sBufAssoc { 
   void * addr;
   int length;
-  int req; /* MPI request id */
+  MPI_Request req; /* MPI request id */
   struct sBufAssoc* next;
 } sBufFirst = {0,0,0}; 
 
 static struct rBufAssoc* rBufAssoc_head=&rBufFirst; /* receive info list head */
 static struct sBufAssoc* sBufAssoc_head=&sBufFirst; /* send info list head */
+
+void complain(int rc) { 
+  printf("adjoint run received MPI return code %d\n",rc);
+  exit -1;
+}
 
 /* associate a receive buffer 
    with a request id by making 
@@ -29,7 +34,7 @@ static struct sBufAssoc* sBufAssoc_head=&sBufFirst; /* send info list head */
 void associateR(void* buf, 
 		void* tBuf,
 		int count, 
-		int req) {
+		MPI_Request req) {
   struct rBufAssoc* thisAssoc=rBufAssoc_head;
   while (1) { 
     if (thisAssoc->req==0)
@@ -54,7 +59,7 @@ void associateR(void* buf,
    a list element and linking it */
 void associateS(void* buf, 
 		int count, 
-		int req) {
+		MPI_Request req) {
   struct sBufAssoc* thisAssoc=sBufAssoc_head;
   while (1) { 
     if (thisAssoc->req==0)
@@ -77,72 +82,56 @@ void associateS(void* buf,
  combine temporary buffer allocation 
  and bookkeeping
 */
-void oadtirecv_(void *buf,
-		int *count, 
-		int *datatype, 
-		int *src, 
-		int *tag, 
-		int *comm, 
-		int *req, 
-		int *ierror) {
+int ampi_irecv_bk(void *buf,
+		  int count, 
+		  MPI_Datatype datatype, 
+		  int src, 
+		  int tag, 
+		  MPI_Comm comm, 
+		  MPI_Request *req) {
   double * tBuf;
-  int myId;
-  *ierror = MPI_Comm_rank(MPI_COMM_WORLD, &myId);
+  int myId, rc=0;
+  rc = MPI_Comm_rank(MPI_COMM_WORLD, &myId);
+  if (rc)
+    complain(rc);
   tBuf=malloc(*count*sizeof(double));
-  *ierror = MPI_Irecv( tBuf, 
-		       *count, 
-		       (MPI_Datatype)(*datatype), 
-		       *src, 
-		       *tag, 
-		       (MPI_Comm)(*comm), 
-		       (MPI_Request *)(req));
-  printf("%i: irecv b:%x t:%x c:%i s:%i r:%i\n",myId, buf,(void*)tBuf,*count, *src, *req);
-  associateR(buf, tBuf,*count, *req);
+  rc = MPI_Irecv( tBuf, 
+		  count, 
+		  datatype, 
+		  src, 
+		  tag, 
+		  comm, 
+		  req);
+  if (rc)
+    complain(rc);
+  associateR(buf, tBuf,count, req);
 } 
 
 /* 
  combine temporary buffer allocation 
  and bookkeeping
 */
-void oadtisend_(void *buf,
-		int *count, 
-		int *datatype, 
-		int *dest, 
-		int *tag, 
-		int *comm, 
-		int *req, 
-		int *ierror) {
-  int myId;
-  *ierror = MPI_Comm_rank(MPI_COMM_WORLD, &myId);
-  *ierror = MPI_Isend( buf, 
-		       *count, 
-		       (MPI_Datatype)(*datatype), 
-		       *dest, 
-		       *tag, 
-		       (MPI_Comm)(*comm), 
-		       (MPI_Request *)(req));
-  printf("%i: isend b:%x c:%i d:%i r:%i\n",myId, buf,*count, *dest, *req);
+void ampi_isend_bk_(void *buf,
+		   int count, 
+		   MPI_Datatype datatype, 
+		   int dest, 
+		   int tag, 
+		   MPI_Comm comm, 
+		   MPI_Request *req) { 
+  int myId, rc=0;
+  rc = MPI_Comm_rank(MPI_COMM_WORLD, &myId);
+  if (rc)
+    complain(rc);
+  rc = MPI_Isend( buf, 
+		  count, 
+		  datatype, 
+		  dest, 
+		  tag, 
+		  comm, 
+		  req);
+  if (rc)
+    complain(rc);
   associateS(buf,*count, *req);
-} 
-
-void oadtsend_(void *buf,
-	       int *count, 
-	       int *datatype, 
-	       int *dest, 
-	       int *tag, 
-	       int *comm, 
-	       int *ierror) {
-  int myId;
-  *ierror = MPI_Comm_rank(MPI_COMM_WORLD, &myId);
-  printf("%i: send b:%x c:%i dt:%i d:%i \n",myId, buf,*count, *datatype, *dest);
-  *ierror = MPI_Send( buf, 
-		      *count, 
-		      (MPI_Datatype)(*datatype), 
-		      *dest, 
-		      *tag, 
-		      (MPI_Comm)(*comm));
-  memset(buf,0,
-	 *count*sizeof(double));
 } 
 
 /* in the adjoint of the 

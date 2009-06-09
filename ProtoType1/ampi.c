@@ -1,130 +1,81 @@
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-subroutine  AMPI_awaitall ( & 
-     count, &
-     requests, &
-     statuses, &
-     ierror)
-  include 'mpif.h'
+#include "ampi.h"
+#include "ampi_bookKeeping.h"
 
-  integer count
-  integer requests(*)
-  integer statuses(MPI_STATUS_SIZE,*)
-  integer ierror  
+int  AMPI_awaitall (int count, 
+		    MPI_Request * requests, 
+		    MPI_Status * statuses) { 
+  int i,rc=0;
+  if (ampi_reverse) { 
+    rc=MPI_waitall(count,requests,statuses);
+    if (!rc) { 
+      for (i=0;
+	   i<count;
+	   ++i)
+	ampi_HandleRequest(requests[i]);
+    }
+  }
+  return rc;
+}
 
-end 
+int  AMPI_isend_from_i (void* buf, 
+			int count, 
+			MPI_Datatype datatype, 
+			int dest, 
+			int tag, 
+			MPI_Comm comm, 
+			MPI_Request* request) {   
+  int rc=0;
+  if (!ampi_reverse) { 
+    rc= mpi_isend(buf, count, datatype, dest, tag, comm, request);
+  }
+  else { 
+    rc= ampi_irecv_bk(buf, count, datatype, dest, tag, comm, request);
+  }
+  return rc;
+}
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-subroutine  AMPI_isend_from_i ( & 
-     buf, & 
-     count, &
-     datatype, &
-     dest, &
-     tag, &
-     comm, &
-     request, &
-     ierror)
+int  AMPI_irecv_from_i (void* buf, 
+			int count, 
+			MPI_Datatype datatype, 
+			int src, 
+			int tag, 
+			MPI_Comm comm, 
+			MPI_Request* request) {   
+  int rc=0;
+  if (!ampi_reverse) { 
+    rc= mpi_irecv(buf, count, datatype, src, tag, comm, request);
+  }
+  else { 
+    rc= ampi_isend_bk(buf, count, datatype, src, tag, comm, request);
+  }
+  return rc;
+}
 
-  double precision buf(*)
-  integer count
-  integer datatype
-  integer dest
-  integer tag
-  integer comm
-  integer request
-  integer ierror  
+int  AMPI_awaitall (int count, 
+		    MPI_Request * requests, 
+		    MPI_Status * statuses) { 
+  int rc=0;
+  if (!ampi_reverse) { 
+    rc=mpi_waitall(count, requests, statuses);
+  }
+  return rc;
+}
 
-  call mpi_isend( &
-     buf, & 
-     count, &
-     datatype, &
-     dest, &
-     tag, &
-     comm, &
-     request, &
-     ierror)
-
-end 
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-subroutine  AMPI_irecv_from_i ( & 
-     buf, & 
-     count, &
-     datatype, &
-     src, &
-     tag, &
-     comm, &
-     request, &
-     ierror)
-
-  double precision buf(*)
-  integer count
-  integer datatype
-  integer src
-  integer tag
-  integer comm
-  integer request
-  integer ierror  
-
-  call mpi_irecv( &
-     buf, & 
-     count, &
-     datatype, &
-     src, &
-     tag, &
-     comm, &
-     request, &
-     ierror)
-
-end 
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-subroutine  AMPI_waitall ( & 
-     count, &
-     requests, &
-     statuses, &
-     ierror)
-  include 'mpif.h'
-
-  integer count
-  integer requests(*)
-  integer statuses(MPI_STATUS_SIZE,*)
-  integer ierror  
-
-  call mpi_waitall( &
-     count, &
-     requests, &
-     statuses, &
-     ierror)
-
-end 
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-subroutine  AMPI_reduce ( & 
-     sbuf, & 
-     rbuf, & 
-     count, &
-     datatype, &
-     op, &
-     root, &
-     comm, &
-     ierror)
-
-  double precision sbuf(*)
-  double precision rbuf(*)
-  integer count
-  integer datatype
-  integer op
-  integer root
-  integer comm
-  integer ierror  
-  call mpi_reduce( &
-     sbuf, & 
-     rbuf, & 
-     count, &
-     datatype, &
-     op, &
-     root, &
-     comm, &
-     ierror)
-
-end 
+int AMPI_reduce(void* sbuf, 
+		void* rbuf, 
+		int count, 
+		MPI_Datatype datatype, 
+		MPI_Op op, 
+		int root, 
+		MPI_Comm comm) { 
+  int rc=0;
+  if (!ampi_reverse) { 
+    rc=mpi_reduce(sbuf, rbuf, count, datatype, op, root, comm);
+  }
+  else { 
+    if (op==MPI_SUM) { 
+      ampi_reduce_bk(sbuf, rbuf, count, datatype, op, root, comm);
+    } 
+  } 
+  return rc;
+}
