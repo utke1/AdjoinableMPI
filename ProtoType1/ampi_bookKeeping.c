@@ -25,7 +25,7 @@ static struct sBufAssoc* sBufAssoc_head=&sBufFirst; /* send info list head */
 
 void complain(int rc) { 
   printf("adjoint run received MPI return code %d\n",rc);
-  exit -1;
+  exit(-1);
 }
 
 /* associate a receive buffer 
@@ -82,7 +82,7 @@ void associateS(void* buf,
  combine temporary buffer allocation 
  and bookkeeping
 */
-int ampi_irecv_bk(void *buf,
+void ampi_irecv_bk(void *buf,
 		  int count, 
 		  MPI_Datatype datatype, 
 		  int src, 
@@ -94,7 +94,7 @@ int ampi_irecv_bk(void *buf,
   rc = MPI_Comm_rank(MPI_COMM_WORLD, &myId);
   if (rc)
     complain(rc);
-  tBuf=malloc(*count*sizeof(double));
+  tBuf=malloc(count*sizeof(double));
   rc = MPI_Irecv( tBuf, 
 		  count, 
 		  datatype, 
@@ -104,14 +104,14 @@ int ampi_irecv_bk(void *buf,
 		  req);
   if (rc)
     complain(rc);
-  associateR(buf, tBuf,count, req);
+  associateR(buf, tBuf,count, *req);
 } 
 
 /* 
  combine temporary buffer allocation 
  and bookkeeping
 */
-void ampi_isend_bk_(void *buf,
+void ampi_isend_bk(void *buf,
 		   int count, 
 		   MPI_Datatype datatype, 
 		   int dest, 
@@ -131,14 +131,14 @@ void ampi_isend_bk_(void *buf,
 		  req);
   if (rc)
     complain(rc);
-  associateS(buf,*count, *req);
+  associateS(buf,count, *req);
 } 
 
 /* in the adjoint of the 
    awaitall we need to increment 
    or nullify the buffers associated 
    with each request we were waiting for */
-void ampi_HandleRequest_ (int *r) { 
+void ampi_HandleRequest(int *r) { 
   int done=0;
   double *tBuf;
   double *rBuf;
@@ -177,4 +177,21 @@ void ampi_HandleRequest_ (int *r) {
   }
   if (!done)
     printf("%i: cannot handle request r:%i\n",myId, *r);
+}
+
+void ampi_reduce_bk(void* sbuf, 
+		    void* rbuf, 
+		    int count, 
+		    MPI_Datatype datatype, 
+		    MPI_Op op, 
+		    int root, 
+		    MPI_Comm comm) {
+  int i;
+  if (op==MPI_SUM && datatype==MPI_DOUBLE_PRECISION) {
+    for (i=0;i<count;++i) { 
+      ((double*)sbuf)[i]+=*((double*)rbuf);
+    }
+  } 
+  else 
+    complain(-1);
 }
