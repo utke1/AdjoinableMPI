@@ -24,7 +24,9 @@ static struct rBufAssoc* rBufAssoc_head=&rBufFirst; /* receive info list head */
 static struct sBufAssoc* sBufAssoc_head=&sBufFirst; /* send info list head */
 
 void complain(int rc) { 
+/*
   printf("adjoint run received MPI return code %d\n",rc);
+*/
   exit(-1);
 }
 
@@ -153,7 +155,9 @@ void ampi_HandleRequest(int r) {
 	       sAssoc->length*sizeof(double));
 	sAssoc->req=0; 
 	done=1;
+/*
 	printf("%i: handle S request r:%i\n",myId, r);
+*/
 	break; 
     }
     sAssoc=sAssoc->next;
@@ -169,7 +173,9 @@ void ampi_HandleRequest(int r) {
       }
       free(tBuf);
       rAssoc->req=0;
+/*
       printf("%i: handle R request r:%i\n",myId, r);
+*/
       done=1;
       break; 
     }
@@ -186,8 +192,15 @@ void ampi_reduce_bk(void* sbuf,
 		    MPI_Op op, 
 		    int root, 
 		    MPI_Comm comm) {
-  int i;
+  int i,rc=0;
   if (op==MPI_SUM && datatype==MPI_DOUBLE_PRECISION) {
+    rc = MPI_Bcast( rbuf,
+		    count,
+		    datatype,
+		    root,
+		    comm);
+    if (rc)
+      complain(rc);
     for (i=0;i<count;++i) { 
       ((double*)sbuf)[i]+=*((double*)rbuf);
     }
