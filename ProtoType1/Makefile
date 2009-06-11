@@ -14,10 +14,10 @@ ADJFILES= driverAdj.o compute.o computeAdj.o init.o ampi.o ampi_bookKeeping.o
 all: driver driverAdj
 
 driver: $(FILES)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lm 
 
 driverAdj: $(ADJFILES)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 %.o : %.c
 	$(CC) $(CFLAGS) -c $<
