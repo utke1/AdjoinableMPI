@@ -5,7 +5,6 @@ int main(int argc, char **argv){
   int myId, ierr;
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &myId);
-  printf("I am %d\n",myId);
   init(&x);
   compute(x,&f);
   if (myId == 0) { 
