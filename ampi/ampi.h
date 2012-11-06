@@ -5,6 +5,15 @@ int AMPI_Init(int* argc,
 
 int AMPI_Finalize(void);
 
+int AMPI_Comm_size(MPI_Comm comm, 
+		   int *size);
+
+int AMPI_Comm_rank(MPI_Comm comm, 
+		   int *rank);
+
+int AMPI_Get_processor_name(char *name, 
+			    int *resultlen );
+
 int AMPI_Send(void* buf, 
 	      int count, 
 	      MPI_Datatype datatype, 
