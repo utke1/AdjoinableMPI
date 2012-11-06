@@ -2,11 +2,11 @@
 
 int AMPI_Init(int* argc, 
 	      char*** argv) { 
-  return MPI_init(argc,argv);
+  return MPI_Init(argc,argv);
 }
 
 int AMPI_Finalize(void) { 
-  return MPI_finalize();
+  return MPI_Finalize();
 }
 
 int AMPI_Send(void* buf, 
@@ -16,9 +16,8 @@ int AMPI_Send(void* buf,
 	      int dest, 
 	      int tag, 
 	      MPI_Comm comm) { 
-  if (isActive) 
-    MPI_Abort(MPI_ERR_TYPE); 
-  return MPI_send(buf,
+  if (isActive) MPI_Abort(comm, MPI_ERR_TYPE); 
+  return MPI_Send(buf,
 		  count,
 		  datatype,
 		  dest,
@@ -27,24 +26,24 @@ int AMPI_Send(void* buf,
 }
 
 int AMPI_Recv(void* buf, 
-	      int cont,
+	      int count,
 	      MPI_Datatype datatype, 
 	      char isActive,
 	      int src, 
 	      int tag, 
 	      MPI_Comm comm,
 	      MPI_Status* status) { 
-  if (isActive) 
-    MPI_Abort(MPI_ERR_TYPE); 
-  return MPI_recv(buf,
+  if (isActive) MPI_Abort(comm, MPI_ERR_TYPE); 
+  return MPI_Recv(buf,
 		  count,
 		  datatype,
 		  src,
 		  tag,
-		  comm);
+		  comm,
+		  status);
 }  
 
-int AMPI_isend (void* buf, 
+int AMPI_Isend (void* buf, 
 		int count, 
 		MPI_Datatype datatype, 
 		char isActive,
@@ -52,9 +51,8 @@ int AMPI_isend (void* buf,
 		int tag, 
 		MPI_Comm comm, 
 		MPI_Request* request) { 
-  if (isActive) 
-    MPI_Abort(MPI_ERR_TYPE); 
-  return MPI_isend(buf,
+  if (isActive) MPI_Abort(comm, MPI_ERR_TYPE); 
+  return MPI_Isend(buf,
 		   count,
 		   datatype,
 		   dest,
@@ -63,7 +61,7 @@ int AMPI_isend (void* buf,
 		   request);
 }
 
-int AMPI_irecv (void* buf, 
+int AMPI_Irecv (void* buf, 
 		int count, 
 		MPI_Datatype datatype, 
 		char isActive,
@@ -71,9 +69,8 @@ int AMPI_irecv (void* buf,
 		int tag, 
 		MPI_Comm comm, 
 		MPI_Request* request) { 
-  if (isActive) 
-    MPI_Abort(MPI_ERR_TYPE);
-  return MPI_irecv(buf,
+  if (isActive) MPI_Abort(comm, MPI_ERR_TYPE);
+  return MPI_Irecv(buf,
 		   count,
 		   datatype,
 		   src,
@@ -85,25 +82,25 @@ int AMPI_irecv (void* buf,
 
 int AMPI_Wait(MPI_Request *request, 
 	      MPI_Status *status) { 
-  return MPI_wait(request,
+  return MPI_Wait(request,
 		  status);
 }
 
 int AMPI_waitall (int count, 
 		  MPI_Request requests[], 
 		  MPI_Status statuses[]) { 
-  return MPI_waitall(count,
+  return MPI_Waitall(count,
 		     requests,
 		     statuses);
 }
 
-int AMPI_awaitall (int count, 
-		  MPI_Request requests[], 
-		  MPI_Status statuses[]);
+int AMPI_Awaitall (int count, 
+		   MPI_Request requests[], 
+		   MPI_Status statuses[]) { 
   return MPI_SUCCESS;
 }
 
-int AMPI_reduce (void* sbuf, 
+int AMPI_Reduce (void* sbuf, 
 		 void* rbuf, 
 		 int count, 
 		 MPI_Datatype datatype, 
@@ -111,9 +108,8 @@ int AMPI_reduce (void* sbuf,
 		 MPI_Op op, 
 		 int root, 
 		 MPI_Comm comm) { 
-  if (isActive) 
-    MPI_Abort(MPI_ERR_TYPE);
-  return MPI_reduce(sbuf,
+  if (isActive) MPI_Abort(comm, MPI_ERR_TYPE);
+  return MPI_Reduce(sbuf,
 		    rbuf,
 		    count,
 		    datatype,
