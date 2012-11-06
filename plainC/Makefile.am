@@ -5,11 +5,8 @@ ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
 
 lib_LIBRARIES = libampiPlainC.a
 
-libAMPI_adir = $(includedir)
+libampiPlainC_adir = $(includedir)
 
-libAMPI_a_HEADERS=\
-                  ../ampi/ampi.h
-
-libAMPI_a_SOURCES = \
+libampiPlainC_a_SOURCES = \
                     $(libAMPI_a_HEADERS) \
                     ampi.c 

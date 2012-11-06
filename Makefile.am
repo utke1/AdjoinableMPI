@@ -1,3 +1,5 @@
 ACLOCAL_AMFLAGS = -I config
 
-SUBDIRS = plainC
+SUBDIRS = \
+ampi \
+plainC

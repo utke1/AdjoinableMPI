@@ -31,21 +31,19 @@ AH_BOTTOM([
 #endif 
 ])
 
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_RANLIB
+
 AC_LANG([C])
 AC_LANG([C++])
 
 AMPI_SET_MPICC
 
-AC_HEADER_STDBOOL
-AC_C_INLINE
-AC_TYPE_SIZE_T
-
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
-AC_CHECK_FUNCS([floor memset pow sqrt])
-
 AC_CONFIG_FILES([Makefile
-                 src/Makefile])
+		 ampi/Makefile
+                 plainC/Makefile])
 AC_SUBST(MPICC)
 AC_SUBST(MPI_INC_DIR)
 AC_SUBST(MPI_LIB_DIR)
