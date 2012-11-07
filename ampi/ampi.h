@@ -1,5 +1,10 @@
 #include "mpi.h"
 
+enum AMPI_activity { 
+  AMPI_PASSIVE=0,
+  AMPI_ACTIVE=1
+};
+
 int AMPI_Init(int* argc, 
 	      char*** argv);
 
