@@ -1,75 +1,12 @@
-#include "mpi.h"
+#ifndef _AMPI_AMPI_H_
+#define _AMPI_AMPI_H_
 
-enum AMPI_activity { 
-  AMPI_PASSIVE=0,
-  AMPI_ACTIVE=1
-};
+/**
+ * \file one-stop header file for all AD-tool-independent AMPI routines; this is the file to replace mpi.h in the user code;
+ */ 
 
-int AMPI_Init(int* argc, 
-	      char*** argv);
+#include "ampi/internal/passThrough.h"
+#include "ampi/internal/nt.h"
+#include "ampi/internal/modified.h"
 
-int AMPI_Finalize(void);
-
-int AMPI_Comm_size(MPI_Comm comm, 
-		   int *size);
-
-int AMPI_Comm_rank(MPI_Comm comm, 
-		   int *rank);
-
-int AMPI_Get_processor_name(char *name, 
-			    int *resultlen );
-
-int AMPI_Send(void* buf, 
-	      int count, 
-	      MPI_Datatype datatype, 
-	      char isActive,
-	      int dest, 
-	      int tag, 
-	      MPI_Comm comm);
-
-int AMPI_Recv(void* buf, 
-	      int count,
-	      MPI_Datatype datatype, 
-	      char isActive,
-	      int src, 
-	      int tag, 
-	      MPI_Comm comm,
-	      MPI_Status* status);
-
-int AMPI_Isend (void* buf, 
-		int count, 
-		MPI_Datatype datatype, 
-		char isActive,
-		int dest, 
-		int tag, 
-		MPI_Comm comm, 
-		MPI_Request* request);
-
-int AMPI_Irecv (void* buf, 
-		int count, 
-		MPI_Datatype datatype, 
-		char isActive,
-		int src, 
-		int tag, 
-		MPI_Comm comm, 
-		MPI_Request* request);
-
-int AMPI_Wait(MPI_Request *request, 
-	      MPI_Status *status);
-
-int AMPI_Waitall (int count, 
-		  MPI_Request requests[], 
-		  MPI_Status statuses[]);
-
-int AMPI_Awaitall (int count, 
-		   MPI_Request requests[], 
-		   MPI_Status statuses[]);
-
-int AMPI_Reduce (void* sbuf, 
-		 void* rbuf, 
-		 int count, 
-		 MPI_Datatype datatype, 
-		char isActive,
-		 MPI_Op op, 
-		 int root, 
-		 MPI_Comm comm); 
+#endif

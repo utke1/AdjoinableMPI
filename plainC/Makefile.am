@@ -8,5 +8,6 @@ lib_LIBRARIES = libampiPlainC.a
 libampiPlainC_adir = $(includedir)
 
 libampiPlainC_a_SOURCES = \
-                    $(libAMPI_a_HEADERS) \
-                    ampi.c 
+modified.c \
+nt.c \
+passThrough.c

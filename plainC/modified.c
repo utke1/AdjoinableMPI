@@ -1,30 +1,13 @@
-#include "ampi/ampi.h"
+#include "ampi/internal/modified.h"
 
 int AMPI_Init(int* argc, 
 	      char*** argv) { 
   return MPI_Init(argc,argv);
 }
 
-int AMPI_Finalize(void) { 
+int AMPI_Finalize(int* argc, 
+		  char*** argv) { 
   return MPI_Finalize();
-}
-
-int AMPI_Comm_size(MPI_Comm comm, 
-		   int *size) {
-  return MPI_Comm_size(comm,
-		       size);
-}
-
-int AMPI_Comm_rank(MPI_Comm comm, 
-		   int *rank) {
-  return MPI_Comm_rank(comm,
-		       rank);
-}
-
-int AMPI_Get_processor_name(char *name, 
-			    int *resultlen ) { 
-  return MPI_Get_processor_name(name,
-				resultlen);
 }
 
 int AMPI_Send(void* buf, 
@@ -104,7 +87,7 @@ int AMPI_Wait(MPI_Request *request,
 		  status);
 }
 
-int AMPI_waitall (int count, 
+int AMPI_Waitall (int count, 
 		  MPI_Request requests[], 
 		  MPI_Status statuses[]) { 
   return MPI_Waitall(count,
