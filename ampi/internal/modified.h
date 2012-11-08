@@ -21,6 +21,29 @@ int AMPI_Init(int* argc,
 int AMPI_Finalize(int* argc, 
 		  char*** argv);
 
+/**
+ * pass through for isActive==AMPI_PASSIVE;  
+ * for isActive==AMPI_ACTIVE this consider the size of the active type; 
+ * this is AD tool dependent and part of the AD tool interface
+ */
+int AMPI_Pack_size(int incount,
+		   MPI_Datatype datatype,
+		   char isActive,
+		   MPI_Comm comm,
+		   int *size);
+
+/**
+ * adjoint needs to detach; signature identical to original MPI call
+ */ 
+int AMPI_Buffer_attach(void *buffer, 
+		       int size); 
+
+/**
+ * adjoint needs to attach; signature identical to original MPI call
+ */ 
+int AMPI_Buffer_detach(void *buffer, 
+		       int *size);
+
 int AMPI_Send(void* buf, 
 	      int count, 
 	      MPI_Datatype datatype, 
@@ -55,6 +78,14 @@ int AMPI_Irecv (void* buf,
 		int tag, 
 		MPI_Comm comm, 
 		MPI_Request* request);
+
+int AMPI_Bsend(void *buf, 
+	       int count, 
+	       MPI_Datatype datatype, 
+	       char isActive,
+	       int dest, 
+	       int tag, 
+	       MPI_Comm comm);
 
 int AMPI_Wait(MPI_Request *request, 
 	      MPI_Status *status);

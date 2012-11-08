@@ -8,14 +8,26 @@
 #include "mpi.h"
 
 /**
- * this wrapper variant as no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
+ * this wrapper variant has no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
  */
 int AMPI_Init_NT(int* argc, 
 		 char*** argv);
 
 /**
- * this wrapper variant as no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
+ * this wrapper variant has no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
  */
 int AMPI_Finalize_NT(void);
+
+/**
+ * this wrapper variant has no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
+ */
+int AMPI_Buffer_attach_NT(void *buffer, 
+			  int size); 
+
+/**
+ * this wrapper variant has no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
+ */
+int AMPI_Buffer_detach_NT(void *buffer, 
+			  int *size);
 
 #endif

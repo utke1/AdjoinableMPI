@@ -10,6 +10,32 @@ int AMPI_Finalize(int* argc,
   return MPI_Finalize();
 }
 
+int AMPI_Pack_size(int incount,
+		   MPI_Datatype datatype,
+		   char isActive,
+		   MPI_Comm comm,
+		   int *size) { 
+  if (isActive!=AMPI_PASSIVE) MPI_Abort(comm, MPI_ERR_TYPE); 
+  return  MPI_Pack_size(incount,
+			datatype,
+			comm,
+			size);
+}
+
+int AMPI_Buffer_attach(void *buffer, 
+		       int size) { 
+  return MPI_Buffer_attach(buffer,
+			   size);
+
+}
+
+int AMPI_Buffer_detach(void *buffer, 
+		       int *size){ 
+  return MPI_Buffer_detach(buffer,
+			   size);
+}
+
+
 int AMPI_Send(void* buf, 
 	      int count, 
 	      MPI_Datatype datatype, 
@@ -80,6 +106,21 @@ int AMPI_Irecv (void* buf,
 		   request);
 }
 
+int AMPI_Bsend(void *buf, 
+	       int count, 
+	       MPI_Datatype datatype, 
+	       char isActive,
+	       int dest, 
+	       int tag, 
+	       MPI_Comm comm) { 
+  if (isActive!=AMPI_PASSIVE) MPI_Abort(comm, MPI_ERR_TYPE); 
+  return MPI_Bsend(buf,
+		   count,
+		   datatype,
+		   dest,
+		   tag,
+		   comm);
+}
 
 int AMPI_Wait(MPI_Request *request, 
 	      MPI_Status *status) { 
