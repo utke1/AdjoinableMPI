@@ -4,6 +4,7 @@ ampi.h
 
 internalincludedir = @includedir@/ampi/internal
 internalinclude_HEADERS = \
+internal/activity.h \
 internal/modified.h \
 internal/nt.h \
 internal/passThrough.h 
