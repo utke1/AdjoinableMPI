@@ -122,6 +122,22 @@ int AMPI_Bsend(void *buf,
 		   comm);
 }
 
+int AMPI_Rsend(void *buf, 
+	       int count, 
+	       MPI_Datatype datatype, 
+	       char isActive,
+	       int dest, 
+	       int tag, 
+	       MPI_Comm comm) { 
+  if (isActive!=AMPI_PASSIVE) MPI_Abort(comm, MPI_ERR_TYPE); 
+  return MPI_Rsend(buf,
+		   count,
+		   datatype,
+		   dest,
+		   tag,
+		   comm);
+}
+
 int AMPI_Wait(MPI_Request *request, 
 	      MPI_Status *status) { 
   return MPI_Wait(request,
