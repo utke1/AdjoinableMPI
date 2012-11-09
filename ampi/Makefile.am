@@ -7,5 +7,6 @@ internalinclude_HEADERS = \
 internal/activity.h \
 internal/modified.h \
 internal/nt.h \
+internal/pairedWith.h \ 
 internal/passThrough.h 
 
