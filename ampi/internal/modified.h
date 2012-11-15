@@ -2,7 +2,8 @@
 #define _AMPI_MODIFIED_H_
 
 /**
- * \file AMPI routines that have adjoint functionality and do no merely pass through to the MPI originals; the routines may signatures with additional parameters compared to their original MPI counterparts
+ * \file 
+ * AMPI routines that have adjoint functionality and do no merely pass through to the MPI originals; the routines may signatures with additional parameters compared to their original MPI counterparts
  */ 
 
 
@@ -102,6 +103,9 @@ int AMPI_Rsend(void *buf,
 	       int pairedWith,
 	       MPI_Comm comm);
 
+/**
+ * before we start reverse we need to make sure there are no pending requests in our internal bookkeeping 
+ */
 int AMPI_Wait(MPI_Request *request, 
 	      void *buf,
 	      MPI_Status *status);
