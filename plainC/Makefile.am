@@ -10,4 +10,5 @@ libampiPlainC_adir = $(includedir)
 libampiPlainC_a_SOURCES = \
 modified.c \
 nt.c \
-passThrough.c
+passThrough.c \
+st.c

@@ -14,7 +14,7 @@
  * challenges.
  *  - the target language may prevent some implementation options
  *   - exposing an MPI_Request augmented with extra information as a structured type (not supported by Fortran 77)
- *   - passing an array of buffers (of different length) as a formal argument (not supported in Fortran)
+ *   - passing an array of buffers (of different length), e.g. to \ref AMPI_Waitall, as a additional argument to  (not supported in any Fortran version)
  *  - the AD tool implementation could be based on 
  *   - operator overloading 
  *   - source transformation
@@ -96,6 +96,8 @@
  * 
  * \subsection commPat General Assumptions and Notions on Communication Patterns
  * 
+ * \subsubsection pairings Pairings
+ *
  * Following the explanations in \cite AMPIpaper it is clear that context information about the 
  * communication pattern, that is the pairing of MPI calls, is needed to achieve 
  * -# correct adjoints, i.e. correct send and receive end points and deadlock free
@@ -118,6 +120,40 @@
  * <b>    Restriction : pairing of send and receive types must be static. </b>
  *
  * Note that this does not prevent the use of wild cards for source, destination, or tag.  
+ * 
+ * \subsubsection nonblocking Nonblocking Communication
+ * 
+ * A central concern is the handling of non-blocking sends and receives in combination with their respective completion,
+ * e.g. wait,  waitall, test. 
+ * Taking as an example 
+ * \code{.cpp}
+ * MPI_Irecv(&b,...,&r);
+ * // some other code in between 
+ * MPI_Wait(&r,MPI_STATUS_IGNORE); 
+ * \endcode
+ * The adjoint action for <tt>MPI_Wait</tt> will have to be the <tt>MPI_Isend</tt> of the adjoint data associated with 
+ * the data in buffer <tt>b</tt>. 
+ * The original <tt>MPI_Wait</tt> does not have any of the parameters required for the send and in particular it does not 
+ * have the buffer. The latter, however, is crucial in particular in a source transformation context because, absent a correct syntactic 
+ * representation for the buffer at the <tt>MPI_Wait</tt> call site one has to map the address <tt>&b</tt> valid during the forward 
+ * sweep to the address of the associated adjoint buffer during the reverse sweep. 
+ * This mapping is subject of ongoing research and currently not supported. 
+ * 
+ * On the other hand, for operator overloading based tools, the mapping to a reverse sweep address space is an integral part of the 
+ * tool because there the reverse sweep is executed as interpretation of  a trace of the execution that is entirely separate from the original program 
+ * address space. Therefore all addresses have to be mapped to the new adjoint address space to begin with and no association to some 
+ * adjoint program variable is needed. Instead, the buffer address can be conveyed via the request parameter (and AMPI-internal bookkeeping) 
+ * to the <tt>MPI_Wait</tt> call site, traced there and is then recoverable during the reverse sweep.  
+ * Nevertheless, to allow a common interface this version of the AMPI library has the buffer as an additional argument to in the source-transformation-specific \ref AMPI_Wait_ST 
+ * variant of \ref AMPI_Wait.  
+ * In later editions, when source transformation tools can fully support the address mapping, the  of the AMPI library the \ref AMPI_Wait_ST variant  may be dropped.  
+ * 
+ * Similarly to conveying the buffer address via internal bookkeeping associated with the request being passed, all other information such as source or destination, tag, 
+ * data type, or the distinction if a request originated with a send or receive  will be part of the augmented information attached to the request and be subject to the trace and recovery as the buffer address itself. 
+ * In the source transformation context, for cases in which parameter values such as source, destination, or tag are constants or loop indices the question could be asked if these values couldn't be easily recovered in
+ * the generated adjoint code without having to store them. 
+ * Such recovery following a TBR-like approach would, however, require exposing the augmented request instance as a structured data type to the TBR analysis in the languages other than Fortran77. 
+ * This necessitates the introduction of the \ref AMPI_Request, which in Fotran77 still maps to just an integer address. 
  */
 
 
@@ -131,5 +167,6 @@
 #include "ampi/internal/passThrough.h"
 #include "ampi/internal/nt.h"
 #include "ampi/internal/modified.h"
+#include "ampi/internal/st.h"
 
 #endif

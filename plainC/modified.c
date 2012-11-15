@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <assert.h>
 #include "ampi/internal/modified.h"
 
 int AMPI_Init(int* argc, 
@@ -12,7 +14,7 @@ int AMPI_Finalize(int* argc,
 
 int AMPI_Pack_size(int incount,
 		   MPI_Datatype datatype,
-		   int isActive,
+		   enum AMPI_Activity isActive,
 		   MPI_Comm comm,
 		   int *size) { 
   if (isActive!=AMPI_PASSIVE) MPI_Abort(comm, MPI_ERR_TYPE); 
@@ -39,7 +41,7 @@ int AMPI_Buffer_detach(void *buffer,
 int AMPI_Send(void* buf, 
 	      int count, 
 	      MPI_Datatype datatype, 
-	      int isActive,
+	      enum AMPI_Activity isActive,
 	      int dest, 
 	      int tag,
 	      int pairedWith,
@@ -63,7 +65,7 @@ int AMPI_Send(void* buf,
 int AMPI_Recv(void* buf, 
 	      int count,
 	      MPI_Datatype datatype, 
-	      int isActive,
+	      enum AMPI_Activity isActive,
 	      int src, 
 	      int tag,
 	      int pairedWith,
@@ -93,12 +95,12 @@ int AMPI_Recv(void* buf,
 int AMPI_Isend (void* buf, 
 		int count, 
 		MPI_Datatype datatype, 
-		int isActive,
+		enum AMPI_Activity isActive,
 		int dest, 
 		int tag,
 		int pairedWith,
 		MPI_Comm comm, 
-		MPI_Request* request) { 
+		struct AMPI_Request* request) { 
   if (!(
 	pairedWith==AMPI_RECV 
 	|| 
@@ -113,18 +115,18 @@ int AMPI_Isend (void* buf,
 		   dest,
 		   tag,
 		   comm,
-		   request);
+		   &(request->plainRequest));
 }
 
 int AMPI_Irecv (void* buf, 
 		int count, 
 		MPI_Datatype datatype, 
-		int isActive,
+		enum AMPI_Activity isActive,
 		int src, 
 		int tag,
 		int pairedWith,
 		MPI_Comm comm, 
-		MPI_Request* request) { 
+		struct AMPI_Request* request) { 
   if (!(
 	pairedWith==AMPI_SEND 
 	|| 
@@ -143,13 +145,13 @@ int AMPI_Irecv (void* buf,
 		   src,
 		   tag,
 		   comm,
-		   request);
+		   &(request->plainRequest));
 }
 
 int AMPI_Bsend(void *buf, 
 	       int count, 
 	       MPI_Datatype datatype, 
-	       int isActive,
+	       enum AMPI_Activity isActive,
 	       int dest, 
 	       int tag,
 	       int pairedWith,
@@ -171,7 +173,7 @@ int AMPI_Bsend(void *buf,
 int AMPI_Rsend(void *buf, 
 	       int count, 
 	       MPI_Datatype datatype, 
-	       int isActive,
+	       enum AMPI_Activity isActive,
 	       int dest, 
 	       int tag,
 	       int pairedWith,
@@ -190,23 +192,27 @@ int AMPI_Rsend(void *buf,
 		   comm);
 }
 
-int AMPI_Wait(MPI_Request *request,
-	      void*  buf,
+int AMPI_Wait(struct AMPI_Request *request,
 	      MPI_Status *status) { 
-  return MPI_Wait(request,
+  return MPI_Wait(&(request->plainRequest),
 		  status);
 }
 
 int AMPI_Waitall (int count, 
-		  MPI_Request requests[], 
+		  struct AMPI_Request requests[], 
 		  MPI_Status statuses[]) { 
+  int i; 
+  /* extract original requests */
+  MPI_Request * origRequests=(MPI_Request*)malloc(count*sizeof(MPI_Request));
+  assert(origRequests);
+  for (i=0;i<count;++i) origRequests[i]=requests[i].plainRequest; 
   return MPI_Waitall(count,
-		     requests,
+		     origRequests,
 		     statuses);
 }
 
 int AMPI_Awaitall (int count, 
-		   MPI_Request requests[], 
+		   struct AMPI_Request requests[], 
 		   MPI_Status statuses[]) { 
   return MPI_SUCCESS;
 }
@@ -215,7 +221,7 @@ int AMPI_Reduce (void* sbuf,
 		 void* rbuf, 
 		 int count, 
 		 MPI_Datatype datatype, 
-		 int isActive,
+		 enum AMPI_Activity isActive,
 		 MPI_Op op, 
 		 int root, 
 		 MPI_Comm comm) { 

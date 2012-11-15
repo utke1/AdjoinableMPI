@@ -5,7 +5,7 @@
  * \file enumeration to distinguish between active and passive variants of MPI_Datatype parameters passed to AMPI routines 
  */ 
 
-enum AMPI_activity { 
+enum AMPI_Activity { 
   AMPI_PASSIVE=0,
   AMPI_ACTIVE=1
 };
