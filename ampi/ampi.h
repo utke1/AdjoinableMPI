@@ -90,7 +90,7 @@
  * with their AMPI "no trace/transformation"  (NT) counterparts \ref AMPI_Init_NT and \ref AMPI_Finalize_NT. 
  * The same approach should be taken for all resource allocations/deallocations (e.g. \ref AMPI_Buffer_attach_NT and \ref AMPI_Buffer_detach_NT) 
  * that can exist in the scope enclosing the adjointed section alleviating 
- + The need for the AD tool implementation to tackle them. 
+ * the need for the AD tool implementation to tackle them. 
  * For cases where these routines have to be called within the adjointed code section the variants without the <tt>_NT</tt> suffix will ensure the
  * correct adjoint behavior.
  * 
@@ -101,6 +101,7 @@
  * -# correct adjoints, i.e. correct send and receive end points and deadlock free
  * -# if possible retain the efficiency advantages present in the original MPI communication for the adjoint.
  *
+ * In AMPI pairings are conveyed via additional <tt>pairedWith</tt> parameters which may be set to \ref AMPI_pairedWith enumeration values , see e.g. \ref AMPI_Send or \ref AMPI_Recv.
  * The need to convey the pairing imposes restrictions because in a given code the pairing may not be static.
  * For a example a given <tt>MPI_Recv</tt> may be paired with 
  * \code{.cpp}
@@ -112,7 +113,11 @@
  *
  * but the AD tool has to decide on the send mode once the reverse sweep needs to adjoin the orginal <tt>MPI_Recv</tt>.  
  * Tracing such information in a global data structure is not scalable and piggybacking the send type onto the message 
- * so it can be traced on the receiving side is conceivable but not trivial and currently not implemented.
+ * so it can be traced on the receiving side is conceivable but not trivial and currently not implemented. 
+ * 
+ * <b>    Restriction : pairing of send and receive types must be static. </b>
+ *
+ * Note that this does not prevent the use of wild cards for source, destination, or tag.  
  */
 
 
