@@ -10,19 +10,26 @@
  */ 
 
 #include <mpi.h>
+#include "ampi/internal/libConfig.h"
 
 /**
  * does the request originate with a  send or a receive 
  */
-enum AMPI_Request_origin { 
+enum AMPI_Request_origin_E { 
   AMPI_SEND_ORIGIN,
   AMPI_RECV_ORIGIN
 };
 
+#ifdef AMPI_FORTRANCOMPATIBLE
+typedef int AMPI_Request_origin;
+#else 
+typedef enum AMPI_Request_origin_E AMPI_Request_origin;
+#endif 
+
 /**
  * MPI_Request augmented with extra information 
  */ 
-struct AMPI_Request {
+struct AMPI_Request_S {
   /**
    * \ref AMPI_Isend / \ref AMPI_Irecv  dst or src  parameter 
    */
@@ -55,7 +62,13 @@ struct AMPI_Request {
   /**
    * \ref AMPI_Isend / \ref AMPI_Irecv sets this
    */ 
-  enum AMPI_Request_origin origin;
+  enum AMPI_Request_origin_E origin;
 };
+
+#ifdef AMPI_FORTRANCOMPATIBLE
+typedef MPI_Request AMPI_Request;
+#else 
+typedef struct AMPI_Request_S AMPI_Request;
+#endif 
 
 #endif

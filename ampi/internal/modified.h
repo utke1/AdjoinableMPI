@@ -31,7 +31,7 @@ int AMPI_Finalize(int* argc,
  */
 int AMPI_Pack_size(int incount,
 		   MPI_Datatype datatype,
-		   enum AMPI_Activity isActive,
+		   AMPI_Activity isActive,
 		   MPI_Comm comm,
 		   int *size);
 
@@ -50,79 +50,79 @@ int AMPI_Buffer_detach(void *buffer,
 int AMPI_Send(void* buf, 
 	      int count, 
 	      MPI_Datatype datatype, 
-	      enum AMPI_Activity isActive,
+	      AMPI_Activity isActive,
 	      int dest, 
 	      int tag, 
-	      int pairedWith,
+	      AMPI_PairedWith pairedWith,
 	      MPI_Comm comm);
 
 int AMPI_Recv(void* buf, 
 	      int count,
 	      MPI_Datatype datatype, 
-	      enum AMPI_Activity isActive,
+	      AMPI_Activity isActive,
 	      int src, 
 	      int tag, 
-	      int pairedWith,
+	      AMPI_PairedWith pairedWith,
 	      MPI_Comm comm,
 	      MPI_Status* status);
 
 int AMPI_Isend (void* buf, 
 		int count, 
 		MPI_Datatype datatype, 
-		enum AMPI_Activity isActive,
+		AMPI_Activity isActive,
 		int dest, 
 		int tag, 
-		int pairedWith,
+		AMPI_PairedWith pairedWith,
 		MPI_Comm comm, 
-		struct AMPI_Request* request);
+		AMPI_Request* request);
 
 int AMPI_Irecv (void* buf, 
 		int count, 
 		MPI_Datatype datatype, 
-		enum AMPI_Activity isActive,
+		AMPI_Activity isActive,
 		int src, 
 		int tag,
-		int pairedWith, 
+		AMPI_PairedWith pairedWith, 
 		MPI_Comm comm, 
-		struct AMPI_Request* request);
+		AMPI_Request* request);
 
 int AMPI_Bsend(void *buf, 
 	       int count, 
 	       MPI_Datatype datatype, 
-	       enum AMPI_Activity isActive,
+	       AMPI_Activity isActive,
 	       int dest, 
 	       int tag,
-	       int pairedWith, 
+	       AMPI_PairedWith pairedWith, 
 	       MPI_Comm comm);
 
 int AMPI_Rsend(void *buf, 
 	       int count, 
 	       MPI_Datatype datatype, 
-	       enum AMPI_Activity isActive,
+	       AMPI_Activity isActive,
 	       int dest, 
 	       int tag,
-	       int pairedWith,
+	       AMPI_PairedWith pairedWith,
 	       MPI_Comm comm);
 
 /**
  * before we start reverse we need to make sure there are no pending requests in our internal bookkeeping 
  */
-int AMPI_Wait(struct AMPI_Request *request, 
+int AMPI_Wait(AMPI_Request *request, 
 	      MPI_Status *status);
 
 int AMPI_Waitall (int count, 
-		  struct AMPI_Request requests[], 
+		  AMPI_Request requests[], 
 		  MPI_Status statuses[]);
 
 int AMPI_Awaitall (int count, 
-		   struct AMPI_Request requests[], 
+		   AMPI_Request requests[], 
 		   MPI_Status statuses[]);
 
 int AMPI_Reduce (void* sbuf, 
 		 void* rbuf, 
 		 int count, 
 		 MPI_Datatype datatype, 
-		 enum AMPI_Activity isActive,
+		 AMPI_Activity isActive,
 		 MPI_Op op, 
 		 int root, 
 		 MPI_Comm comm); 

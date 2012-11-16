@@ -41,8 +41,27 @@ AC_LANG([C++])
 
 AMPI_SET_MPICC
 
+AC_SUBST(fortranCompatible)
+
+AC_ARG_ENABLE(fortranCompatible,
+[AS_HELP_STRING([--enable-fortranCompatible],
+                [adjust the signatures to be callable from Fortran])],
+[case "${enableval}" in
+  yes)
+    fortranCompatible='#define AMPI_FORTRANCOMPATIBLE'
+    ;;
+  no)
+    fortranCompatible='#undef AMPI_FORTRANCOMPATIBLE'
+    ;;
+  *)
+     AC_MSG_ERROR(bad value ${fortranCompatible} for --enable-fortranCompatible) ;;
+esac],
+[fortranCompatible='#undef AMPI_FORTRANCOMPATIBLE'])
+
+
 AC_CONFIG_FILES([Makefile
 		 ampi/Makefile
+		 ampi/internal/libConfig.h
                  plainC/Makefile])
 AC_SUBST(MPICC)
 AC_SUBST(MPI_INC_DIR)

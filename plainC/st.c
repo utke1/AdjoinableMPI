@@ -1,8 +1,13 @@
 #include "ampi/internal/st.h"
 
-int AMPI_Wait_ST(struct AMPI_Request *request,
+int AMPI_Wait_ST(AMPI_Request *request,
 		 void*  buf,
 		 MPI_Status *status) { 
-  return MPI_Wait(&(request->plainRequest),
-		  status);
+  return MPI_Wait(
+#ifdef AMPI_FORTRANCOMPATIBLE
+		   request
+#else 
+		   &(request->plainRequest)
+#endif 
+		   ,status);
 }

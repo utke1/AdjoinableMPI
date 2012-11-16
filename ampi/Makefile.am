@@ -5,6 +5,7 @@ ampi.h
 internalincludedir = @includedir@/ampi/internal
 internalinclude_HEADERS = \
 internal/activity.h \
+internal/libConfig.h \
 internal/modified.h \
 internal/nt.h \
 internal/pairedWith.h \
