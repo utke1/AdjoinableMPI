@@ -103,7 +103,7 @@
  * -# correct adjoints, i.e. correct send and receive end points and deadlock free
  * -# if possible retain the efficiency advantages present in the original MPI communication for the adjoint.
  *
- * In AMPI pairings are conveyed via additional <tt>pairedWith</tt> parameters which may be set to \ref AMPI_pairedWith enumeration values , see e.g. \ref AMPI_Send or \ref AMPI_Recv.
+ * In AMPI pairings are conveyed via additional <tt>pairedWith</tt> parameters which may be set to \ref AMPI_PairedWith enumeration values , see e.g. \ref AMPI_Send or \ref AMPI_Recv.
  * The need to convey the pairing imposes restrictions because in a given code the pairing may not be static.
  * For a example a given <tt>MPI_Recv</tt> may be paired with 
  * \code{.cpp}
@@ -121,7 +121,7 @@
  *
  * Note that this does not prevent the use of wild cards for source, destination, or tag.  
  * 
- * \subsubsection nonblocking Nonblocking Communication
+ * \subsubsection nonblocking Nonblocking Communication and Fortran Compatibility
  * 
  * A central concern is the handling of non-blocking sends and receives in combination with their respective completion,
  * e.g. wait,  waitall, test. 
@@ -154,6 +154,7 @@
  * the generated adjoint code without having to store them. 
  * Such recovery following a TBR-like approach would, however, require exposing the augmented request instance as a structured data type to the TBR analysis in the languages other than Fortran77. 
  * This necessitates the introduction of the \ref AMPI_Request, which in Fotran77 still maps to just an integer address. 
+ * The switching between these variants is done via  configure flags, see \ref configure.
  */
 
 
