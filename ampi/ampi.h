@@ -68,12 +68,12 @@
  * The top level header file to be included in place of the usual  "mpi.h" is located in  
  * ampi/ampi.h
  *
- * It references the header files in <tt>ampi/internal</tt> which are organized to contain
- *  - unmodified pass through to MPI in <tt>ampi/internal/passThrough.h</tt> which exists to give the extent of the original MPI we cover  
+ * It references the header files in <tt>ampi/userIF</tt> which are organized to contain
+ *  - unmodified pass through to MPI in <tt>ampi/userIF/passThrough.h</tt> which exists to give the extent of the original MPI we cover  
  *  - variants of routines that in principle need adjoint logic but happen to be called outside of the code section that is adjoined and therefore 
- *    are not transformed / not traced (NT) in  <tt>ampi/internal/nt.h</tt>
+ *    are not transformed / not traced (NT) in  <tt>ampi/userIF/nt.h</tt>
  *  - routines that are modified from the original MPI counterparts because their behavior in the reverse sweep differs from their behavior in the 
- *    forward sweep and they also may have a modified signatyre; in <tt>ampi/internal/modified.h</tt>
+ *    forward sweep and they also may have a modified signatyre; in <tt>ampi/userIF/modified.h</tt>
  *
  * Additional header files contain enumerations used as arguments to AMPI routines.
  * 
@@ -142,13 +142,13 @@
  * On the other hand, for operator overloading based tools, the mapping to a reverse sweep address space is an integral part of the 
  * tool because there the reverse sweep is executed as interpretation of  a trace of the execution that is entirely separate from the original program 
  * address space. Therefore all addresses have to be mapped to the new adjoint address space to begin with and no association to some 
- * adjoint program variable is needed. Instead, the buffer address can be conveyed via the request parameter (and AMPI-internal bookkeeping) 
+ * adjoint program variable is needed. Instead, the buffer address can be conveyed via the request parameter (and AMPI-userIF bookkeeping) 
  * to the <tt>MPI_Wait</tt> call site, traced there and is then recoverable during the reverse sweep.  
  * Nevertheless, to allow a common interface this version of the AMPI library has the buffer as an additional argument to in the source-transformation-specific \ref AMPI_Wait_ST 
  * variant of \ref AMPI_Wait.  
  * In later editions, when source transformation tools can fully support the address mapping, the  of the AMPI library the \ref AMPI_Wait_ST variant  may be dropped.  
  * 
- * Similarly to conveying the buffer address via internal bookkeeping associated with the request being passed, all other information such as source or destination, tag, 
+ * Similarly to conveying the buffer address via userIF bookkeeping associated with the request being passed, all other information such as source or destination, tag, 
  * data type, or the distinction if a request originated with a send or receive  will be part of the augmented information attached to the request and be subject to the trace and recovery as the buffer address itself. 
  * In the source transformation context, for cases in which parameter values such as source, destination, or tag are constants or loop indices the question could be asked if these values couldn't be easily recovered in
  * the generated adjoint code without having to store them. 
@@ -165,9 +165,9 @@
 
 
 
-#include "ampi/internal/passThrough.h"
-#include "ampi/internal/nt.h"
-#include "ampi/internal/modified.h"
-#include "ampi/internal/st.h"
+#include "ampi/userIF/passThrough.h"
+#include "ampi/userIF/nt.h"
+#include "ampi/userIF/modified.h"
+#include "ampi/userIF/st.h"
 
 #endif

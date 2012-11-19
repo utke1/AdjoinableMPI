@@ -1,4 +1,4 @@
-#include "ampi/internal/passThrough.h"
+#include "ampi/userIF/passThrough.h"
 
 int AMPI_Comm_size(MPI_Comm comm, 
 		   int *size) {

@@ -8,9 +8,9 @@
 
 
 #include <mpi.h>
-#include "ampi/internal/activity.h"
-#include "ampi/internal/pairedWith.h"
-#include "ampi/internal/request.h"
+#include "ampi/userIF/activity.h"
+#include "ampi/userIF/pairedWith.h"
+#include "ampi/userIF/request.h"
 
 /**
  * adjoint needs to MPI_Finalize; signature identical to original MPI call
@@ -105,7 +105,7 @@ int AMPI_Rsend(void *buf,
 	       MPI_Comm comm);
 
 /**
- * before we start reverse we need to make sure there are no pending requests in our internal bookkeeping 
+ * before we start reverse we need to make sure there are no pending requests in our userIF bookkeeping 
  */
 int AMPI_Wait(AMPI_Request *request, 
 	      MPI_Status *status);

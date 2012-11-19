@@ -1,4 +1,4 @@
-#include "ampi/internal/st.h"
+#include "ampi/userIF/st.h"
 
 int AMPI_Wait_ST(AMPI_Request *request,
 		 void*  buf,

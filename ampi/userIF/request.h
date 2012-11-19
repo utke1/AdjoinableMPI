@@ -10,7 +10,7 @@
  */ 
 
 #include <mpi.h>
-#include "ampi/internal/libConfig.h"
+#include "ampi/userIF/libConfig.h"
 
 /**
  * does the request originate with a  send or a receive 

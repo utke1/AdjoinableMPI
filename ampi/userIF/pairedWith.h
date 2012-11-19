@@ -6,7 +6,7 @@
  * enumeration to distinguish between active and passive variants of MPI_Datatype parameters passed to AMPI routines 
  */ 
 
-#include "ampi/internal/libConfig.h"
+#include "ampi/userIF/libConfig.h"
 
 enum AMPI_PairedWith_E { 
   AMPI_RECV,

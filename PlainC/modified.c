@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <assert.h>
-#include "ampi/internal/modified.h"
+#include "ampi/userIF/modified.h"
 
 int AMPI_Init(int* argc, 
 	      char*** argv) { 

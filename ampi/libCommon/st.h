@@ -3,11 +3,11 @@
 
 /**
  * \file 
- * common AD implementation portion of AMPI routines from ampi/internal/st.h
+ * common AD implementation portion of AMPI routines from ampi/userIF/st.h
  */ 
 
 #include <mpi.h>
-#include "ampi/internal/request.h"
+#include "ampi/userIF/request.h"
 
 /** 
  * forward sweep variant of \ref AMPI_Wait_ST 

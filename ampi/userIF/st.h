@@ -7,7 +7,7 @@
  */ 
 
 #include <mpi.h>
-#include "ampi/internal/request.h"
+#include "ampi/userIF/request.h"
 
 
 /**

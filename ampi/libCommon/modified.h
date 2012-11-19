@@ -3,13 +3,13 @@
 
 /**
  * \file 
- * common AD implementation portion of AMPI routines from ampi/internal/modifief.h
+ * common AD implementation portion of AMPI routines from ampi/userIF/modifief.h
  */ 
 
 #include <mpi.h>
-#include "ampi/internal/activity.h"
-#include "ampi/internal/pairedWith.h"
-#include "ampi/internal/request.h"
+#include "ampi/userIF/activity.h"
+#include "ampi/userIF/pairedWith.h"
+#include "ampi/userIF/request.h"
 
 /** 
  * forward sweep variant of \ref AMPI_Recv 

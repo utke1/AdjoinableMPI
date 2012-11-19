@@ -1,7 +1,7 @@
 #ifndef _AMPI_ADTOOL_SUPPORT_H_
 #define _AMPI_ADTOOL_SUPPORT_H__
 
-#include "ampi/internal/request.h"
+#include "ampi/userIF/request.h"
 
 /**
  * \file 
@@ -10,13 +10,13 @@
 
 /**
  * the implementation of pushing the required elements of an \ref  AMPI_Request_S
- * to the AD-tool-internal stack
+ * to the AD-tool-userIF stack
  */
 void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
 
 /**
  * the implementation of popping the required elements of an \ref  AMPI_Request_S
- * from the AD-tool-internal stack
+ * from the AD-tool-userIF stack
  */
 void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
 
