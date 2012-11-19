@@ -662,7 +662,6 @@ WARN_LOGFILE           =
 # with spaces.
 
 INPUT                  = ampi \
-			 ampi/internal \
                          plainC \
 
 # This tag can be used to specify the character encoding of the source files
