@@ -42,11 +42,22 @@ struct AMPI_Request_S {
    * \ref AMPI_Isend / \ref AMPI_Irecv  buf  parameter 
    */
   void *buf;
+
+  /**
+   * temporary adjoint buffer; not to be traced
+   */
+  void *adjointTempBuf;
   
   /**
    * \ref AMPI_Isend / \ref AMPI_Irecv  count  parameter 
    */
   int count;
+
+  /**
+   * the count of the adjoint buffer size in terms of the original data type; not to be traced;
+   */
+  int adjointCount;
+  
   /**
    * \ref AMPI_Isend / \ref AMPI_Irecv  datatype  parameter 
    */
