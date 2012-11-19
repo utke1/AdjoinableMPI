@@ -2,4 +2,7 @@ ACLOCAL_AMFLAGS = -I config
 
 SUBDIRS = \
 ampi \
-PlainC
+PlainC \
+Common \
+adToolStubs/ST \
+adToolStubs/OO

@@ -1,4 +1,6 @@
 #include "ampi/libCommon/st.h"
+#include "ampi/bookKeeping/support.h"
+#include "ampi/adTool/support.h"
 
 int FW_AMPI_Wait_ST(AMPI_Request *request,
 		    void*  buf,
@@ -6,8 +8,10 @@ int FW_AMPI_Wait_ST(AMPI_Request *request,
   MPI_Request *plainRequest;
   struct AMPI_Request_S *ampiRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
+  struct AMPI_Request_S ampiRequestInst;
+  ampiRequest=&ampiRequestInst;
   plainRequest=request;
-  ampiRequest=PR_AMPI_get_AMPI_Request(request);
+  BK_AMPI_get_AMPI_Request(request,ampiRequest);
 #else 
   plainRequest=&(request->plainRequest);
   ampiRequest=request;
@@ -16,40 +20,6 @@ int FW_AMPI_Wait_ST(AMPI_Request *request,
   ADTOOL_AMPI_push_AMPI_Request(ampiRequest);
   return MPI_Wait(plainRequest,
 		  status);
-}
-
-void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest) { 
-}
-void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest) { 
-}
-
-void ADTOOL_AMPI_setBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
-				  void* buf) { 
-  /* an overloading tool would not do this but rather leave the buffer as traced 
-     because the memory mapping happens already at FW time */
-  ampiRequest->buf=buf;
-}
-
-void ADTOOL_AMPI_setAdjointCount(struct AMPI_Request_S  *ampiRequest) { 
-  /* for now we keep the count as is but for example in vector mode one would have to multiply by vector length */
-}
-
-void ADTOOL_AMPI_setAdjoinCountAndTempBuf(struct AMPI_Request_S *ampiRequest) { 
-  ADTOOL_AMPI_setAdjointCount(ampiRequest);
-  size_t s=0;
-  switch(ampiRequest->datatype) { 
-  case MPI_DOUBLE: 
-    s=sizeof(double);
-    break;
-  case MPI_FLOAT: 
-    s=sizeof(float);
-    break;
-  default:
-    MPI_Abort(ampiRequest->comm, MPI_ERR_TYPE);
-    break;
-  }
-  request->adjointTempBuf=(void*)malloc(ampiRequest->adjointCount*s);
-  assert(request->adjointTempBuf);
 }
 
 int BW_AMPI_Wait_ST(AMPI_Request *request,
@@ -90,7 +60,7 @@ int BW_AMPI_Wait_ST(AMPI_Request *request,
   }
 #ifdef AMPI_FORTRANCOMPATIBLE
   *request=ampiRequest.plainRequest;
-  PR_AMPI_set_AMPI_Request(&ampiRequest);
+  BK_AMPI_put_AMPI_Request(&ampiRequest);
 #endif
   return rc;
 }

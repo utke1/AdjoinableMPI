@@ -62,7 +62,10 @@ esac],
 AC_CONFIG_FILES([Makefile
 		 ampi/Makefile
 		 ampi/userIF/libConfig.h
-                 PlainC/Makefile])
+                 PlainC/Makefile
+		 Common/Makefile
+		 adToolStubs/ST/Makefile
+		 adToolStubs/OO/Makefile])
 AC_SUBST(MPICC)
 AC_SUBST(MPI_INC_DIR)
 AC_SUBST(MPI_LIB_DIR)

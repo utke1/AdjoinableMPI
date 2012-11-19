@@ -1,5 +1,5 @@
 #ifndef _AMPI_ADTOOL_SUPPORT_H_
-#define _AMPI_ADTOOL_SUPPORT_H__
+#define _AMPI_ADTOOL_SUPPORT_H_
 
 #include "ampi/userIF/request.h"
 
