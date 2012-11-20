@@ -65,8 +65,8 @@ AC_CONFIG_FILES([Makefile
                  PlainC/Makefile
 		 Bookkeeping/Makefile
 		 Common/Makefile
-		 adToolStubs/ST/Makefile
-		 adToolStubs/OO/Makefile])
+		 ADtoolStubs/ST/Makefile
+		 ADtoolStubs/OO/Makefile])
 AC_SUBST(MPICC)
 AC_SUBST(MPI_INC_DIR)
 AC_SUBST(MPI_LIB_DIR)

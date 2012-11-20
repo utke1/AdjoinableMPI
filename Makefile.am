@@ -5,5 +5,5 @@ ampi \
 PlainC \
 Common \
 Bookkeeping \
-adToolStubs/ST \
-adToolStubs/OO
+ADtoolStubs/ST \
+ADtoolStubs/OO
