@@ -4,5 +4,6 @@ SUBDIRS = \
 ampi \
 PlainC \
 Common \
+Bookkeeping \
 adToolStubs/ST \
 adToolStubs/OO
