@@ -1,5 +1,5 @@
 #include "ampi/libCommon/st.h"
-#include "ampi/bookKeeping/support.h"
+#include "ampi/bookkeeping/support.h"
 #include "ampi/adTool/support.h"
 
 int FW_AMPI_Wait_ST(AMPI_Request *request,

@@ -68,7 +68,7 @@ static struct RequestListItem* findInList(MPI_Request *request) {
   struct RequestListItem* current_p=requestListHead;
   while(current_p) { 
     if (current_p->ampiRequest.plainRequest==*request) break;
-    current_p=current_p->next_ppp;
+    current_p=current_p->next_p;
   }
   assert(current_p);
   return current_p;
