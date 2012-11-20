@@ -669,7 +669,8 @@ INPUT                  = ampi \
                          PlainC \
 			 Bookkeeping \ 
 			 Common \
-			 ADtoolStubs/ST
+			 ADtoolStubs/ST \
+			 ADtoolStubs/OO 
 			 
 
 # This tag can be used to specify the character encoding of the source files

@@ -11,7 +11,7 @@ int FW_AMPI_Wait_ST(AMPI_Request *request,
   struct AMPI_Request_S ampiRequestInst;
   ampiRequest=&ampiRequestInst;
   plainRequest=request;
-  BK_AMPI_get_AMPI_Request(request,ampiRequest);
+  BK_AMPI_get_AMPI_Request(plainRequest,ampiRequest);
 #else 
   plainRequest=&(request->plainRequest);
   ampiRequest=request;

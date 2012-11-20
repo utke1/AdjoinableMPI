@@ -155,6 +155,13 @@
  * Such recovery following a TBR-like approach would, however, require exposing the augmented request instance as a structured data type to the TBR analysis in the languages other than Fortran77. 
  * This necessitates the introduction of the \ref AMPI_Request, which in Fotran77 still maps to just an integer address. 
  * The switching between these variants is done via  configure flags, see \ref configure.
+ * 
+ * \subsection bookkeeping Bookkeeping of Requests
+ * 
+ * As mentioned in \ref nonblocking the target language may prevent the augmented request from being used directly.  
+ * In such cases the augmented information has to be kept internal to the library, that is we do some bookkeeping to convey the necessary information between the nonblocking sends or receives and
+ * the and respective completion calls. Currently the bookkeeping has a very simple implementation as a doubly-linked list implying linear search costs which is acceptable only as long as the 
+ * number of icomplete nonblocking operations per process remains moderate. 
  */
 
 

@@ -14,8 +14,14 @@ void ADTOOL_AMPI_setBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
   ampiRequest->buf=buf;
 }
 
-void ADTOOL_AMPI_setAdjointCount(struct AMPI_Request_S  *ampiRequest) { 
+void ADTOOL_AMPI_getAdjointCount(int *count,
+				 MPI_Datatype datatype) {
   /* for now we keep the count as is but for example in vector mode one would have to multiply by vector length */
+}
+
+void ADTOOL_AMPI_setAdjointCount(struct AMPI_Request_S  *ampiRequest) { 
+  ampiRequest->adjointCount=ampiRequest->count;
+  ADTOOL_AMPI_getAdjointCount(&(ampiRequest->adjointCount),ampiRequest->datatype);
 }
 
 void ADTOOL_AMPI_setAdjoinCountAndTempBuf(struct AMPI_Request_S *ampiRequest) { 

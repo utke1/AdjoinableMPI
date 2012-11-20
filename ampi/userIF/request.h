@@ -11,6 +11,7 @@
 
 #include <mpi.h>
 #include "ampi/userIF/libConfig.h"
+#include "ampi/userIF/pairedWith.h"
 
 /**
  * does the request originate with a  send or a receive 
@@ -74,6 +75,12 @@ struct AMPI_Request_S {
    * \ref AMPI_Isend / \ref AMPI_Irecv sets this
    */ 
   enum AMPI_Request_origin_E origin;
+
+  /**
+   * \ref AMPI_Isend / \ref AMPI_Irecv sets this
+   */ 
+  enum AMPI_PairedWith_E pairedWith;
+
 };
 
 #ifdef AMPI_FORTRANCOMPATIBLE
