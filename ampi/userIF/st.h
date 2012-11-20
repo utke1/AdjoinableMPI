@@ -12,8 +12,10 @@
 
 /**
  * variant of \ref AMPI_Wait with an extra parameter 
+ * \param request follows the semantics of  <tt>MPI_Wait</tt>
  * \param buf is the buffer that was passed to the corresponding \ref AMPI_Isend or \ref AMPI_Irecv call; 
  * see also \ref nonblocking for a discussion of the necessity of the buf parameter.
+ * \param status follows the semantics of  <tt>MPI_Wait</tt>
  */
 int AMPI_Wait_ST(AMPI_Request *request, 
 		 void *buf,
