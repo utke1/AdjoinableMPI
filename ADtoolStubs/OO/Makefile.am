@@ -1,11 +1,6 @@
-CC=@MPICC@
-AM_CXXFLAGS = -Wall -I$(top_srcdir)
-AM_CFLAGS = -Wall -Wno-unknown-pragmas -std=c89 -I$(top_srcdir)
-ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
+lib_LTLIBRARIES = libampiADtoolStubsOO.la
 
-lib_LIBRARIES = libampiADtoolStubsOO.a
+libampiADtoolStubsOO_la_CPPFLAGS = -I@abs_top_srcdir@
 
-libampiADtoolStubsOO_adir = $(includedir)
-
-libampiADtoolStubsOO_a_SOURCES = \
+libampiADtoolStubsOO_la_SOURCES = \
 support.c

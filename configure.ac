@@ -21,28 +21,12 @@ AM_INIT_AUTOMAKE([foreign no-define])
 dnl Do not show compilation command by default
 AM_SILENT_RULES([yes])
 
-# dump the configuration options here:
-AC_CONFIG_HEADERS([config.h])
-AH_TOP([
-#ifndef AMPI_CONFIG_H
-#define AMPI_CONFIG_H
-])
-AH_BOTTOM([
-#endif 
-])
-
-AC_PROG_CXX
-AC_PROG_CC
 AC_PROG_CPP
-AC_PROG_RANLIB
-
-AC_LANG([C])
-AC_LANG([C++])
-
-AMPI_SET_MPICC
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_LIBTOOL
 
 AC_SUBST(fortranCompatible)
-
 AC_ARG_ENABLE(fortranCompatible,
 [AS_HELP_STRING([--enable-fortranCompatible],
                 [adjust the signatures to be callable from Fortran])],
@@ -58,6 +42,10 @@ AC_ARG_ENABLE(fortranCompatible,
 esac],
 [fortranCompatible='#undef AMPI_FORTRANCOMPATIBLE'])
 
+AC_LANG([C])
+MPI_CONF
+dnl try to keep things clean: 
+CFLAGS="-Wall -Wno-unknown-pragmas -std=c89 "${CFLAGS}
 
 AC_CONFIG_FILES([Makefile
 		 ampi/Makefile
@@ -67,17 +55,11 @@ AC_CONFIG_FILES([Makefile
 		 Common/Makefile
 		 ADtoolStubs/ST/Makefile
 		 ADtoolStubs/OO/Makefile])
-AC_SUBST(MPICC)
-AC_SUBST(MPI_INC_DIR)
-AC_SUBST(MPI_LIB_DIR)
-AC_SUBST(MPI_LIBS)
-AC_SUBST(MPI_FLAGS)
 
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 
 AC_OUTPUT
-AMPI_REPORT
 
 dnl use config.status instead of reconfigure if configure hasn't changed
 AC_CONFIG_COMMANDS([outmsg],[chmod +x autogen.sh])

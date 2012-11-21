@@ -1,11 +1,6 @@
-CC=@MPICC@
-AM_CXXFLAGS = -Wall -I$(top_srcdir)
-AM_CFLAGS = -Wall -Wno-unknown-pragmas -std=c89 -I$(top_srcdir)
-ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS}
+lib_LTLIBRARIES = libampiBookkeeping.la
 
-lib_LIBRARIES = libampiBookkeeping.a
+libampiBookkeeping_la_CPPFLAGS = -I@abs_top_srcdir@
 
-libampiBookkeeping_adir = $(includedir)
-
-libampiBookkeeping_a_SOURCES = \
+libampiBookkeeping_la_SOURCES = \
 support.c 
