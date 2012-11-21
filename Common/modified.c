@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <mpi.h>
 #include "ampi/libCommon/modified.h"
 #include "ampi/bookkeeping/support.h"
 #include "ampi/adTool/support.h"

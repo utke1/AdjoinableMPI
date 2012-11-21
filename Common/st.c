@@ -1,3 +1,4 @@
+#include <mpi.h>
 #include "ampi/libCommon/st.h"
 #include "ampi/bookkeeping/support.h"
 #include "ampi/adTool/support.h"

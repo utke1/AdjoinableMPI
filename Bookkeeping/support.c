@@ -1,5 +1,6 @@
 #include <malloc.h>
 #include <assert.h>
+#include <mpi.h>
 #include "ampi/bookkeeping/support.h"
 
 struct RequestListItem { 

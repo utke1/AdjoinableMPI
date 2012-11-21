@@ -1,3 +1,4 @@
+#include <mpi.h>
 #include "ampi/userIF/nt.h"
 
 int AMPI_Init_NT(int* argc, 
