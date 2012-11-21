@@ -176,11 +176,11 @@ int BW_AMPI_Isend (void* buf,
   ampiRequest=&ampiRequestInst;
   ampiRequest->plainRequest=request;
   plainRequest=request;
+  BK_AMPI_get_AMPI_Request(plainRequest,ampiRequest);
 #else 
   ampiRequest=request;
   plainRequest=&(ampiRequest->plainRequest);
 #endif
-  BK_AMPI_get_AMPI_Request(plainRequest,ampiRequest);
   if (!(
 	ampiRequest->pairedWith==AMPI_RECV 
 	|| 
