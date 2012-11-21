@@ -193,7 +193,6 @@ int BW_AMPI_Isend (void* buf,
     case AMPI_RECV: { 
       rc=MPI_Wait(plainRequest,
 		  MPI_STATUS_IGNORE);
-      ADTOOL_AMPI_setBufForAdjoint(&ampiRequest,buf);
       ADTOOL_AMPI_adjointIncrement(ampiRequest->adjointCount,
 				   ampiRequest->buf,
 				   ampiRequest->adjointTempBuf);
