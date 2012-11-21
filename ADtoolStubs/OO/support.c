@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <mpi.h>
 #include "ampi/adTool/support.h"
 
 void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest) { 
