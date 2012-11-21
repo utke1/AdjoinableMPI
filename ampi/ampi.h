@@ -170,11 +170,17 @@
  * One-stop header file for all AD-tool-independent AMPI routines; this is the file to replace mpi.h in the user code.
  */ 
 
-
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
 #include "ampi/userIF/passThrough.h"
 #include "ampi/userIF/nt.h"
 #include "ampi/userIF/modified.h"
 #include "ampi/userIF/st.h"
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
