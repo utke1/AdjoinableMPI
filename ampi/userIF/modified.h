@@ -6,8 +6,6 @@
  * AMPI routines that have adjoint functionality and do no merely pass through to the MPI originals; the routines may signatures with additional parameters compared to their original MPI counterparts
  */ 
 
-
-#include <mpi.h>
 #include "ampi/userIF/activity.h"
 #include "ampi/userIF/pairedWith.h"
 #include "ampi/userIF/request.h"

@@ -6,8 +6,6 @@
  * prototypes for wrapper routines with identical signatures that pass the parameters through to the MPI routines; we do this to gave a consistent AMPI naming scheme and avoid having to mix  AMPI and MPI calls
  */ 
 
-#include "mpi.h"
-
 /**
  * simple wrapper; signature is identical to MPI original 
  */

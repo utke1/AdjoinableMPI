@@ -6,7 +6,6 @@
  * ST = "source tansformation" specific versions of routines that exist because generic memory mapping is not yet implemented in any source transformation tool   
  */ 
 
-#include <mpi.h>
 #include "ampi/userIF/request.h"
 
 

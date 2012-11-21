@@ -170,6 +170,7 @@
  * One-stop header file for all AD-tool-independent AMPI routines; this is the file to replace mpi.h in the user code.
  */ 
 
+#include <mpi.h>
 #if defined(__cplusplus)
 extern "C" {
 #endif

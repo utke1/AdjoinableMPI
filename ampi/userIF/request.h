@@ -9,7 +9,6 @@
  * tools to use TBR analysis on the tracked information.
  */ 
 
-#include <mpi.h>
 #include "ampi/userIF/libConfig.h"
 #include "ampi/userIF/pairedWith.h"
 
