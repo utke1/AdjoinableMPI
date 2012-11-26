@@ -2,6 +2,10 @@
 #define _AMPI_AMPI_H_
 
 /** \mainpage 
+ * \authors Laurent Hascoet
+ * \authors Uwe Naumann
+ * \authors Michel Schanen
+ * \authors Jean Utke 
  *
  * \section Introduction
  * 
