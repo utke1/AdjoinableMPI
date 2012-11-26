@@ -74,6 +74,10 @@
  *    are not transformed / not traced (NT) in  <tt>ampi/userIF/nt.h</tt>
  *  - routines that are modified from the original MPI counterparts because their behavior in the reverse sweep differs from their behavior in the 
  *    forward sweep and they also may have a modified signatyre; in <tt>ampi/userIF/modified.h</tt>
+ *  - routines that are specific for some variants of source transformation (ST) approaches in <tt>ampi/userIF/st.h</tt>; 
+ *    while these impose a larger burden for moving from MPI to AMPI on the user, they also enable a wider variety of transformations 
+ *    currently supported by the tools; we anticipate that the ST specific versions may become obsolete as the source transformation tools evolve to 
+ *    support all transformations via the routines in <tt>ampi/userIF/modified.h</tt> 
  *
  * Additional header files contain enumerations used as arguments to AMPI routines.
  * 
@@ -137,6 +141,12 @@
  * have the buffer. The latter, however, is crucial in particular in a source transformation context because, absent a correct syntactic 
  * representation for the buffer at the <tt>MPI_Wait</tt> call site one has to map the address <tt>&b</tt> valid during the forward 
  * sweep to the address of the associated adjoint buffer during the reverse sweep. 
+ * In some circumstances, e.g. when the buffer refers to stack variable and the reversal mode follows a strict <em>joint</em> scheme 
+ * where one does not leave the stack frame of a given subroutine until the reverse sweep has completed, it is possible to predetermine 
+ * the address of the respective adjoint buffer even in the source transformation context.  
+ * In the general case, e.g. allowing for <em>split</em> mode reversal 
+ * or  dynamic memory deallocation before the adjoint sweep commences such predetermination 
+ * requires a more elaborate mapping algorithm. 
  * This mapping is subject of ongoing research and currently not supported. 
  * 
  * On the other hand, for operator overloading based tools, the mapping to a reverse sweep address space is an integral part of the 
