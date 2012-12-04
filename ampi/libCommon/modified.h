@@ -7,6 +7,11 @@
  */ 
 
 #include <mpi.h>
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include "ampi/userIF/activity.h"
 #include "ampi/userIF/pairedWith.h"
 #include "ampi/userIF/request.h"
@@ -63,5 +68,9 @@ int BW_AMPI_Isend (void* buf,
 		   MPI_Comm comm, 
 		   AMPI_Request* request);
 
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif

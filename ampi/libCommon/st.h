@@ -7,6 +7,11 @@
  */ 
 
 #include <mpi.h>
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include "ampi/userIF/request.h"
 
 /** 
@@ -22,5 +27,9 @@ int FW_AMPI_Wait_ST(AMPI_Request *request,
 int BW_AMPI_Wait_ST(AMPI_Request *request, 
 		    void *buf,
 		    MPI_Status *status);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
