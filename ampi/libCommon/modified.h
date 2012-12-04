@@ -68,6 +68,19 @@ int BW_AMPI_Isend (void* buf,
 		   MPI_Comm comm, 
 		   AMPI_Request* request);
 
+/** 
+ * forward sweep variant of \ref AMPI_Wait 
+ */
+int FW_AMPI_Wait(AMPI_Request *request, 
+		 MPI_Status *status);
+
+/** 
+ * backward sweep variant of \ref AMPI_Wait 
+ */
+int BW_AMPI_Wait(AMPI_Request *request, 
+		 MPI_Status *status);
+
+
 
 #if defined(__cplusplus)
 }
