@@ -1,6 +1,11 @@
 #ifndef _AMPI_ADTOOL_SUPPORT_H_
 #define _AMPI_ADTOOL_SUPPORT_H_
 
+#include <mpi.h>
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include "ampi/userIF/request.h"
 
 /**
@@ -123,6 +128,10 @@ void ADTOOL_AMPI_adjointIncrement(int adjointCount, void* target, void *source);
  * adjoint nullify the values in buf
  */ 
 void ADTOOL_AMPI_adjointNullify(int adjointCount, void* buf);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
 

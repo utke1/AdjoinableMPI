@@ -13,3 +13,7 @@ userIF/passThrough.h \
 userIF/request.h \
 userIF/st.h
 
+adToolincludedir = @includedir@/ampi/adTool
+adToolinclude_HEADERS = \
+adTool/support.h 
+
