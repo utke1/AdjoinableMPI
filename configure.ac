@@ -60,7 +60,3 @@ AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 
 AC_OUTPUT
-
-dnl use config.status instead of reconfigure if configure hasn't changed
-AC_CONFIG_COMMANDS([outmsg],[chmod +x autogen.sh])
-
