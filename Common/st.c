@@ -34,7 +34,7 @@ int BW_AMPI_Wait_ST(AMPI_Request *request,
   ADTOOL_AMPI_setBufForAdjoint(&ampiRequest,buf);   
   switch(ampiRequest.origin) { 
   case AMPI_SEND_ORIGIN: { 
-    ADTOOL_AMPI_setAdjoinCountAndTempBuf(&ampiRequest);   
+    ADTOOL_AMPI_setAdjointCountAndTempBuf(&ampiRequest);   
     rc=MPI_Irecv(ampiRequest.adjointTempBuf,
 	      ampiRequest.adjointCount,
 	      ampiRequest.datatype,
@@ -45,7 +45,7 @@ int BW_AMPI_Wait_ST(AMPI_Request *request,
     break;
   }
   case AMPI_RECV_ORIGIN: { 
-    ADTOOL_AMPI_setAdjoinCount(&ampiRequest);
+    ADTOOL_AMPI_setAdjointCount(&ampiRequest);
     rc=MPI_Isend(ampiRequest.buf,
 	      ampiRequest.adjointCount,
 	      ampiRequest.datatype,

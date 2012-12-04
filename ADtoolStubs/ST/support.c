@@ -25,7 +25,7 @@ void ADTOOL_AMPI_setAdjointCount(struct AMPI_Request_S  *ampiRequest) {
   ADTOOL_AMPI_getAdjointCount(&(ampiRequest->adjointCount),ampiRequest->datatype);
 }
 
-void ADTOOL_AMPI_setAdjoinCountAndTempBuf(struct AMPI_Request_S *ampiRequest) { 
+void ADTOOL_AMPI_setAdjointCountAndTempBuf(struct AMPI_Request_S *ampiRequest) { 
   ADTOOL_AMPI_setAdjointCount(ampiRequest);
   size_t s=0;
   switch(ampiRequest->datatype) { 

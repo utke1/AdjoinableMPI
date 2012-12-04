@@ -104,7 +104,7 @@ void ADTOOL_AMPI_setAdjointCount(struct AMPI_Request_S  *ampiRequest);
  * calls \ref ADTOOL_AMPI_setAdjointCount and sets up a temporary buffer into which the adjoint data is received, see e.g. \ref BW_AMPI_Wait
  * \param ampiRequest is the request instance that is modified
  */
-void ADTOOL_AMPI_setAdjoinCountAndTempBuf(struct AMPI_Request_S *ampiRequest);
+void ADTOOL_AMPI_setAdjointCountAndTempBuf(struct AMPI_Request_S *ampiRequest);
 
 /**  
  * releases the temporary buffer (allocated by \ref ADTOOL_AMPI_setAdjoinCountAndTempBuf)  into which the adjoint data was received 

@@ -197,7 +197,7 @@ int BW_AMPI_Isend (void* buf,
       ADTOOL_AMPI_adjointIncrement(ampiRequest->adjointCount,
 				   ampiRequest->buf,
 				   ampiRequest->adjointTempBuf);
-      ADTOOL_AMPI_releaseAdjointTempBuf(&ampiRequest);
+      ADTOOL_AMPI_releaseAdjointTempBuf(ampiRequest);
       break;
     }
     default:  
