@@ -36,6 +36,8 @@
  *
  * \section sources Getting the source files
  * 
+ * The sources can be accessed throug the <a href="http://mercurial.mcs.anl.gov/ad/AdjoinableMPI/">AdjoinableMPI mercurial repository</a>. Bug tracking, feature requests 
+ * etc. are done via <a href="http://trac.mcs.anl.gov/projects/AdjoinableMPI">trac</a>.
  * In the following we assume the sources are installed in a directory 
  * \code
  * AdjoinableMPI
