@@ -32,7 +32,7 @@ void ADTOOL_AMPI_pushSRinfo(void* buf,
  * from the AD-tool-internal stack;
  * the source transformation implementation will ignore <tt>buf</tt>
  */
-void ADTOOL_AMPI_popSRinfo(void* buf, 
+void ADTOOL_AMPI_popSRinfo(void** buf, 
 			   int* count,
 			   MPI_Datatype* datatype, 
 			   int* src, 
