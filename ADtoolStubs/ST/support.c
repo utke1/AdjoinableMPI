@@ -8,6 +8,9 @@ void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest) {
 void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest) { 
 }
 
+void* ADTOOL_AMPI_rawData(void* activeData) { 
+}
+
 void ADTOOL_AMPI_setBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
 				  void* buf) { 
   /* an overloading tool would not do this but rather leave the buffer as traced 

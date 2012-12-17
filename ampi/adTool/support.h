@@ -70,6 +70,13 @@ void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
  * from the AD-tool-internal stack
  */
 void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
+  
+/**
+ * map active data to raw data; this is to be implemented for the forward 
+ * execution by tools using association-by-address; 
+ * for tools using association-by-name the same address should be returned;   
+ */
+void * ADTOOL_AMPI_rawData(void* activeData);
 
 /**
  * an operator overloading tool should not do anything in the implementation but see \ref ADTOOL_AMPI_setBufForAdjoint;

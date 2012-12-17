@@ -33,6 +33,9 @@ void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest) {
 void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest) { 
 }
 
+void* ADTOOL_AMPI_rawData(void* activeData) { 
+}
+
 void ADTOOL_AMPI_mapBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
 				  void* buf) { 
 }
