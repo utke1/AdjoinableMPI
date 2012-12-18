@@ -11,6 +11,7 @@
 
 #include "ampi/userIF/libConfig.h"
 #include "ampi/userIF/pairedWith.h"
+#include "ampi/userIF/activity.h"
 
 /**
  * does the request originate with a  send or a receive 
@@ -30,18 +31,46 @@ typedef enum AMPI_Request_origin_E AMPI_Request_origin;
  * MPI_Request augmented with extra information 
  */ 
 struct AMPI_Request_S {
-  /**
-   * \ref AMPI_Isend / \ref AMPI_Irecv  dst or src  parameter 
-   */
-  int endPoint;
-  /**
-   * \ref AMPI_Isend / \ref AMPI_Irecv  tag parameter 
-   */
-  int tag;
+
   /**
    * \ref AMPI_Isend / \ref AMPI_Irecv  buf  parameter 
    */
   void *buf;
+
+  /**
+   * \ref AMPI_Isend / \ref AMPI_Irecv  count  parameter 
+   */
+  int count;
+
+  /**
+   * \ref AMPI_Isend / \ref AMPI_Irecv  datatype  parameter 
+   */
+  MPI_Datatype datatype;
+
+  /**
+   * \ref AMPI_Isend / \ref AMPI_Irecv  dst or src  parameter 
+   */
+  int endPoint;
+
+  /**
+   * \ref AMPI_Isend / \ref AMPI_Irecv  tag parameter 
+   */
+  int tag;
+
+  /**
+   * \ref AMPI_Isend / \ref AMPI_Irecv sets this
+   */ 
+  enum AMPI_PairedWith_E pairedWith;
+
+  /**
+   * \ref AMPI_Isend / \ref AMPI_Irecv  comm  parameter 
+   */
+  MPI_Comm comm;
+
+  /**
+   * \ref AMPI_Isend / \ref AMPI_Irecv  isActive  parameter; not to be traced 
+   */
+  enum AMPI_Activity_E isActive;
 
   /**
    * temporary adjoint buffer; not to be traced
@@ -49,36 +78,19 @@ struct AMPI_Request_S {
   void *adjointTempBuf;
   
   /**
-   * \ref AMPI_Isend / \ref AMPI_Irecv  count  parameter 
-   */
-  int count;
-
-  /**
    * the count of the adjoint buffer size in terms of the original data type; not to be traced;
    */
   int adjointCount;
   
   /**
-   * \ref AMPI_Isend / \ref AMPI_Irecv  datatype  parameter 
-   */
-  MPI_Datatype datatype;
-  /**
-   * \ref AMPI_Isend / \ref AMPI_Irecv  comm  parameter 
-   */
-  MPI_Comm comm;
-  /**
-   * the "plain" request returned by MPI_Isend or MPI_Irecv resp. 
+   * the "plain" request returned by MPI_Isend or MPI_Irecv resp; not to be traced
    */  
   MPI_Request plainRequest;
-  /**
-   * \ref AMPI_Isend / \ref AMPI_Irecv sets this
-   */ 
-  enum AMPI_Request_origin_E origin;
 
   /**
    * \ref AMPI_Isend / \ref AMPI_Irecv sets this
    */ 
-  enum AMPI_PairedWith_E pairedWith;
+  enum AMPI_Request_origin_E origin;
 
 };
 

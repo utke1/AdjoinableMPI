@@ -79,9 +79,7 @@ void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
 void * ADTOOL_AMPI_rawData(void* activeData);
 
 /**
- * an operator overloading tool should not do anything in the implementation but see \ref ADTOOL_AMPI_setBufForAdjoint;
- * an operator overloading tool maps a given buf to the respective adjoint address space (e.g. the locint of Adol-C)
- * and set it on the request; 
+ * set it on the request; 
  * \param buf is forward sweep buffer (for source transformation tools)
  * \param ampiRequest is the request to be pushed and popped for the adjoint communication
  */

@@ -121,7 +121,7 @@ int FW_AMPI_Isend (void* buf,
 	pairedWith==AMPI_IRECV_WAITALL
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else { 
-    rc= MPI_Isend(buf,
+    rc= MPI_Isend(ADTOOL_AMPI_rawData(buf),
 		  count,
 		  datatype,
 		  dest,
@@ -133,29 +133,28 @@ int FW_AMPI_Isend (void* buf,
 		  &(request->plainRequest)
 #endif 
 		  );
-    if (isActive==AMPI_ACTIVE) {
-      struct AMPI_Request_S *ampiRequest;
+    struct AMPI_Request_S *ampiRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
-      struct AMPI_Request_S ampiRequestInst;
-      ampiRequest=&ampiRequestInst;
-      ampiRequest->plainRequest=request;
+    struct AMPI_Request_S ampiRequestInst;
+    ampiRequest=&ampiRequestInst;
+    ampiRequest->plainRequest=request;
 #else 
-      ampiRequest=request;
+    ampiRequest=request;
 #endif
       /* fill in the other info */
-      ampiRequest->endPoint=dest;
-      ampiRequest->tag=tag;
-      ampiRequest->count=count;
-      ampiRequest->datatype=datatype;
-      ampiRequest->comm=comm;
-      ampiRequest->origin=AMPI_SEND_ORIGIN;
-      ampiRequest->pairedWith=pairedWith;
-      ADTOOL_AMPI_mapBufForAdjoint(ampiRequest,buf);
+    ampiRequest->isActive=isActive;
+    ampiRequest->endPoint=dest;
+    ampiRequest->tag=tag;
+    ampiRequest->count=count;
+    ampiRequest->datatype=datatype;
+    ampiRequest->comm=comm;
+    ampiRequest->origin=AMPI_SEND_ORIGIN;
+    ampiRequest->pairedWith=pairedWith;
+    ADTOOL_AMPI_mapBufForAdjoint(ampiRequest,buf);
 #ifdef AMPI_FORTRANCOMPATIBLE
-      BK_AMPI_put_AMPI_Request(ampiRequest);
+    BK_AMPI_put_AMPI_Request(ampiRequest);
 #endif
-      ADTOOL_AMPI_push_CallCode(AMPI_ISEND);
-    }
+    if (isActive==AMPI_ACTIVE) ADTOOL_AMPI_push_CallCode(AMPI_ISEND);     
   }
   return rc;
 }
@@ -210,6 +209,7 @@ int BW_AMPI_Isend (void* buf,
 
 int FW_AMPI_Wait(AMPI_Request *request,
 		 MPI_Status *status) { 
+  int rc;
   MPI_Request *plainRequest;
   struct AMPI_Request_S *ampiRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
@@ -221,10 +221,13 @@ int FW_AMPI_Wait(AMPI_Request *request,
   plainRequest=&(request->plainRequest);
   ampiRequest=request;
 #endif 
-  /* push request  */
-  ADTOOL_AMPI_push_AMPI_Request(ampiRequest);
-  return MPI_Wait(plainRequest,
-		  status);
+  rc=MPI_Wait(plainRequest,
+	      status);
+  if (rc==MPI_SUCCESS && ampiRequest->isActive==AMPI_ACTIVE) {
+    ADTOOL_AMPI_push_AMPI_Request(ampiRequest);
+    ADTOOL_AMPI_push_CallCode(AMPI_WAIT);
+  }
+  return rc;
 }
 
 int BW_AMPI_Wait(AMPI_Request *request,
