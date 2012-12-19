@@ -42,6 +42,22 @@ AC_ARG_ENABLE(fortranCompatible,
 esac],
 [fortranCompatible='#undef AMPI_FORTRANCOMPATIBLE'])
 
+AC_SUBST(requestOnTrace)
+AC_ARG_ENABLE(requestOnTrace,
+[AS_HELP_STRING([--enable-requestOnTrace],
+                [trace reverse sweep MPI request by forward sweep in the internal bookkeeping (typically not needed for source transformation AD)])],
+[case "${enableval}" in
+  yes)
+    requestOnTrace='#define AMPI_REQUESTONTRACE'
+    ;;
+  no)
+    requestOnTrace='#undef AMPI_REQUESTONTRACE'
+    ;;
+  *)
+     AC_MSG_ERROR(bad value ${requestOnTrace} for --enable-requestOnTrace) ;;
+esac],
+[requestOnTrace='#undef AMPI_REQUESTONTRACE'])
+
 AC_LANG([C])
 MPI_CONF
 dnl try to keep things clean: 

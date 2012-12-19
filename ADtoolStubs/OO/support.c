@@ -33,6 +33,13 @@ void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest) {
 void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest) { 
 }
 
+void ADTOOL_AMPI_push_request(MPI_Request request) { 
+} 
+
+MPI_Request ADTOOL_AMPI_pop_request() { 
+  return 0;
+}
+
 void* ADTOOL_AMPI_rawData(void* activeData) { 
 }
 

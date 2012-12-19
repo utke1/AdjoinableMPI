@@ -29,6 +29,7 @@ static struct RequestListItem* addToList() {
   unusedRequestStack=returnItem_p->prev_p;
   returnItem_p->prev_p=0;
   /* add it to the list */
+  if (!requestListHead) requestListHead=returnItem_p;
   if (requestListTail) { 
     requestListTail->next_p=returnItem_p;
     returnItem_p->prev_p=requestListTail;
@@ -44,12 +45,12 @@ static void dropFromList(struct RequestListItem* toBoDropped) {
   /* remove it from the list */
   if (requestListHead==toBoDropped) { 
     requestListHead=toBoDropped->next_p;
-    requestListHead->prev_p=0;
+    if (requestListHead) requestListHead->prev_p=0;
     toBoDropped->next_p=0;
   }
   if (requestListTail==toBoDropped) { 
     requestListTail=toBoDropped->prev_p;
-    requestListTail->next_p=0;
+    if (requestListTail) requestListTail->next_p=0;
     toBoDropped->prev_p=0;
   }
   if (toBoDropped->next_p && toBoDropped->prev_p) {
@@ -65,10 +66,10 @@ static void dropFromList(struct RequestListItem* toBoDropped) {
   unusedRequestStack=toBoDropped;
 }
 
-static struct RequestListItem* findInList(MPI_Request *request) { 
+static struct RequestListItem* findInList(MPI_Request *request, int traced) { 
   struct RequestListItem* current_p=requestListHead;
   while(current_p) { 
-    if (current_p->ampiRequest.plainRequest==*request) break;
+    if ((traced==0 && current_p->ampiRequest.plainRequest==*request) || (traced!=0 && current_p->ampiRequest.tracedRequest==*request)) break;
     current_p=current_p->next_p;
   }
   assert(current_p);
@@ -81,14 +82,14 @@ void BK_AMPI_put_AMPI_Request(struct AMPI_Request_S  *ampiRequest) {
   inList_p->ampiRequest=*ampiRequest;
 }
 
-void BK_AMPI_get_AMPI_Request(MPI_Request *request, struct AMPI_Request_S  *ampiRequest) { 
-  struct RequestListItem *inList_p=findInList(request);
+void BK_AMPI_get_AMPI_Request(MPI_Request *request, struct AMPI_Request_S  *ampiRequest, int traced) { 
+  struct RequestListItem *inList_p=findInList(request,traced);
   *ampiRequest=inList_p->ampiRequest;
   dropFromList(inList_p);
 }
 
-void BK_AMPI_read_AMPI_Request(MPI_Request *request, struct AMPI_Request_S  *ampiRequest) { 
-  struct RequestListItem *inList_p=findInList(request);
+void BK_AMPI_read_AMPI_Request(MPI_Request *request, struct AMPI_Request_S  *ampiRequest, int traced) { 
+  struct RequestListItem *inList_p=findInList(request,traced);
   *ampiRequest=inList_p->ampiRequest;
 }
 

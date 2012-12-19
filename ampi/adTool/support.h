@@ -72,6 +72,17 @@ void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
 void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
   
 /**
+ * if we need to trace requests for a pure (operator overloading) trace evaluation
+ * the Common implementation uses this to push the request 
+ */
+void ADTOOL_AMPI_push_request(MPI_Request request);
+
+/**
+ * the companion to \ref ADTOOL_AMPI_push_request
+ */
+MPI_Request ADTOOL_AMPI_pop_request();
+
+/**
  * map active data to raw data; this is to be implemented for the forward 
  * execution by tools using association-by-address; 
  * for tools using association-by-name the same address should be returned;   

@@ -5,5 +5,8 @@
 /* Defined when configured with --enable-fortranCompatible . */
 @fortranCompatible@
 
+/* Defined when configured with --enable-requestOnTrace . */
+@requestOnTrace@
+
 #endif 
 

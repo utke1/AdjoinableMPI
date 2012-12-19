@@ -88,6 +88,11 @@ struct AMPI_Request_S {
   MPI_Request plainRequest;
 
   /**
+   * the "plain" request returned by MPI_Isend or MPI_Irecv resp; 
+   */  
+  MPI_Request tracedRequest;
+
+  /**
    * \ref AMPI_Isend / \ref AMPI_Irecv sets this
    */ 
   enum AMPI_Request_origin_E origin;

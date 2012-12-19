@@ -16,16 +16,18 @@ void BK_AMPI_put_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
 /**
  * \param request is used as key to look up the associated AMPI_Request_S instance which then is deep copied 
  * \param ampiRequest pointer to the structure into which the values are copied 
+ * \param traced if non-zero indicates one should match tracedReques instead of plainRequest 
  * the information is removed from the internal bookkeeping data
  */
-void BK_AMPI_get_AMPI_Request(MPI_Request *request, struct AMPI_Request_S  *ampiRequest);
+void BK_AMPI_get_AMPI_Request(MPI_Request *request, struct AMPI_Request_S  *ampiRequest, int traced);
 
 /**
  * \param request is used as key to look up the associated AMPI_Request_S instance which then is deep copied 
  * \param ampiRequest pointer to the structure into which the values are copied 
+ * \param traced if non-zero indicates one should match tracedReques instead of plainRequest 
  * the information is retained in the internal bookkeeping data
  */
-void BK_AMPI_read_AMPI_Request(MPI_Request *request, struct AMPI_Request_S  *ampiRequest);
+void BK_AMPI_read_AMPI_Request(MPI_Request *request, struct AMPI_Request_S  *ampiRequest, int traced);
 
 #endif
 

@@ -62,7 +62,7 @@ int BW_AMPI_Recv(void* buf,
 		 MPI_Comm comm,
 		 MPI_Status* status) { 
   int rc;
-  ADTOOL_AMPI_popSRinfo(buf, /* ST ignores it, OO had mapped it already */
+  ADTOOL_AMPI_popSRinfo(&buf, /* ST ignores it, OO had mapped it already */
 			&count,
 			&datatype,
 			&src,
@@ -151,10 +151,16 @@ int FW_AMPI_Isend (void* buf,
     ampiRequest->origin=AMPI_SEND_ORIGIN;
     ampiRequest->pairedWith=pairedWith;
     ADTOOL_AMPI_mapBufForAdjoint(ampiRequest,buf);
+    ampiRequest->tracedRequest=ampiRequest->plainRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
     BK_AMPI_put_AMPI_Request(ampiRequest);
 #endif
-    if (isActive==AMPI_ACTIVE) ADTOOL_AMPI_push_CallCode(AMPI_ISEND);     
+    if (isActive==AMPI_ACTIVE) { 
+      ADTOOL_AMPI_push_CallCode(AMPI_ISEND);
+#ifdef AMPI_REQUESTONTRACE
+      ADTOOL_AMPI_push_request(ampiRequest->tracedRequest);
+#endif
+    }
   }
   return rc;
 }
@@ -169,18 +175,25 @@ int BW_AMPI_Isend (void* buf,
 		   MPI_Comm comm, 
 		   AMPI_Request* request) { 
   int rc;
-  MPI_Request *plainRequest;
+  MPI_Request *plainRequest,tracedRequest;
   struct AMPI_Request_S *ampiRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
   struct AMPI_Request_S ampiRequestInst;
   ampiRequest=&ampiRequestInst;
   ampiRequest->plainRequest=request;
   plainRequest=request;
-  BK_AMPI_get_AMPI_Request(plainRequest,ampiRequest);
 #else 
   ampiRequest=request;
   plainRequest=&(ampiRequest->plainRequest);
 #endif
+#if defined AMPI_FORTRANCOMPATIBLE || defined AMPI_REQUESTONTRACE
+#ifdef AMPI_REQUESTONTRACE
+  tracedRequest=ADTOOL_AMPI_pop_request();
+  BK_AMPI_get_AMPI_Request(&tracedRequest,ampiRequest,1);
+#else 
+  BK_AMPI_get_AMPI_Request(plainRequest,ampiRequest,0);
+#endif
+#endif  
   if (!(
 	ampiRequest->pairedWith==AMPI_RECV 
 	|| 
@@ -263,8 +276,10 @@ int BW_AMPI_Wait(AMPI_Request *request,
     rc=MPI_Abort(ampiRequest.comm, MPI_ERR_TYPE);
     break;
   }
-#ifdef AMPI_FORTRANCOMPATIBLE
+#ifdef AMPI_FORTRANCOMPATIBLE 
   *request=ampiRequest.plainRequest;
+#endif
+#if defined AMPI_FORTRANCOMPATIBLE || defined AMPI_REQUESTONTRACE
   BK_AMPI_put_AMPI_Request(&ampiRequest);
 #endif
   return rc;
