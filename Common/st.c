@@ -27,7 +27,6 @@ int BW_AMPI_Wait_ST(AMPI_Request *request,
 		    void*  buf,
 		    MPI_Status *status) {
   int rc; 
-  MPI_Request *plainRequest;
   struct AMPI_Request_S ampiRequest;
   /* pop request  */
   ADTOOL_AMPI_pop_AMPI_Request(&ampiRequest);
