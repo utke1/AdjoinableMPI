@@ -62,7 +62,7 @@ int BW_AMPI_Recv(void* buf,
 		 MPI_Comm comm,
 		 MPI_Status* status) { 
   int rc;
-  ADTOOL_AMPI_popSRinfo(&buf, /* ST ignores it, OO had mapped it already */
+  ADTOOL_AMPI_popSRinfo(&buf, 
 			&count,
 			&datatype,
 			&src,
