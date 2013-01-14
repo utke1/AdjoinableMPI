@@ -91,8 +91,8 @@ int BW_AMPI_Recv(void* buf,
 		  src,
 		  tag,
 		  comm);
-      ADTOOL_AMPI_adjointNullify(count,
-				 buf);
+      ADTOOL_AMPI_adjointNullify(count,datatype,comm,
+				 buf, buf, buf);
       break;
     }
     default:  
@@ -102,6 +102,210 @@ int BW_AMPI_Recv(void* buf,
   }
   return rc;
 }  
+
+int FW_AMPI_Irecv (void* buf, 
+		   int count, 
+		   MPI_Datatype datatype, 
+		   AMPI_Activity isActive,
+		   int source, 
+		   int tag,
+		   AMPI_PairedWith pairedWith,
+		   MPI_Comm comm, 
+		   AMPI_Request* request) {
+  int rc;
+  if (!(
+	pairedWith==AMPI_SEND
+        ||
+        pairedWith==AMPI_ISEND_WAIT
+	||
+	pairedWith==AMPI_ISEND_WAITALL
+	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
+  else {
+    struct AMPI_Request_S *ampiRequest;
+#ifdef AMPI_FORTRANCOMPATIBLE
+    /* [llh] This *ampiRequest will be stored after exit of procedure => malloc */
+    ampiRequest = (struct AMPI_Request_S*)malloc(sizeof(struct AMPI_Request_S)) ;
+    ampiRequest->plainRequest=request;
+#else 
+    ampiRequest=request;
+#endif
+    rc= MPI_Irecv(ADTOOL_AMPI_rawData(buf),
+		  count,
+		  datatype,
+		  source,
+		  tag,
+		  comm,
+		  &(ampiRequest->plainRequest)
+		  );
+    /* fill in the other info */
+    ampiRequest->isActive=isActive;
+    ampiRequest->endPoint=source;
+    ampiRequest->tag=tag;
+    ampiRequest->count=count;
+    ampiRequest->datatype=datatype;
+    ampiRequest->comm=comm;
+    ampiRequest->origin=AMPI_RECV_ORIGIN;
+    ampiRequest->pairedWith=pairedWith;
+    ADTOOL_AMPI_mapBufForAdjoint(ampiRequest,buf);
+    ampiRequest->tracedRequest=ampiRequest->plainRequest;
+#ifdef AMPI_FORTRANCOMPATIBLE
+    BK_AMPI_put_AMPI_Request(ampiRequest);
+#endif
+    if (isActive==AMPI_ACTIVE) { 
+      ADTOOL_AMPI_push_CallCode(AMPI_IRECV);
+#ifdef AMPI_REQUESTONTRACE
+      ADTOOL_AMPI_push_request(ampiRequest->tracedRequest);
+#endif
+    }
+  }
+  return rc;
+}
+
+int BW_AMPI_Irecv (void* buf, 
+		   int count, 
+		   MPI_Datatype datatype, 
+		   AMPI_Activity isActive,
+		   int source, 
+		   int tag,
+		   AMPI_PairedWith pairedWith,
+		   MPI_Comm comm, 
+		   AMPI_Request* request) {
+  int rc;
+  MPI_Request *plainRequest,tracedRequest;
+  struct AMPI_Request_S *ampiRequest;
+#ifdef AMPI_FORTRANCOMPATIBLE
+  plainRequest=request;
+#else
+  plainRequest=&(request->plainRequest) ;
+  ampiRequest=request;
+#endif
+#if defined AMPI_FORTRANCOMPATIBLE || defined AMPI_REQUESTONTRACE
+#ifdef AMPI_REQUESTONTRACE
+  tracedRequest=ADTOOL_AMPI_pop_request();
+  BK_AMPI_get_AMPI_Request(&tracedRequest,ampiRequest,1);
+#else 
+  BK_AMPI_get_AMPI_Request(plainRequest,ampiRequest,0);
+#endif
+#endif
+  assert(ampiRequest->origin==AMPI_RECV_ORIGIN) ;
+  if (!(
+	ampiRequest->pairedWith==AMPI_SEND 
+	|| 
+	ampiRequest->pairedWith==AMPI_ISEND_WAIT
+	||
+	ampiRequest->pairedWith==AMPI_ISEND_WAITALL
+	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
+  else { 
+    switch(ampiRequest->pairedWith) { 
+    case AMPI_SEND:
+    case AMPI_ISEND_WAIT: {
+      rc=MPI_Wait(plainRequest,
+		  MPI_STATUS_IGNORE);
+      ADTOOL_AMPI_adjointNullify(ampiRequest->adjointCount,
+                                 ampiRequest->datatype,
+                                 ampiRequest->comm,
+                                 ampiRequest->buf,
+                                 ampiRequest->adjointBuf,
+                                 buf);
+      break ;
+    }
+    default:  
+      rc=MPI_Abort(ampiRequest->comm, MPI_ERR_TYPE);
+      break;
+    }
+  }
+  return rc;
+}
+
+int FW_AMPI_Send (void* buf, 
+                  int count, 
+                  MPI_Datatype datatype, 
+                  AMPI_Activity isActive,
+                  int dest, 
+                  int tag,
+                  AMPI_PairedWith pairedWith,
+                  MPI_Comm comm) {
+  int rc;
+  if (!(
+	pairedWith==AMPI_RECV 
+	|| 
+	pairedWith==AMPI_IRECV_WAIT
+	||
+	pairedWith==AMPI_IRECV_WAITALL
+	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
+  else { 
+    rc=MPI_Send(ADTOOL_AMPI_rawData(buf),
+		count,
+		datatype,
+		dest,
+		tag,
+		comm);
+    if (rc==MPI_SUCCESS && isActive==AMPI_ACTIVE) {
+      ADTOOL_AMPI_pushSRinfo(buf,
+			     count,
+			     datatype,
+			     dest,
+			     tag,
+			     pairedWith,
+			     comm);
+      ADTOOL_AMPI_push_CallCode(AMPI_SEND);
+    }
+  }
+  return rc;
+}
+
+int BW_AMPI_Send (void* buf,
+                  int count, 
+                  MPI_Datatype datatype, 
+                  AMPI_Activity isActive,
+                  int dest, 
+                  int tag,
+                  AMPI_PairedWith pairedWith,
+                  MPI_Comm comm) {
+  int rc;
+  ADTOOL_AMPI_popSRinfo(&buf, 
+			&count,
+			&datatype,
+			&dest,
+			&tag,
+			&pairedWith,
+			&comm);
+  if (!(
+	pairedWith==AMPI_RECV 
+	|| 
+	pairedWith==AMPI_IRECV_WAIT
+	||
+	pairedWith==AMPI_IRECV_WAITALL
+	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
+  else {
+    switch(pairedWith) {
+    case AMPI_IRECV_WAIT:
+    case AMPI_RECV: {
+      void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm) ;
+      rc=MPI_Recv(tempBuf,
+                  count,
+                  datatype,
+                  dest,
+                  tag,
+                  comm,
+                  MPI_STATUS_IGNORE) ;
+      ADTOOL_AMPI_adjointIncrement(count,
+                                   datatype,
+                                   comm,
+				   buf,
+				   buf,
+                                   buf,
+                                   tempBuf);
+      ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+      break;
+    }
+    default:  
+      rc=MPI_Abort(comm, MPI_ERR_TYPE);
+      break;
+    }
+  }
+  return rc;
+}
 
 int FW_AMPI_Isend (void* buf, 
 		   int count, 
@@ -121,6 +325,7 @@ int FW_AMPI_Isend (void* buf,
 	pairedWith==AMPI_IRECV_WAITALL
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else { 
+    struct AMPI_Request_S *ampiRequest;
     rc= MPI_Isend(ADTOOL_AMPI_rawData(buf),
 		  count,
 		  datatype,
@@ -133,10 +338,9 @@ int FW_AMPI_Isend (void* buf,
 		  &(request->plainRequest)
 #endif 
 		  );
-    struct AMPI_Request_S *ampiRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
-    struct AMPI_Request_S ampiRequestInst;
-    ampiRequest=&ampiRequestInst;
+    /* [llh] This *ampiRequest will be stored after exit of procedure => malloc */
+    ampiRequest = (struct AMPI_Request_S*)malloc(sizeof(struct AMPI_Request_S)) ;
     ampiRequest->plainRequest=request;
 #else 
     ampiRequest=request;
@@ -194,6 +398,7 @@ int BW_AMPI_Isend (void* buf,
   BK_AMPI_get_AMPI_Request(plainRequest,ampiRequest,0);
 #endif
 #endif  
+  assert(ampiRequest->origin==AMPI_SEND_ORIGIN) ;
   if (!(
 	ampiRequest->pairedWith==AMPI_RECV 
 	|| 
@@ -203,13 +408,18 @@ int BW_AMPI_Isend (void* buf,
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else { 
     switch(ampiRequest->pairedWith) { 
-    case AMPI_RECV: { 
+    case AMPI_RECV:
+    case AMPI_IRECV_WAIT: { 
       rc=MPI_Wait(plainRequest,
 		  MPI_STATUS_IGNORE);
       ADTOOL_AMPI_adjointIncrement(ampiRequest->adjointCount,
+                                   ampiRequest->datatype,
+                                   ampiRequest->comm,
 				   ampiRequest->buf,
-				   ampiRequest->adjointTempBuf);
-      ADTOOL_AMPI_releaseAdjointTempBuf(ampiRequest);
+				   ampiRequest->adjointBuf,
+                                   buf,
+                                   ampiRequest->adjointTempBuf);
+      ADTOOL_AMPI_releaseAdjointTempBuf(ampiRequest->adjointTempBuf);
       break;
     }
     default:  
@@ -226,12 +436,14 @@ int FW_AMPI_Wait(AMPI_Request *request,
   MPI_Request *plainRequest;
   struct AMPI_Request_S *ampiRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
+  /*
   struct AMPI_Request_S ampiRequestInst;
   ampiRequest=&ampiRequestInst;
+  */
   plainRequest=request;
   BK_AMPI_get_AMPI_Request(plainRequest,ampiRequest);
 #else 
-  plainRequest=&(request->plainRequest);
+  plainRequest=&(request->plainRequest) ;
   ampiRequest=request;
 #endif 
   rc=MPI_Wait(plainRequest,
@@ -240,44 +452,53 @@ int FW_AMPI_Wait(AMPI_Request *request,
     ADTOOL_AMPI_push_AMPI_Request(ampiRequest);
     ADTOOL_AMPI_push_CallCode(AMPI_WAIT);
   }
+#ifdef AMPI_FORTRANCOMPATIBLE
+  free(ampiRequest) ;
+#endif
   return rc;
 }
 
 int BW_AMPI_Wait(AMPI_Request *request,
 		 MPI_Status *status) {
   int rc; 
-  struct AMPI_Request_S ampiRequest;
+  struct AMPI_Request_S *ampiRequest ;
+#ifdef AMPI_FORTRANCOMPATIBLE 
+  ampiRequest =
+    (struct AMPI_Request_S*)malloc(sizeof(struct AMPI_Request_S)) ;
+#else
+  ampiRequest = request ;
+#endif
   /* pop request  */
-  ADTOOL_AMPI_pop_AMPI_Request(&ampiRequest);
-  switch(ampiRequest.origin) { 
+  ADTOOL_AMPI_pop_AMPI_Request(ampiRequest);
+  switch(ampiRequest->origin) { 
   case AMPI_SEND_ORIGIN: { 
-    ADTOOL_AMPI_setAdjointCountAndTempBuf(&ampiRequest);   
-    rc=MPI_Irecv(ampiRequest.adjointTempBuf,
-		 ampiRequest.adjointCount,
-		 ampiRequest.datatype,
-		 ampiRequest.endPoint,
-		 ampiRequest.tag,
-		 ampiRequest.comm,
-		 &(ampiRequest.plainRequest));
+    ADTOOL_AMPI_setAdjointCountAndTempBuf(ampiRequest);   
+    rc=MPI_Irecv(ampiRequest->adjointTempBuf,
+		 ampiRequest->adjointCount,
+		 ampiRequest->datatype,
+		 ampiRequest->endPoint,
+		 ampiRequest->tag,
+		 ampiRequest->comm,
+		 &(ampiRequest->plainRequest));
     break;
   }
   case AMPI_RECV_ORIGIN: { 
-    ADTOOL_AMPI_setAdjointCount(&ampiRequest);
-    rc=MPI_Isend(ampiRequest.buf,
-		 ampiRequest.adjointCount,
-		 ampiRequest.datatype,
-		 ampiRequest.endPoint,
-		 ampiRequest.tag,
-		 ampiRequest.comm,
-		 &(ampiRequest.plainRequest));
+    ADTOOL_AMPI_setAdjointCount(ampiRequest);
+    rc=MPI_Isend(ADTOOL_AMPI_rawAdjointData(ampiRequest->adjointBuf),
+		 ampiRequest->adjointCount,
+		 ampiRequest->datatype,
+		 ampiRequest->endPoint,
+		 ampiRequest->tag,
+		 ampiRequest->comm,
+		 &(ampiRequest->plainRequest));
     break;
   }
   default:  
-    rc=MPI_Abort(ampiRequest.comm, MPI_ERR_TYPE);
+    rc=MPI_Abort(ampiRequest->comm, MPI_ERR_TYPE);
     break;
   }
 #ifdef AMPI_FORTRANCOMPATIBLE 
-  *request=ampiRequest.plainRequest;
+  *request=ampiRequest->plainRequest;
 #endif
 #if defined AMPI_FORTRANCOMPATIBLE || defined AMPI_REQUESTONTRACE
   BK_AMPI_put_AMPI_Request(&ampiRequest);

@@ -90,6 +90,13 @@ MPI_Request ADTOOL_AMPI_pop_request();
 void * ADTOOL_AMPI_rawData(void* activeData);
 
 /**
+ * map active data to adjoint data; this is to be implemented for the backward
+ * execution by tools using association-by-address; 
+ * for tools using association-by-name the same address should be returned;   
+ */
+void * ADTOOL_AMPI_rawAdjointData(void* activeData);
+
+/**
  * set it on the request; 
  * \param buf is forward sweep buffer (for source transformation tools)
  * \param ampiRequest is the request to be pushed and popped for the adjoint communication
@@ -127,23 +134,26 @@ void ADTOOL_AMPI_setAdjointCount(struct AMPI_Request_S  *ampiRequest);
  */
 void ADTOOL_AMPI_setAdjointCountAndTempBuf(struct AMPI_Request_S *ampiRequest);
 
+/**
+ * Allocates a temporary buffer needed to receive adjoint
+ * data before adding it to the adjoint variable
+ */
+void* ADTOOL_AMPI_allocateTempBuf(int adjointCount, MPI_Datatype dataType, MPI_Comm comm) ;
+
 /**  
  * releases the temporary buffer (allocated by \ref ADTOOL_AMPI_setAdjoinCountAndTempBuf)  into which the adjoint data was received 
  */
-void ADTOOL_AMPI_releaseAdjointTempBuf(struct AMPI_Request_S *ampiRequest);
+void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf);
 
 /** 
  * adjoint increment 
- * \param count number of elements
- * \param target values to be incremented
- * \param source increment values
  */
-void ADTOOL_AMPI_adjointIncrement(int adjointCount, void* target, void *source);
+void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source);
 
 /** 
  * adjoint nullify the values in buf
  */ 
-void ADTOOL_AMPI_adjointNullify(int adjointCount, void* buf);
+void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget);
 
 #if defined(__cplusplus)
 }

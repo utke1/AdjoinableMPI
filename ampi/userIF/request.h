@@ -38,6 +38,11 @@ struct AMPI_Request_S {
   void *buf;
 
   /**
+   * The corresponding adjoint buffer
+   */
+  void *adjointBuf ;
+
+  /**
    * \ref AMPI_Isend / \ref AMPI_Irecv  count  parameter 
    */
   int count;

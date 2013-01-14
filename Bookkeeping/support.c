@@ -4,7 +4,7 @@
 #include "ampi/bookkeeping/support.h"
 
 struct RequestListItem { 
-  struct AMPI_Request_S ampiRequest;
+  struct AMPI_Request_S ampiRequest; /*[llh] I'd rather put *ampiRequest to not copy */
   struct RequestListItem *next_p;
   struct RequestListItem *prev_p;
 };

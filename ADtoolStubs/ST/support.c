@@ -1,16 +1,121 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include <mpi.h>
 #include "ampi/adTool/support.h"
 
+struct AMPI_Request_stack {
+  struct AMPI_Request_stack *next_p;
+  void *buf ;
+  void *adjointBuf ;
+  MPI_Datatype datatype ;
+  int endPoint ;
+  int tag ;
+  enum AMPI_PairedWith_E pairedWith;
+  MPI_Comm comm;
+  enum AMPI_Activity_E isActive;
+  enum AMPI_Request_origin_E origin;
+} ;
+
+static struct AMPI_Request_stack* requestStackTop=0 ;
+
+void ADTOOL_AMPI_pushSRinfo(void* buf, 
+			    int count,
+			    MPI_Datatype datatype, 
+			    int src, 
+			    int tag,
+			    enum AMPI_PairedWith_E pairedWith,
+			    MPI_Comm comm) {
+}
+
+void ADTOOL_AMPI_popSRinfo(void** buf, 
+			   int* count,
+			   MPI_Datatype* datatype, 
+			   int* src, 
+			   int* tag,
+			   enum AMPI_PairedWith_E* pairedWith,
+			   MPI_Comm* comm) { 
+}
+
+void ADTOOL_AMPI_push_CallCode(enum AMPI_PairedWith_E thisCall) { 
+}
+
+void ADTOOL_AMPI_pop_CallCode(enum AMPI_PairedWith_E *thisCall) { 
+}
+
 void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest) { 
+  struct AMPI_Request_stack* newTop =
+    (struct AMPI_Request_stack*)malloc(sizeof(struct AMPI_Request_stack)) ;
+  newTop->next_p = requestStackTop ;
+  newTop->buf = ampiRequest->buf ;
+  newTop->adjointBuf = ampiRequest->adjointBuf ;
+  newTop->datatype = ampiRequest->datatype ;
+  newTop->endPoint = ampiRequest->endPoint ;
+  newTop->tag = ampiRequest->tag ;
+  newTop->pairedWith = ampiRequest->pairedWith ;
+  newTop->comm = ampiRequest->comm ;
+  newTop->isActive = ampiRequest->isActive ;
+  newTop->origin = ampiRequest->origin ;
+  requestStackTop = newTop ;
 }
+
 void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest) { 
+  struct AMPI_Request_stack* oldTop = requestStackTop ;
+  ampiRequest->buf = oldTop->buf ;
+  ampiRequest->adjointBuf = oldTop->adjointBuf ;
+  ampiRequest->datatype = oldTop->datatype ;
+  ampiRequest->endPoint = oldTop->endPoint ;
+  ampiRequest->tag = oldTop->tag ;
+  ampiRequest->pairedWith = oldTop->pairedWith ;
+  ampiRequest->comm = oldTop->comm ;
+  ampiRequest->isActive = oldTop->isActive ;
+  ampiRequest->origin = oldTop->origin ;
+  requestStackTop = oldTop->next_p ;
+  free(oldTop) ;
 }
 
+void ADTOOL_AMPI_push_request(MPI_Request request) { 
+} 
+
+MPI_Request ADTOOL_AMPI_pop_request() { 
+  return 0;
+}
+
+/** Returns the non-diff part of a communication buffer
+ * passed to AMPI send or recv. For Tapenade, this is
+ * the communication buffer itself (association by name) */
 void* ADTOOL_AMPI_rawData(void* activeData) { 
+  return activeData ;
 }
 
+/** Returns the diff part of the adjoint of a communication buffer
+ * passed to AMPI send or recv. For Tapenade, this is
+ * the adjoint communication buffer itself (association by name) */
+void* ADTOOL_AMPI_rawAdjointData(void* activeData) { 
+  return activeData ;
+}
+
+/** Remembers the association from a request <tt>ampiRequest</tt> to its
+ * associated non-diff buffer <tt>buf</tt> */
+void ADTOOL_AMPI_mapBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
+				  void* buf) { 
+  ampiRequest->buf = buf ;
+}
+
+/** Adds into the request-to-buffer association list the associated
+ * adjoint buffer <tt>adjointBuf</tt> of non-diff buffer <tt>buf</tt>
+ * This should be done upon turn from FW sweep to BW sweep. */
+void ADTOOL_AMPI_Turn(void* buf, void* adjointBuf) {
+  struct AMPI_Request_stack* inStack = requestStackTop ;
+  while (inStack!=NULL) {
+    if (inStack->buf==buf) {
+      inStack->adjointBuf = adjointBuf ;
+    }
+    inStack = inStack->next_p ;
+  }
+}
+
+/*[llh] not used ? redundant with mapBufForAdjoint? */
 void ADTOOL_AMPI_setBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
 				  void* buf) { 
   /* an overloading tool would not do this but rather leave the buffer as traced 
@@ -30,19 +135,69 @@ void ADTOOL_AMPI_setAdjointCount(struct AMPI_Request_S  *ampiRequest) {
 
 void ADTOOL_AMPI_setAdjointCountAndTempBuf(struct AMPI_Request_S *ampiRequest) { 
   ADTOOL_AMPI_setAdjointCount(ampiRequest);
-  size_t s=0;
-  switch(ampiRequest->datatype) { 
-  case MPI_DOUBLE: 
-    s=sizeof(double);
-    break;
-  case MPI_FLOAT: 
-    s=sizeof(float);
-    break;
-  default:
-    MPI_Abort(ampiRequest->comm, MPI_ERR_TYPE);
-    break;
-  }
-  ampiRequest->adjointTempBuf=(void*)malloc(ampiRequest->adjointCount*s);
+  ampiRequest->adjointTempBuf =
+    ADTOOL_AMPI_allocateTempBuf(ampiRequest->adjointCount,
+                                ampiRequest->datatype,
+                                ampiRequest->comm) ;
   assert(ampiRequest->adjointTempBuf);
+}
+
+void* ADTOOL_AMPI_allocateTempBuf(int adjointCount, MPI_Datatype datatype, MPI_Comm comm) {
+  size_t s=0;
+  if (datatype==MPI_DOUBLE)
+    s=sizeof(double);
+  else if (datatype==MPI_FLOAT)
+    s=sizeof(float);
+  else
+    MPI_Abort(comm, MPI_ERR_TYPE);
+  return (void*)malloc(adjointCount*s);
+}
+
+void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf) { 
+  free(tempBuf) ;
+}
+
+void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source) { 
+  assert(adjointTarget==checkAdjointTarget) ;
+  if (datatype==MPI_DOUBLE) {
+    double *vb = (double *)adjointTarget ;
+    double *nb = (double *)source ;
+    int i ;
+    for (i=0 ; i<adjointCount ; ++i) {
+      *vb = *vb + *nb ;
+      ++vb ;
+      ++nb ;
+    }
+  } else if (datatype==MPI_FLOAT) {
+    float *vb = (float *)adjointTarget ;
+    float *nb = (float *)source ;
+    int i ;
+    for (i=0 ; i<adjointCount ; ++i) {
+      *vb = *vb + *nb ;
+      ++vb ;
+      ++nb ;
+    }
+  } else
+    MPI_Abort(comm, MPI_ERR_TYPE);
+}
+
+void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget) { 
+  assert(adjointTarget==checkAdjointTarget) ;
+  if (datatype==MPI_DOUBLE) {
+    double *vb = (double *)adjointTarget ;
+    int i ;
+    for (i=0 ; i<adjointCount ; ++i) {
+      *vb = 0.0 ;
+      ++vb ;
+    }
+  } else if (datatype==MPI_FLOAT) {
+    float *vb = (float *)adjointTarget ;
+    int i ;
+    for (i=0 ; i<adjointCount ; ++i) {
+      *vb = 0.0 ;
+      ++vb ;
+    }
+  } else
+    MPI_Abort(comm, MPI_ERR_TYPE);
 }
 
