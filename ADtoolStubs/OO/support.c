@@ -41,9 +41,11 @@ MPI_Request ADTOOL_AMPI_pop_request() {
 }
 
 void* ADTOOL_AMPI_rawData(void* activeData) { 
+  return activeData;
 }
 
 void * ADTOOL_AMPI_rawAdjointData(void* activeData) { 
+  return activeData;
 }
 
 void ADTOOL_AMPI_mapBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
