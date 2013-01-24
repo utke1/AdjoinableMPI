@@ -666,8 +666,10 @@ INPUT                  = ampi \
 			 ampi/bookkeeping \
 			 ampi/libCommon \
 			 ampi/adTool \
+			 ampi/tape \
                          PlainC \
 			 Bookkeeping \ 
+			 Tape \
 			 Common \
 			 ADtoolStubs/ST \
 			 ADtoolStubs/OO 
