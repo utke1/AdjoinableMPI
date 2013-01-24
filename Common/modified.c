@@ -325,7 +325,6 @@ int FW_AMPI_Isend (void* buf,
 	pairedWith==AMPI_IRECV_WAITALL
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else { 
-    struct AMPI_Request_S *ampiRequest;
     rc= MPI_Isend(ADTOOL_AMPI_rawData(buf),
 		  count,
 		  datatype,
@@ -338,9 +337,10 @@ int FW_AMPI_Isend (void* buf,
 		  &(request->plainRequest)
 #endif 
 		  );
+    struct AMPI_Request_S *ampiRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
-    /* [llh] This *ampiRequest will be stored after exit of procedure => malloc */
-    ampiRequest = (struct AMPI_Request_S*)malloc(sizeof(struct AMPI_Request_S)) ;
+    struct AMPI_Request_S ampiRequestInst;
+    ampiRequest=&ampiRequestInst;
     ampiRequest->plainRequest=request;
 #else 
     ampiRequest=request;
@@ -436,14 +436,12 @@ int FW_AMPI_Wait(AMPI_Request *request,
   MPI_Request *plainRequest;
   struct AMPI_Request_S *ampiRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
-  /*
   struct AMPI_Request_S ampiRequestInst;
   ampiRequest=&ampiRequestInst;
-  */
   plainRequest=request;
   BK_AMPI_get_AMPI_Request(plainRequest,ampiRequest);
 #else 
-  plainRequest=&(request->plainRequest) ;
+  plainRequest=&(request->plainRequest);
   ampiRequest=request;
 #endif 
   rc=MPI_Wait(plainRequest,
@@ -452,22 +450,19 @@ int FW_AMPI_Wait(AMPI_Request *request,
     ADTOOL_AMPI_push_AMPI_Request(ampiRequest);
     ADTOOL_AMPI_push_CallCode(AMPI_WAIT);
   }
-#ifdef AMPI_FORTRANCOMPATIBLE
-  free(ampiRequest) ;
-#endif
   return rc;
 }
 
 int BW_AMPI_Wait(AMPI_Request *request,
 		 MPI_Status *status) {
   int rc; 
-  struct AMPI_Request_S *ampiRequest ;
-#ifdef AMPI_FORTRANCOMPATIBLE 
-  ampiRequest =
-    (struct AMPI_Request_S*)malloc(sizeof(struct AMPI_Request_S)) ;
-#else
-  ampiRequest = request ;
-#endif
+  struct AMPI_Request_S *ampiRequest;
+#ifdef AMPI_FORTRANCOMPATIBLE
+  struct AMPI_Request_S ampiRequestInst;
+  ampiRequest=&ampiRequestInst;
+#else 
+  ampiRequest=request;
+#endif 
   /* pop request  */
   ADTOOL_AMPI_pop_AMPI_Request(ampiRequest);
   switch(ampiRequest->origin) { 
@@ -501,7 +496,7 @@ int BW_AMPI_Wait(AMPI_Request *request,
   *request=ampiRequest->plainRequest;
 #endif
 #if defined AMPI_FORTRANCOMPATIBLE || defined AMPI_REQUESTONTRACE
-  BK_AMPI_put_AMPI_Request(&ampiRequest);
+  BK_AMPI_put_AMPI_Request(ampiRequest);
 #endif
   return rc;
 }
