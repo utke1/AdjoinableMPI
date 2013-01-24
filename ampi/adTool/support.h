@@ -97,6 +97,16 @@ void * ADTOOL_AMPI_rawData(void* activeData);
 void * ADTOOL_AMPI_rawAdjointData(void* activeData);
 
 /**
+ * Declares correspondence between a buffer and its counterpart adjoint buffer
+ * Adds correspondence into the request-to-buffer association list
+ * This is necessary for association-by-name transfo tools.
+ * should be done upon turn from FW sweep to BW sweep.
+ * \param buf the original, non-differentiated buffer.
+ * \param adjointBuf the corresponding adjoint buffer.
+ */
+void ADTOOL_AMPI_Turn(void* buf, void* adjointBuf) ;
+
+/**
  * set it on the request; 
  * \param buf is forward sweep buffer (for source transformation tools)
  * \param ampiRequest is the request to be pushed and popped for the adjoint communication
@@ -145,13 +155,26 @@ void* ADTOOL_AMPI_allocateTempBuf(int adjointCount, MPI_Datatype dataType, MPI_C
  */
 void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf);
 
-/** 
- * adjoint increment 
+/**
+ * Adjoint increment the values in adjointTarget.
+ * \param adjointCount is the number of items in the buffer we will increment
+ * \param datatype the data type of the buffer to be incremented
+ * \param comm the communicator to be passed to MPI_Abort for failures
+ * \param target the buffer that comes from the fwd sweep.
+ * \param adjointTarget the adjoint buffer to be incremented
+ * \param checkAdjointTarget the adjoint buffer that comes from the bwd sweep. For runtime checking only.
+ * \param source the adjoint value that must be added into the adjoint buffer.
  */
 void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source);
 
-/** 
- * adjoint nullify the values in buf
+/**
+ * Adjoint nullify the values in adjointTarget.
+ * \param adjointCount is the number of items in the buffer we will nullify
+ * \param datatype the data type of the buffer to be nullified
+ * \param comm the communicator to be passed to MPI_Abort for failures
+ * \param target the buffer that comes from the fwd sweep.
+ * \param adjointTarget the adjoint buffer to be nullified
+ * \param checkAdjointTarget the adjoint buffer that comes from the bwd sweep. For runtime checking only.
  */ 
 void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget);
 
