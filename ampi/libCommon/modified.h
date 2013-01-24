@@ -69,6 +69,30 @@ int BW_AMPI_Irecv (void* buf,
 		   AMPI_Request* request);
 
 /** 
+ * forward sweep variant of \ref AMPI_Send
+ */
+int FW_AMPI_Send (void* buf, 
+                  int count, 
+                  MPI_Datatype datatype, 
+                  AMPI_Activity isActive,
+                  int dest, 
+                  int tag,
+                  AMPI_PairedWith pairedWith,
+                  MPI_Comm comm);
+
+/** 
+ * backward sweep variant of \ref AMPI_Send
+ */
+int BW_AMPI_Send (void* buf,
+                  int count, 
+                  MPI_Datatype datatype, 
+                  AMPI_Activity isActive,
+                  int dest, 
+                  int tag,
+                  AMPI_PairedWith pairedWith,
+                  MPI_Comm comm);
+
+/** 
  * forward sweep variant of \ref AMPI_Isend 
  */
 int FW_AMPI_Isend (void* buf, 
