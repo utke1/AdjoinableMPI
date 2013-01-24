@@ -68,6 +68,7 @@ AC_CONFIG_FILES([Makefile
 		 ampi/userIF/libConfig.h
                  PlainC/Makefile
 		 Bookkeeping/Makefile
+		 Tape/Makefile
 		 Common/Makefile
 		 ADtoolStubs/ST/Makefile
 		 ADtoolStubs/OO/Makefile])

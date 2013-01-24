@@ -17,6 +17,10 @@ adToolincludedir = @includedir@/ampi/adTool
 adToolinclude_HEADERS = \
 adTool/support.h 
 
+tapeincludedir = @includedir@/ampi/tape
+tapeinclude_HEADERS = \
+tape/support.h
+
 libCommonincludedir = @includedir@/ampi/libCommon
 libCommoninclude_HEADERS = \
 libCommon/modified.h \
