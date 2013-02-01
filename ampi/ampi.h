@@ -7,6 +7,11 @@
  * \authors Michel Schanen
  * \authors Jean Utke 
  *
+ * \section links Links to Ressources
+ * 
+ *  - <a href="https://trac.mcs.anl.gov/projects/AdjoinableMPI/wiki">TRAC  page</a> for bugs and feature tracking
+ *  - <a href="http://http://mercurial.mcs.anl.gov/ad/AdjoinableMPI/">mercurial repository</a> for source code and change history
+ *  
  * \section Introduction
  * 
  * The Adjoinable MPI (AMPI) library provides a modified set if MPI subroutines 
