@@ -1,6 +1,7 @@
 userincludedir = @includedir@/ampi
 userinclude_HEADERS = \
-ampi.h 
+ampi.h \
+ampif.h
 
 userIFincludedir = @includedir@/ampi/userIF
 userIFinclude_HEADERS = \

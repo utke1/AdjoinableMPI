@@ -8,6 +8,7 @@ struct AMPI_Request_stack {
   struct AMPI_Request_stack *next_p;
   void *buf ;
   void *adjointBuf ;
+  int count ;
   MPI_Datatype datatype ;
   int endPoint ;
   int tag ;
@@ -49,6 +50,7 @@ void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest) {
   newTop->next_p = requestStackTop ;
   newTop->buf = ampiRequest->buf ;
   newTop->adjointBuf = ampiRequest->adjointBuf ;
+  newTop->count = ampiRequest->count ;
   newTop->datatype = ampiRequest->datatype ;
   newTop->endPoint = ampiRequest->endPoint ;
   newTop->tag = ampiRequest->tag ;
@@ -63,6 +65,7 @@ void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest) {
   struct AMPI_Request_stack* oldTop = requestStackTop ;
   ampiRequest->buf = oldTop->buf ;
   ampiRequest->adjointBuf = oldTop->adjointBuf ;
+  ampiRequest->count = oldTop->count ;
   ampiRequest->datatype = oldTop->datatype ;
   ampiRequest->endPoint = oldTop->endPoint ;
   ampiRequest->tag = oldTop->tag ;

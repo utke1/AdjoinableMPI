@@ -6,4 +6,5 @@ libampiCommon_la_SOURCES = \
 modified.c \
 nt.c \
 passThrough.c \
-st.c
+st.c \
+ampi_f2c.c

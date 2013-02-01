@@ -103,14 +103,14 @@ int BW_AMPI_Recv(void* buf,
   return rc;
 }  
 
-int FW_AMPI_Irecv (void* buf, 
-		   int count, 
-		   MPI_Datatype datatype, 
+int FW_AMPI_Irecv (void* buf,
+		   int count,
+		   MPI_Datatype datatype,
 		   AMPI_Activity isActive,
-		   int source, 
+		   int source,
 		   int tag,
 		   AMPI_PairedWith pairedWith,
-		   MPI_Comm comm, 
+		   MPI_Comm comm,
 		   AMPI_Request* request) {
   int rc;
   if (!(
@@ -121,22 +121,26 @@ int FW_AMPI_Irecv (void* buf,
 	pairedWith==AMPI_ISEND_WAITALL
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else {
-    struct AMPI_Request_S *ampiRequest;
-#ifdef AMPI_FORTRANCOMPATIBLE
-    /* [llh] This *ampiRequest will be stored after exit of procedure => malloc */
-    ampiRequest = (struct AMPI_Request_S*)malloc(sizeof(struct AMPI_Request_S)) ;
-    ampiRequest->plainRequest=request;
-#else 
-    ampiRequest=request;
-#endif
     rc= MPI_Irecv(ADTOOL_AMPI_rawData(buf),
 		  count,
 		  datatype,
 		  source,
 		  tag,
 		  comm,
-		  &(ampiRequest->plainRequest)
+#ifdef AMPI_FORTRANCOMPATIBLE
+                  request
+#else
+                  &(request->plainRequest)
+#endif
 		  );
+    struct AMPI_Request_S *ampiRequest;
+#ifdef AMPI_FORTRANCOMPATIBLE
+    struct AMPI_Request_S ampiRequestInst;
+    ampiRequest=&ampiRequestInst;
+    ampiRequest->plainRequest=*request;
+#else 
+    ampiRequest=request;
+#endif
     /* fill in the other info */
     ampiRequest->isActive=isActive;
     ampiRequest->endPoint=source;
@@ -171,9 +175,14 @@ int BW_AMPI_Irecv (void* buf,
 		   MPI_Comm comm, 
 		   AMPI_Request* request) {
   int rc;
-  MPI_Request *plainRequest,tracedRequest;
+  MPI_Request *plainRequest;
   struct AMPI_Request_S *ampiRequest;
+#ifdef AMPI_REQUESTONTRACE
+  MPI_Request tracedRequest;
+#endif
 #ifdef AMPI_FORTRANCOMPATIBLE
+  struct AMPI_Request_S ampiRequestInst;
+  ampiRequest=&ampiRequestInst;
   plainRequest=request;
 #else
   plainRequest=&(request->plainRequest) ;
@@ -307,7 +316,7 @@ int BW_AMPI_Send (void* buf,
   return rc;
 }
 
-int FW_AMPI_Isend (void* buf, 
+int FW_AMPI_Isend (void* buf,
 		   int count, 
 		   MPI_Datatype datatype, 
 		   AMPI_Activity isActive,
@@ -341,11 +350,11 @@ int FW_AMPI_Isend (void* buf,
 #ifdef AMPI_FORTRANCOMPATIBLE
     struct AMPI_Request_S ampiRequestInst;
     ampiRequest=&ampiRequestInst;
-    ampiRequest->plainRequest=request;
+    ampiRequest->plainRequest=*request;
 #else 
     ampiRequest=request;
 #endif
-      /* fill in the other info */
+    /* fill in the other info */
     ampiRequest->isActive=isActive;
     ampiRequest->endPoint=dest;
     ampiRequest->tag=tag;
@@ -379,12 +388,14 @@ int BW_AMPI_Isend (void* buf,
 		   MPI_Comm comm, 
 		   AMPI_Request* request) { 
   int rc;
-  MPI_Request *plainRequest,tracedRequest;
+  MPI_Request *plainRequest;
   struct AMPI_Request_S *ampiRequest;
+#ifdef AMPI_REQUESTONTRACE
+  MPI_Request tracedRequest;
+#endif
 #ifdef AMPI_FORTRANCOMPATIBLE
   struct AMPI_Request_S ampiRequestInst;
   ampiRequest=&ampiRequestInst;
-  ampiRequest->plainRequest=request;
   plainRequest=request;
 #else 
   ampiRequest=request;
@@ -397,7 +408,7 @@ int BW_AMPI_Isend (void* buf,
 #else 
   BK_AMPI_get_AMPI_Request(plainRequest,ampiRequest,0);
 #endif
-#endif  
+#endif
   assert(ampiRequest->origin==AMPI_SEND_ORIGIN) ;
   if (!(
 	ampiRequest->pairedWith==AMPI_RECV 
@@ -439,7 +450,8 @@ int FW_AMPI_Wait(AMPI_Request *request,
   struct AMPI_Request_S ampiRequestInst;
   ampiRequest=&ampiRequestInst;
   plainRequest=request;
-  BK_AMPI_get_AMPI_Request(plainRequest,ampiRequest);
+  /*[llh] doubt about the 3rd argument (0?) for the OO traced case: */
+  BK_AMPI_get_AMPI_Request(plainRequest,ampiRequest,0);
 #else 
   plainRequest=&(request->plainRequest);
   ampiRequest=request;

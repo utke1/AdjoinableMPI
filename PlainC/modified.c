@@ -217,8 +217,8 @@ int AMPI_Wait(AMPI_Request *request,
 int AMPI_Waitall (int count, 
 		  AMPI_Request requests[], 
 		  MPI_Status statuses[]) { 
-  int i; 
 #ifndef AMPI_FORTRANCOMPATIBLE
+  int i; 
   /* extract original requests */
   MPI_Request * origRequests=(MPI_Request*)malloc(count*sizeof(MPI_Request));
   assert(origRequests);
