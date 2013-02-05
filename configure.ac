@@ -42,7 +42,7 @@ AC_ARG_ENABLE(fortranCompatible,
 esac],
 [fortranCompatible='#undef AMPI_FORTRANCOMPATIBLE'])
 
-AM_CONDITIONAL(ISFORTRANCOMPATIBLE, [ test "x$fortranCompatible" = "x\#define AMPI_FORTRANCOMPATIBLE" ] )
+AM_CONDITIONAL(ISFORTRANCOMPATIBLE, [ test "x$fortranCompatible" = "x#define AMPI_FORTRANCOMPATIBLE" ] )
 
 AC_SUBST(requestOnTrace)
 AC_ARG_ENABLE(requestOnTrace,
