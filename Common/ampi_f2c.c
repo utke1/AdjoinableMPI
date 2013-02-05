@@ -1,4 +1,5 @@
 
+#include <stdlib.h>
 #include <mpi.h>
 
 #include "ampi/userIF/activity.h"
@@ -44,13 +45,13 @@ MPI_Datatype datatypeTable[] =
    MPI_2REAL,
    MPI_2DOUBLE_PRECISION,
    MPI_2INTEGER,
-   MPI_2COMPLEX,
-   MPI_2DOUBLE_COMPLEX,
+   NULL,/* <== PATCH!! MPI_2COMPLEX */
+   NULL,/* <== PATCH!! MPI_2DOUBLE_COMPLEX */
    NULL,/* <== PATCH!! MPI_REAL2*/
-   MPI_LOGICAL1,
-   MPI_LOGICAL2,
-   MPI_LOGICAL4,
-   MPI_LOGICAL8,
+   NULL,/* <== PATCH!! MPI_LOGICAL1 */
+   NULL,/* <== PATCH!! MPI_LOGICAL2 */
+   NULL,/* <== PATCH!! MPI_LOGICAL4 */
+   NULL,/* <== PATCH!! MPI_LOGICAL8 */
    MPI_WCHAR,
    MPI_CHAR,
    MPI_UNSIGNED_CHAR,
