@@ -6,5 +6,8 @@ libampiCommon_la_SOURCES = \
 modified.c \
 nt.c \
 passThrough.c \
-st.c \
-ampi_f2c.c
+st.c
+
+if ISFORTRANCOMPATIBLE
+libampiCommon_la_SOURCES += ampi_f2c.c
+endif
