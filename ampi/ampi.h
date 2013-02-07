@@ -18,7 +18,7 @@
  * that are constructed such that and adjoint in the context of algorithmic 
  * differentiation (AD) can be computed. 
  * There are principal recipes for the construction of the adjoint of 
- * a given communication, see \cite AMPIpaper . 
+ * a given communication, see \cite Utke2009TAM . 
  * The practical implementation of these recipes, however, faces the following 
  * challenges.
  *  - the target language may prevent some implementation options
@@ -113,7 +113,7 @@
  * 
  * \subsubsection pairings Pairings
  *
- * Following the explanations in \cite AMPIpaper it is clear that context information about the 
+ * Following the explanations in \cite Utke2009TAM it is clear that context information about the 
  * communication pattern, that is the pairing of MPI calls, is needed to achieve 
  * -# correct adjoints, i.e. correct send and receive end points and deadlock free
  * -# if possible retain the efficiency advantages present in the original MPI communication for the adjoint.

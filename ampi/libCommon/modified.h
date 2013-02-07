@@ -43,7 +43,7 @@ int BW_AMPI_Recv(void* buf,
 		 MPI_Status* status);
 
 /** 
- * forward sweep variant of \ref AMPI_IRecv 
+ * forward sweep variant of \ref AMPI_Irecv 
  */
 int FW_AMPI_Irecv (void* buf, 
 		   int count, 
@@ -56,7 +56,7 @@ int FW_AMPI_Irecv (void* buf,
 		   AMPI_Request* request);
 
 /** 
- * backward sweep variant of \ref AMPI_IRecv 
+ * backward sweep variant of \ref AMPI_Irecv 
  */
 int BW_AMPI_Irecv (void* buf, 
 		   int count, 

@@ -126,7 +126,7 @@ void ADTOOL_AMPI_setBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
 
 /**  
  * this method resets \param count member to represent the buffer in terms of 
- * elements of the original MPI data type; this is of particular interest for vector mode; 
+ * elements of the original MPI \param datatype; this is of particular interest for vector mode; 
  * \todo needs to be expanded for the case where the adjoint data is not represented by the same MPI data type as the 
  * original program data
  */
@@ -151,7 +151,7 @@ void ADTOOL_AMPI_setAdjointCountAndTempBuf(struct AMPI_Request_S *ampiRequest);
 void* ADTOOL_AMPI_allocateTempBuf(int adjointCount, MPI_Datatype dataType, MPI_Comm comm) ;
 
 /**  
- * releases the temporary buffer (allocated by \ref ADTOOL_AMPI_setAdjoinCountAndTempBuf)  into which the adjoint data was received 
+ * releases the temporary buffer (allocated by \ref ADTOOL_AMPI_setAdjointCountAndTempBuf)  into which the adjoint data was received 
  */
 void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf);
 

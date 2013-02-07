@@ -5,7 +5,8 @@ syntax: glob
 *.la
 *~
 *.orig
-doc/*
+doc/html
+doc/latex
 config.log
 autom4te.cache
 config.h*
