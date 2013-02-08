@@ -98,9 +98,9 @@ void ampi_init_nt_(int* err_code) {
 void ampi_finalize_nt_(int* err_code) {
   *err_code = AMPI_Finalize_NT();}
 
-void ampi_comm_rank_(int *commF, int *rank, int* err_code) {
-  MPI_Comm comm = MPI_COMM_WORLD ; /* <== PATCH!! */
-  *err_code = MPI_Comm_rank(comm, rank);
+void ampi_comm_rank_(MPI_Fint *commF, int *rank, int* err_code) {
+  MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
+  *err_code = MPI_Comm_rank(commC, rank);
 }
 
 void adtool_ampi_turn_(double *v, double *vb) {
@@ -120,9 +120,9 @@ void fw_ampi_recv_(void* buf,
   MPI_Datatype datatype = datatypeTable[*datatypeF] ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
-  MPI_Comm comm = MPI_COMM_WORLD ; /* <== PATCH!! */
+  MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
   *err_code = FW_AMPI_Recv(buf, *count, datatype, isActive,
-                           *src, *tag, pairedWith, comm,
+                           *src, *tag, pairedWith, commC,
                            (MPI_Status*)status);
 }
 
@@ -139,9 +139,9 @@ void bw_ampi_recv_(void* buf,
   MPI_Datatype datatype = datatypeTable[*datatypeF] ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
-  MPI_Comm comm = MPI_COMM_WORLD ; /* <== PATCH!! */
+  MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
   *err_code = BW_AMPI_Recv(buf, *count, datatype, isActive,
-                           *src, *tag, pairedWith, comm,
+                           *src, *tag, pairedWith, commC,
                            (MPI_Status*)status);
 }
 
@@ -157,9 +157,9 @@ void fw_ampi_send_(void* buf,
   MPI_Datatype datatype = datatypeTable[*datatypeF] ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
-  MPI_Comm comm = MPI_COMM_WORLD ; /* <== PATCH!! */
+  MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
   *err_code = FW_AMPI_Send (buf, *count, datatype, isActive,
-                            *dest, *tag, pairedWith, comm);
+                            *dest, *tag, pairedWith, commC);
 }
 
 void bw_ampi_send_(void* buf,
@@ -174,9 +174,9 @@ void bw_ampi_send_(void* buf,
   MPI_Datatype datatype = datatypeTable[*datatypeF] ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
-  MPI_Comm comm = MPI_COMM_WORLD ; /* <== PATCH!! */
+  MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
   *err_code = BW_AMPI_Send (buf, *count, datatype, isActive,
-                            *dest, *tag, pairedWith, comm);
+                            *dest, *tag, pairedWith, commC);
 }
 
 void fw_ampi_irecv_(void* buf,
@@ -192,9 +192,9 @@ void fw_ampi_irecv_(void* buf,
   MPI_Datatype datatype = datatypeTable[*datatypeF] ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
-  MPI_Comm comm = MPI_COMM_WORLD ; /* <== PATCH!! */
+  MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
   *err_code = FW_AMPI_Irecv(buf, *count, datatype, isActive,
-                            *source, *tag, pairedWith, comm,
+                            *source, *tag, pairedWith, commC,
                             (MPI_Request*)request);
 }
 
@@ -211,9 +211,9 @@ void bw_ampi_irecv_(void* buf,
   MPI_Datatype datatype = datatypeTable[*datatypeF] ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
-  MPI_Comm comm = MPI_COMM_WORLD ; /* <== PATCH!! */
+  MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
   *err_code = BW_AMPI_Irecv(buf, *count, datatype, isActive,
-                            *source, *tag, pairedWith, comm,
+                            *source, *tag, pairedWith, commC,
                             (MPI_Request*)request);
 }
 
@@ -230,9 +230,9 @@ void fw_ampi_isend_(void* buf,
   MPI_Datatype datatype = datatypeTable[*datatypeF] ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
-  MPI_Comm comm = MPI_COMM_WORLD ; /* <== PATCH!! */
+  MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
   *err_code = FW_AMPI_Isend(buf, *count, datatype, isActive,
-                            *dest, *tag, pairedWith, comm,
+                            *dest, *tag, pairedWith, commC,
                             (MPI_Request*)request);
 }
 
@@ -249,9 +249,9 @@ void bw_ampi_isend_(void* buf,
   MPI_Datatype datatype = datatypeTable[*datatypeF] ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
-  MPI_Comm comm = MPI_COMM_WORLD ; /* <== PATCH!! */
+  MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
   *err_code = BW_AMPI_Isend(buf, *count, datatype, isActive,
-                            *dest, *tag, pairedWith, comm,
+                            *dest, *tag, pairedWith, commC,
                             (MPI_Request*)request);
 }
 
