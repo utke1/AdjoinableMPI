@@ -28,13 +28,14 @@ int FW_AMPI_Recv(void* buf,
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else { 
     MPI_Status myStatus;
-    rc=MPI_Recv(ADTOOL_AMPI_rawData(buf),
+    rc=MPI_Recv(ADTOOL_AMPI_rawData(buf,&count),
 		count,
 		datatype,
 		src,
 		tag,
 		comm,
 		&myStatus); /* because status as passed in may be MPI_STATUS_IGNORE */
+    ADTOOL_AMPI_writeData(buf,&count);
     if (rc==MPI_SUCCESS && isActive==AMPI_ACTIVE) {
       if(tag==MPI_ANY_TAG) tag=myStatus.MPI_TAG;
       if(src==MPI_ANY_SOURCE) src=myStatus.MPI_SOURCE;
@@ -62,13 +63,15 @@ int BW_AMPI_Recv(void* buf,
 		 MPI_Comm comm,
 		 MPI_Status* status) { 
   int rc;
+  void *idx=NULL;
   ADTOOL_AMPI_popSRinfo(&buf, 
 			&count,
 			&datatype,
 			&src,
 			&tag,
 			&pairedWith,
-			&comm);
+			&comm,
+			&idx);
   if (!(
 	pairedWith==AMPI_SEND 
 	|| 
@@ -121,7 +124,7 @@ int FW_AMPI_Irecv (void* buf,
 	pairedWith==AMPI_ISEND_WAITALL
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else {
-    rc= MPI_Irecv(ADTOOL_AMPI_rawData(buf),
+    rc= MPI_Irecv(ADTOOL_AMPI_rawData(buf,&count),
 		  count,
 		  datatype,
 		  source,
@@ -243,7 +246,7 @@ int FW_AMPI_Send (void* buf,
 	pairedWith==AMPI_IRECV_WAITALL
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else { 
-    rc=MPI_Send(ADTOOL_AMPI_rawData(buf),
+    rc=MPI_Send(ADTOOL_AMPI_rawData(buf,&count),
 		count,
 		datatype,
 		dest,
@@ -272,13 +275,15 @@ int BW_AMPI_Send (void* buf,
                   AMPI_PairedWith pairedWith,
                   MPI_Comm comm) {
   int rc;
+  void *idx=NULL;
   ADTOOL_AMPI_popSRinfo(&buf, 
 			&count,
 			&datatype,
 			&dest,
 			&tag,
 			&pairedWith,
-			&comm);
+			&comm,
+			&idx);
   if (!(
 	pairedWith==AMPI_RECV 
 	|| 
@@ -304,7 +309,8 @@ int BW_AMPI_Send (void* buf,
 				   buf,
 				   buf,
                                    buf,
-                                   tempBuf);
+                                   tempBuf,
+				   idx);
       ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
       break;
     }
@@ -334,7 +340,7 @@ int FW_AMPI_Isend (void* buf,
 	pairedWith==AMPI_IRECV_WAITALL
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else { 
-    rc= MPI_Isend(ADTOOL_AMPI_rawData(buf),
+    rc= MPI_Isend(ADTOOL_AMPI_rawData(buf,&count),
 		  count,
 		  datatype,
 		  dest,
@@ -429,7 +435,8 @@ int BW_AMPI_Isend (void* buf,
 				   ampiRequest->buf,
 				   ampiRequest->adjointBuf,
                                    buf,
-                                   ampiRequest->adjointTempBuf);
+                                   ampiRequest->adjointTempBuf,
+	                           ampiRequest->idx);
       ADTOOL_AMPI_releaseAdjointTempBuf(ampiRequest->adjointTempBuf);
       break;
     }
@@ -459,6 +466,7 @@ int FW_AMPI_Wait(AMPI_Request *request,
   rc=MPI_Wait(plainRequest,
 	      status);
   if (rc==MPI_SUCCESS && ampiRequest->isActive==AMPI_ACTIVE) {
+    ADTOOL_AMPI_writeData(ampiRequest->buf,&ampiRequest->count);
     ADTOOL_AMPI_push_AMPI_Request(ampiRequest);
     ADTOOL_AMPI_push_CallCode(AMPI_WAIT);
   }

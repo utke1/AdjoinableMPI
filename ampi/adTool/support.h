@@ -38,7 +38,8 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   int* src, 
 			   int* tag,
 			   enum AMPI_PairedWith_E* pairedWith,
-			   MPI_Comm* comm);
+			   MPI_Comm* comm,
+			   void **idx);
 
 /**
  * the implementation of pushing an operation code to the 
@@ -87,7 +88,8 @@ MPI_Request ADTOOL_AMPI_pop_request();
  * execution by tools using association-by-address; 
  * for tools using association-by-name the same address should be returned;   
  */
-void * ADTOOL_AMPI_rawData(void* activeData);
+void * ADTOOL_AMPI_rawData(void* activeData, int *size);
+void ADTOOL_AMPI_writeData(void* activeData, int *size);
 
 /**
  * map active data to adjoint data; this is to be implemented for the backward
@@ -164,8 +166,9 @@ void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf);
  * \param adjointTarget the adjoint buffer to be incremented
  * \param checkAdjointTarget the adjoint buffer that comes from the bwd sweep. For runtime checking only.
  * \param source the adjoint value that must be added into the adjoint buffer.
+ * \param idx tape index for each element of the non contiguous buffer
  */
-void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source);
+void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
 
 /**
  * Adjoint nullify the values in adjointTarget.

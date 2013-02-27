@@ -102,6 +102,8 @@ struct AMPI_Request_S {
    */ 
   enum AMPI_Request_origin_E origin;
 
+  void *idx;
+
 };
 
 #ifdef AMPI_FORTRANCOMPATIBLE

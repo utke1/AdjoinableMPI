@@ -18,7 +18,8 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   int* src, 
 			   int* tag,
 			   enum AMPI_PairedWith_E* pairedWith,
-			   MPI_Comm* comm) { 
+			   MPI_Comm* comm,
+			   void **idx) { 
 }
 
 void ADTOOL_AMPI_push_CallCode(enum AMPI_PairedWith_E thisCall) { 
@@ -40,7 +41,7 @@ MPI_Request ADTOOL_AMPI_pop_request() {
   return 0;
 }
 
-void* ADTOOL_AMPI_rawData(void* activeData) { 
+void* ADTOOL_AMPI_rawData(void* activeData, int *size) { 
   return activeData;
 }
 
@@ -88,7 +89,7 @@ void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf) {
   free(tempBuf) ;
 }
 
-void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source) { 
+void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) { 
 }
 
 void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget) { 

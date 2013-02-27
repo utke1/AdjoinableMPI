@@ -20,6 +20,10 @@ void TAPE_AMPI_push_int(int an_int);
 void TAPE_AMPI_pop_int(int *an_int);
 void TAPE_AMPI_read_int(int* an_int);
 
+void TAPE_AMPI_push_ptr(void *ptr);
+void TAPE_AMPI_pop_ptr(void **ptr);
+void TAPE_AMPI_read_ptr(void **ptr);
+
 void TAPE_AMPI_push_MPI_Datatype(MPI_Datatype an_MPI_Datatype);
 void TAPE_AMPI_pop_MPI_Datatype(MPI_Datatype *an_MPI_Datatype);
 void TAPE_AMPI_read_MPI_Datatype(MPI_Datatype* an_MPI_Datatype);
