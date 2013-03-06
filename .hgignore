@@ -27,4 +27,6 @@ config/missing
 config/install-sh
 .deps/*
 .libs/*
-
+.cproject
+.project
+runConfigure.*
