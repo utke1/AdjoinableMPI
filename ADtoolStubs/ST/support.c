@@ -205,3 +205,4 @@ void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Com
     MPI_Abort(comm, MPI_ERR_TYPE);
 }
 
+void ADTOOL_AMPI_writeData(void *buf,int *count) { };
