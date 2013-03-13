@@ -109,7 +109,7 @@ void adtool_ampi_turn_(double *v, double *vb) {
 
 void fw_ampi_recv_(void* buf,
                    int *count,
-                   int *datatypeF,
+                   MPI_Fint *datatypeF,
                    int *isActiveF,
                    int *src,
                    int *tag,
@@ -117,7 +117,7 @@ void fw_ampi_recv_(void* buf,
                    int *commF,
                    int *status,
                    int *err_code) {
-  MPI_Datatype datatype = datatypeTable[*datatypeF] ;
+  MPI_Datatype datatype = MPI_Type_f2c(*datatypeF) ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
   MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
@@ -128,7 +128,7 @@ void fw_ampi_recv_(void* buf,
 
 void bw_ampi_recv_(void* buf,
                    int *count,
-                   int *datatypeF,
+                   MPI_Fint *datatypeF,
                    int* isActiveF,
                    int* src,
                    int* tag,
@@ -136,7 +136,7 @@ void bw_ampi_recv_(void* buf,
                    int* commF,
                    int* status,
                    int* err_code) {
-  MPI_Datatype datatype = datatypeTable[*datatypeF] ;
+  MPI_Datatype datatype = MPI_Type_f2c(*datatypeF) ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
   MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
@@ -147,14 +147,14 @@ void bw_ampi_recv_(void* buf,
 
 void fw_ampi_send_(void* buf, 
                    int *count, 
-                   int *datatypeF, 
+                   MPI_Fint *datatypeF, 
                    int *isActiveF,
                    int *dest, 
                    int *tag,
                    int *pairedWithF,
                    int *commF,
                    int *err_code) {
-  MPI_Datatype datatype = datatypeTable[*datatypeF] ;
+  MPI_Datatype datatype = MPI_Type_f2c(*datatypeF) ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
   MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
@@ -164,14 +164,14 @@ void fw_ampi_send_(void* buf,
 
 void bw_ampi_send_(void* buf,
                    int *count,
-                   int *datatypeF,
+                   MPI_Fint *datatypeF,
                    int *isActiveF,
                    int *dest, 
                    int *tag,
                    int *pairedWithF,
                    int *commF,
                    int *err_code) {
-  MPI_Datatype datatype = datatypeTable[*datatypeF] ;
+  MPI_Datatype datatype = MPI_Type_f2c(*datatypeF) ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
   MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
@@ -181,7 +181,7 @@ void bw_ampi_send_(void* buf,
 
 void fw_ampi_irecv_(void* buf,
                     int *count,
-                    int *datatypeF,
+                    MPI_Fint *datatypeF,
                     int *isActiveF,
                     int *source,
                     int *tag,
@@ -189,7 +189,7 @@ void fw_ampi_irecv_(void* buf,
                     int *commF,
                     int *request,
                     int *err_code){
-  MPI_Datatype datatype = datatypeTable[*datatypeF] ;
+  MPI_Datatype datatype = MPI_Type_f2c(*datatypeF) ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
   MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
@@ -200,7 +200,7 @@ void fw_ampi_irecv_(void* buf,
 
 void bw_ampi_irecv_(void* buf,
                     int *count,
-                    int *datatypeF,
+                    MPI_Fint *datatypeF,
                     int *isActiveF,
                     int *source,
                     int *tag,
@@ -208,7 +208,7 @@ void bw_ampi_irecv_(void* buf,
                     int *commF,
                     int *request,
                     int *err_code) {
-  MPI_Datatype datatype = datatypeTable[*datatypeF] ;
+  MPI_Datatype datatype = MPI_Type_f2c(*datatypeF) ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
   MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
@@ -219,7 +219,7 @@ void bw_ampi_irecv_(void* buf,
 
 void fw_ampi_isend_(void* buf,
                     int *count,
-                    int *datatypeF,
+                    MPI_Fint *datatypeF,
                     int *isActiveF,
                     int *dest,
                     int *tag,
@@ -227,7 +227,7 @@ void fw_ampi_isend_(void* buf,
                     int *commF,
                     int *request,
                     int *err_code) {
-  MPI_Datatype datatype = datatypeTable[*datatypeF] ;
+  MPI_Datatype datatype = MPI_Type_f2c(*datatypeF) ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
   MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
@@ -238,7 +238,7 @@ void fw_ampi_isend_(void* buf,
 
 void bw_ampi_isend_(void* buf,
                     int *count,
-                    int *datatypeF,
+                    MPI_Fint *datatypeF,
                     int *isActiveF,
                     int *dest,
                     int *tag,
@@ -246,7 +246,7 @@ void bw_ampi_isend_(void* buf,
                     int *commF,
                     int *request,
                     int *err_code) {
-  MPI_Datatype datatype = datatypeTable[*datatypeF] ;
+  MPI_Datatype datatype = MPI_Type_f2c(*datatypeF) ;
   AMPI_Activity isActive = activityTable[*isActiveF] ;
   AMPI_PairedWith pairedWith = pairedWithTable[*pairedWithF] ;
   MPI_Comm commC = MPI_Comm_f2c( *commF ) ;
