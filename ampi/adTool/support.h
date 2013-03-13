@@ -16,8 +16,10 @@ extern "C" {
 /**
  * the implementation of pushing the required elements for send/recv
  * to the AD-tool-internal stack;
- * the operator overloading implementation maps <tt>buf</tt> to the adjoint address space
- * the source transformation implementation ignores <tt>buf</tt> 
+ * For souce transformation this may remain unimplemented provided all the parameters
+ * are recovered by TBR and <tt>buf</tt> is mapped explicitly.
+ * the operator overloading implementation maps <tt>buf</tt> to the adjoint address space.
+ * The source transformation implementation ignores <tt>buf</tt> 
  */
 void ADTOOL_AMPI_pushSRinfo(void* buf, 
 			    int count,
@@ -30,7 +32,7 @@ void ADTOOL_AMPI_pushSRinfo(void* buf,
 /**
  * the implementation of popping the required elements for send/recv
  * from the AD-tool-internal stack;
- * the source transformation implementation will ignore <tt>buf</tt>
+ * See comments of \ref ADTOOL_AMPI_pushSRinfo.
  */
 void ADTOOL_AMPI_popSRinfo(void** buf, 
 			   int* count,
@@ -51,9 +53,9 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 void ADTOOL_AMPI_push_CallCode(enum AMPI_PairedWith_E thisCall);
 
 /**
- * the implementation of pushing an operation code to the 
+ * the implementation of popping an operation code from the 
  * to the AD-tool-internal stack for an operator overloading tool;
- * the source transformation implementation will leave this empty;
+ * See comments of \ref ADTOOL_AMPI_push_CallCode.
  * the operator overloading tool needs to pop the code from its operation 
  * stack first and then call (with dummy parameters) the respect <tt>BW_</tt>
  * variant of the operatiorn represented by <tt>thisCall</tt> 
@@ -72,7 +74,10 @@ void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
  */
 void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
   
-/**
+/** Push the MPI_Request on the AD tool internal stack.
+ * This is used as a key to the request bookkeeping 
+to keep correspondence between the request Id of the FW sweep
+ * to the request Id in BW sweep.
  * if we need to trace requests for a pure (operator overloading) trace evaluation
  * the Common implementation uses this to push the request 
  */
