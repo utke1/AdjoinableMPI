@@ -148,7 +148,7 @@ void ADTOOL_AMPI_setAdjointCountAndTempBuf(struct AMPI_Request_S *ampiRequest) {
 
 void* ADTOOL_AMPI_allocateTempBuf(int adjointCount, MPI_Datatype datatype, MPI_Comm comm) {
   size_t s=0;
-  if (datatype==MPI_DOUBLE)
+  if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION)
     s=sizeof(double);
   else if (datatype==MPI_FLOAT)
     s=sizeof(float);
@@ -163,7 +163,7 @@ void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf) {
 
 void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) { 
   assert(adjointTarget==checkAdjointTarget) ;
-  if (datatype==MPI_DOUBLE) {
+  if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
     double *vb = (double *)adjointTarget ;
     double *nb = (double *)source ;
     int i ;
@@ -187,7 +187,7 @@ void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_C
 
 void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget) { 
   assert(adjointTarget==checkAdjointTarget) ;
-  if (datatype==MPI_DOUBLE) {
+  if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
     double *vb = (double *)adjointTarget ;
     int i ;
     for (i=0 ; i<adjointCount ; ++i) {
