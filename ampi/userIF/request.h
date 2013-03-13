@@ -11,7 +11,6 @@
 
 #include "ampi/userIF/libConfig.h"
 #include "ampi/userIF/pairedWith.h"
-#include "ampi/userIF/activity.h"
 
 /**
  * does the request originate with a  send or a receive 
@@ -71,11 +70,6 @@ struct AMPI_Request_S {
    * \ref AMPI_Isend / \ref AMPI_Irecv  comm  parameter 
    */
   MPI_Comm comm;
-
-  /**
-   * \ref AMPI_Isend / \ref AMPI_Irecv  isActive  parameter; not to be traced 
-   */
-  enum AMPI_Activity_E isActive;
 
   /**
    * temporary adjoint buffer; not to be traced

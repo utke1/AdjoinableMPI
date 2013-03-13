@@ -57,7 +57,6 @@ void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest) {
   newTop->tag = ampiRequest->tag ;
   newTop->pairedWith = ampiRequest->pairedWith ;
   newTop->comm = ampiRequest->comm ;
-  newTop->isActive = ampiRequest->isActive ;
   newTop->origin = ampiRequest->origin ;
   requestStackTop = newTop ;
 }
@@ -72,7 +71,6 @@ void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest) {
   ampiRequest->tag = oldTop->tag ;
   ampiRequest->pairedWith = oldTop->pairedWith ;
   ampiRequest->comm = oldTop->comm ;
-  ampiRequest->isActive = oldTop->isActive ;
   ampiRequest->origin = oldTop->origin ;
   requestStackTop = oldTop->next_p ;
   free(oldTop) ;
@@ -206,3 +204,26 @@ void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Com
 }
 
 void ADTOOL_AMPI_writeData(void *buf,int *count) { };
+
+void ADTOOL_AMPI_setupTypes() {
+  AMPI_ADOUBLE=MPI_DOUBLE;
+  AMPI_AFLOAT=MPI_FLOAT;
+#ifdef AMPI_FORTRANCOMPATIBLE
+  AMPI_ADOUBLE_PRECISION=MPI_DOUBLE_PRECISION;
+  AMPI_AREAL=MPI_REAL;
+#endif
+}
+
+AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype) {
+  if (datatype==AMPI_ADOUBLE
+      ||
+      datatype==AMPI_AFLOAT
+#ifdef AMPI_FORTRANCOMPATIBLE
+      ||
+      datatype==AMPI_ADOUBLE_PRECISION
+      ||
+      datatype==AMPI_AREAL
+#endif
+      ) return AMPI_ACTIVE;
+  return AMPI_PASSIVE;
+}

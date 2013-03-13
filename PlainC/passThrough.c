@@ -19,3 +19,12 @@ int AMPI_Get_processor_name(char *name,
 				resultlen);
 }
 
+int AMPI_Pack_size(int incount,
+                   MPI_Datatype datatype,
+                   MPI_Comm comm,
+                   int *size) {
+  return  MPI_Pack_size(incount,
+                        datatype,
+                        comm,
+                        size);
+}

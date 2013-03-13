@@ -3,8 +3,11 @@
 
 int AMPI_Init_NT(int* argc, 
 	      char*** argv) { 
-  return MPI_Init(argc,
-		  argv);
+  int rc;
+  rc=MPI_Init(argc,
+              argv);
+  ADTOOL_AMPI_setupTypes();
+  return rc;
 }
 
 int AMPI_Finalize_NT(void) { 

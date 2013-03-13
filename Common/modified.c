@@ -5,10 +5,17 @@
 #include "ampi/bookkeeping/support.h"
 #include "ampi/adTool/support.h"
 
+MPI_Datatype AMPI_ADOUBLE;
+MPI_Datatype AMPI_AFLOAT;
+
+#ifdef AMPI_FORTRANCOMPATIBLE
+MPI_Datatype AMPI_ADOUBLE_PRECISION;
+MPI_Datatype AMPI_AREAL;
+#endif
+
 int FW_AMPI_Recv(void* buf, 
 		 int count,
 		 MPI_Datatype datatype, 
-		 AMPI_Activity isActive,
 		 int src, 
 		 int tag,
 		 AMPI_PairedWith pairedWith,
@@ -36,7 +43,7 @@ int FW_AMPI_Recv(void* buf,
 		comm,
 		&myStatus); /* because status as passed in may be MPI_STATUS_IGNORE */
     ADTOOL_AMPI_writeData(buf,&count);
-    if (rc==MPI_SUCCESS && isActive==AMPI_ACTIVE) {
+    if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
       if(tag==MPI_ANY_TAG) tag=myStatus.MPI_TAG;
       if(src==MPI_ANY_SOURCE) src=myStatus.MPI_SOURCE;
       ADTOOL_AMPI_pushSRinfo(buf,
@@ -56,7 +63,6 @@ int FW_AMPI_Recv(void* buf,
 int BW_AMPI_Recv(void* buf, 
 		 int count,
 		 MPI_Datatype datatype, 
-		 AMPI_Activity isActive,
 		 int src, 
 		 int tag,
 		 AMPI_PairedWith pairedWith,
@@ -109,7 +115,6 @@ int BW_AMPI_Recv(void* buf,
 int FW_AMPI_Irecv (void* buf,
 		   int count,
 		   MPI_Datatype datatype,
-		   AMPI_Activity isActive,
 		   int source,
 		   int tag,
 		   AMPI_PairedWith pairedWith,
@@ -145,7 +150,6 @@ int FW_AMPI_Irecv (void* buf,
     ampiRequest=request;
 #endif
     /* fill in the other info */
-    ampiRequest->isActive=isActive;
     ampiRequest->endPoint=source;
     ampiRequest->tag=tag;
     ampiRequest->count=count;
@@ -158,7 +162,7 @@ int FW_AMPI_Irecv (void* buf,
 #ifdef AMPI_FORTRANCOMPATIBLE
     BK_AMPI_put_AMPI_Request(ampiRequest);
 #endif
-    if (isActive==AMPI_ACTIVE) { 
+    if (ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
       ADTOOL_AMPI_push_CallCode(AMPI_IRECV);
 #ifdef AMPI_REQUESTONTRACE
       ADTOOL_AMPI_push_request(ampiRequest->tracedRequest);
@@ -171,7 +175,6 @@ int FW_AMPI_Irecv (void* buf,
 int BW_AMPI_Irecv (void* buf, 
 		   int count, 
 		   MPI_Datatype datatype, 
-		   AMPI_Activity isActive,
 		   int source, 
 		   int tag,
 		   AMPI_PairedWith pairedWith,
@@ -232,7 +235,6 @@ int BW_AMPI_Irecv (void* buf,
 int FW_AMPI_Send (void* buf, 
                   int count, 
                   MPI_Datatype datatype, 
-                  AMPI_Activity isActive,
                   int dest, 
                   int tag,
                   AMPI_PairedWith pairedWith,
@@ -252,7 +254,7 @@ int FW_AMPI_Send (void* buf,
 		dest,
 		tag,
 		comm);
-    if (rc==MPI_SUCCESS && isActive==AMPI_ACTIVE) {
+    if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
       ADTOOL_AMPI_pushSRinfo(buf,
 			     count,
 			     datatype,
@@ -269,7 +271,6 @@ int FW_AMPI_Send (void* buf,
 int BW_AMPI_Send (void* buf,
                   int count, 
                   MPI_Datatype datatype, 
-                  AMPI_Activity isActive,
                   int dest, 
                   int tag,
                   AMPI_PairedWith pairedWith,
@@ -325,7 +326,6 @@ int BW_AMPI_Send (void* buf,
 int FW_AMPI_Isend (void* buf,
 		   int count, 
 		   MPI_Datatype datatype, 
-		   AMPI_Activity isActive,
 		   int dest, 
 		   int tag,
 		   AMPI_PairedWith pairedWith,
@@ -361,7 +361,6 @@ int FW_AMPI_Isend (void* buf,
     ampiRequest=request;
 #endif
     /* fill in the other info */
-    ampiRequest->isActive=isActive;
     ampiRequest->endPoint=dest;
     ampiRequest->tag=tag;
     ampiRequest->count=count;
@@ -374,7 +373,7 @@ int FW_AMPI_Isend (void* buf,
 #ifdef AMPI_FORTRANCOMPATIBLE
     BK_AMPI_put_AMPI_Request(ampiRequest);
 #endif
-    if (isActive==AMPI_ACTIVE) { 
+    if (ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
       ADTOOL_AMPI_push_CallCode(AMPI_ISEND);
 #ifdef AMPI_REQUESTONTRACE
       ADTOOL_AMPI_push_request(ampiRequest->tracedRequest);
@@ -387,7 +386,6 @@ int FW_AMPI_Isend (void* buf,
 int BW_AMPI_Isend (void* buf, 
 		   int count, 
 		   MPI_Datatype datatype, 
-		   AMPI_Activity isActive,
 		   int dest, 
 		   int tag,
 		   AMPI_PairedWith pairedWith,
@@ -465,7 +463,7 @@ int FW_AMPI_Wait(AMPI_Request *request,
 #endif 
   rc=MPI_Wait(plainRequest,
 	      status);
-  if (rc==MPI_SUCCESS && ampiRequest->isActive==AMPI_ACTIVE) {
+  if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(ampiRequest->datatype)==AMPI_ACTIVE) {
     ADTOOL_AMPI_writeData(ampiRequest->buf,&ampiRequest->count);
     ADTOOL_AMPI_push_AMPI_Request(ampiRequest);
     ADTOOL_AMPI_push_CallCode(AMPI_WAIT);

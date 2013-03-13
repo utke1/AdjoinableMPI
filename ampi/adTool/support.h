@@ -7,6 +7,8 @@ extern "C" {
 #endif
 
 #include "ampi/userIF/request.h"
+#include "ampi/userIF/activity.h"
+#include "ampi/userIF/modified.h"
 
 /**
  * \file 
@@ -185,6 +187,18 @@ void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_C
  * \param checkAdjointTarget the adjoint buffer that comes from the bwd sweep. For runtime checking only.
  */ 
 void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget);
+
+/**
+ * initialize predefined active types
+ */
+void ADTOOL_AMPI_setupTypes();
+
+/**
+ * test types for activity
+ * \param datatype any data type but particularly also the active data type(s) created by the tool (see \ref AMPI_ADOUBLE etc.)
+ * \returns the respective enum value based on the type's activity
+ */
+AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype);
 
 #if defined(__cplusplus)
 }

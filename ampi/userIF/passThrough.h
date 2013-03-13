@@ -24,5 +24,12 @@ int AMPI_Comm_rank(MPI_Comm comm,
 int AMPI_Get_processor_name(char *name, 
 			    int *resultlen );
 
+/**
+ * simple wrapper; signature is identical to MPI original
+ */
+int AMPI_Pack_size(int incount,
+                   MPI_Datatype datatype,
+                   MPI_Comm comm,
+                   int *size);
 
 #endif

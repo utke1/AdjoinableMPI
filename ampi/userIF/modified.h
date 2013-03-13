@@ -6,9 +6,32 @@
  * AMPI routines that have adjoint functionality and do no merely pass through to the MPI originals; the routines may signatures with additional parameters compared to their original MPI counterparts
  */ 
 
-#include "ampi/userIF/activity.h"
 #include "ampi/userIF/pairedWith.h"
 #include "ampi/userIF/request.h"
+
+/**
+ * active variant of the predefined  MPI_DOUBLE
+ */
+extern MPI_Datatype AMPI_ADOUBLE;
+
+/**
+ * active variant of the predefined  MPI_FLOAT
+ */
+extern MPI_Datatype AMPI_AFLOAT;
+
+#ifdef AMPI_FORTRANCOMPATIBLE
+
+/**
+ * active variant of the predefined  MPI_DOUBLE_PRECISION
+ */
+extern MPI_Datatype AMPI_ADOUBLE_PRECISION;
+
+/**
+ * active variant of the predefined  MPI_REAL
+ */
+extern MPI_Datatype AMPI_AREAL;
+
+#endif
 
 /**
  * adjoint needs to MPI_Finalize; signature identical to original MPI call
@@ -21,17 +44,6 @@ int AMPI_Init(int* argc,
  */
 int AMPI_Finalize(int* argc, 
 		  char*** argv);
-
-/**
- * pass through for isActive==AMPI_PASSIVE;  
- * for isActive==AMPI_ACTIVE this consider the size of the active type; 
- * this is AD tool dependent and part of the AD tool interface
- */
-int AMPI_Pack_size(int incount,
-		   MPI_Datatype datatype,
-		   AMPI_Activity isActive,
-		   MPI_Comm comm,
-		   int *size);
 
 /**
  * adjoint needs to detach; signature identical to original MPI call
@@ -48,7 +60,6 @@ int AMPI_Buffer_detach(void *buffer,
 int AMPI_Send(void* buf, 
 	      int count, 
 	      MPI_Datatype datatype, 
-	      AMPI_Activity isActive,
 	      int dest, 
 	      int tag, 
 	      AMPI_PairedWith pairedWith,
@@ -57,7 +68,6 @@ int AMPI_Send(void* buf,
 int AMPI_Recv(void* buf, 
 	      int count,
 	      MPI_Datatype datatype, 
-	      AMPI_Activity isActive,
 	      int src, 
 	      int tag, 
 	      AMPI_PairedWith pairedWith,
@@ -67,7 +77,6 @@ int AMPI_Recv(void* buf,
 int AMPI_Isend (void* buf, 
 		int count, 
 		MPI_Datatype datatype, 
-		AMPI_Activity isActive,
 		int dest, 
 		int tag, 
 		AMPI_PairedWith pairedWith,
@@ -77,7 +86,6 @@ int AMPI_Isend (void* buf,
 int AMPI_Irecv (void* buf, 
 		int count, 
 		MPI_Datatype datatype, 
-		AMPI_Activity isActive,
 		int src, 
 		int tag,
 		AMPI_PairedWith pairedWith, 
@@ -87,7 +95,6 @@ int AMPI_Irecv (void* buf,
 int AMPI_Bsend(void *buf, 
 	       int count, 
 	       MPI_Datatype datatype, 
-	       AMPI_Activity isActive,
 	       int dest, 
 	       int tag,
 	       AMPI_PairedWith pairedWith, 
@@ -96,7 +103,6 @@ int AMPI_Bsend(void *buf,
 int AMPI_Rsend(void *buf, 
 	       int count, 
 	       MPI_Datatype datatype, 
-	       AMPI_Activity isActive,
 	       int dest, 
 	       int tag,
 	       AMPI_PairedWith pairedWith,
@@ -120,7 +126,6 @@ int AMPI_Reduce (void* sbuf,
 		 void* rbuf, 
 		 int count, 
 		 MPI_Datatype datatype, 
-		 AMPI_Activity isActive,
 		 MPI_Op op, 
 		 int root, 
 		 MPI_Comm comm); 

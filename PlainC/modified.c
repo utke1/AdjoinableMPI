@@ -13,18 +13,6 @@ int AMPI_Finalize(int* argc,
   return MPI_Finalize();
 }
 
-int AMPI_Pack_size(int incount,
-		   MPI_Datatype datatype,
-		   AMPI_Activity isActive,
-		   MPI_Comm comm,
-		   int *size) { 
-  if (isActive!=AMPI_PASSIVE) MPI_Abort(comm, MPI_ERR_TYPE); 
-  return  MPI_Pack_size(incount,
-			datatype,
-			comm,
-			size);
-}
-
 int AMPI_Buffer_attach(void *buffer, 
 		       int size) { 
   return MPI_Buffer_attach(buffer,
@@ -42,7 +30,6 @@ int AMPI_Buffer_detach(void *buffer,
 int AMPI_Send(void* buf, 
 	      int count, 
 	      MPI_Datatype datatype, 
-	      AMPI_Activity isActive,
 	      int dest, 
 	      int tag,
 	      AMPI_PairedWith pairedWith,
@@ -54,7 +41,6 @@ int AMPI_Send(void* buf,
 	||
 	pairedWith==AMPI_IRECV_WAITALL
 	)) MPI_Abort(comm, MPI_ERR_ARG);
-  if (isActive!=AMPI_PASSIVE) MPI_Abort(comm, MPI_ERR_TYPE); 
   return MPI_Send(buf,
 		  count,
 		  datatype,
@@ -66,7 +52,6 @@ int AMPI_Send(void* buf,
 int AMPI_Recv(void* buf, 
 	      int count,
 	      MPI_Datatype datatype, 
-	      AMPI_Activity isActive,
 	      int src, 
 	      int tag,
 	      AMPI_PairedWith pairedWith,
@@ -83,7 +68,6 @@ int AMPI_Recv(void* buf,
 	||
 	pairedWith==AMPI_ISEND_WAITALL
 	)) MPI_Abort(comm, MPI_ERR_ARG);
-  if (isActive!=AMPI_PASSIVE) MPI_Abort(comm, MPI_ERR_TYPE); 
   return MPI_Recv(buf,
 		  count,
 		  datatype,
@@ -96,7 +80,6 @@ int AMPI_Recv(void* buf,
 int AMPI_Isend (void* buf, 
 		int count, 
 		MPI_Datatype datatype, 
-		AMPI_Activity isActive,
 		int dest, 
 		int tag,
 		AMPI_PairedWith pairedWith,
@@ -109,7 +92,6 @@ int AMPI_Isend (void* buf,
 	||
 	pairedWith==AMPI_IRECV_WAITALL
 	)) MPI_Abort(comm, MPI_ERR_ARG);
-  if (isActive!=AMPI_PASSIVE) MPI_Abort(comm, MPI_ERR_TYPE); 
   return MPI_Isend(buf,
 		   count,
 		   datatype,
@@ -127,7 +109,6 @@ int AMPI_Isend (void* buf,
 int AMPI_Irecv (void* buf, 
 		int count, 
 		MPI_Datatype datatype, 
-		AMPI_Activity isActive,
 		int src, 
 		int tag,
 		AMPI_PairedWith pairedWith,
@@ -144,7 +125,6 @@ int AMPI_Irecv (void* buf,
 	||
 	pairedWith==AMPI_ISEND_WAITALL
 	)) MPI_Abort(comm, MPI_ERR_ARG);
-  if (isActive!=AMPI_PASSIVE) MPI_Abort(comm, MPI_ERR_TYPE);
   return MPI_Irecv(buf,
 		   count,
 		   datatype,
@@ -162,7 +142,6 @@ int AMPI_Irecv (void* buf,
 int AMPI_Bsend(void *buf, 
 	       int count, 
 	       MPI_Datatype datatype, 
-	       AMPI_Activity isActive,
 	       int dest, 
 	       int tag,
 	       AMPI_PairedWith pairedWith,
@@ -172,7 +151,6 @@ int AMPI_Bsend(void *buf,
 	|| 
 	pairedWith==AMPI_IRECV_WAIT
 	)) MPI_Abort(comm, MPI_ERR_ARG);
-  if (isActive!=AMPI_PASSIVE) MPI_Abort(comm, MPI_ERR_TYPE); 
   return MPI_Bsend(buf,
 		   count,
 		   datatype,
@@ -184,7 +162,6 @@ int AMPI_Bsend(void *buf,
 int AMPI_Rsend(void *buf, 
 	       int count, 
 	       MPI_Datatype datatype, 
-	       AMPI_Activity isActive,
 	       int dest, 
 	       int tag,
 	       AMPI_PairedWith pairedWith,
@@ -194,7 +171,6 @@ int AMPI_Rsend(void *buf,
 	|| 
 	pairedWith==AMPI_IRECV_WAIT
 	)) MPI_Abort(comm, MPI_ERR_ARG);
-  if (isActive!=AMPI_PASSIVE) MPI_Abort(comm, MPI_ERR_TYPE); 
   return MPI_Rsend(buf,
 		   count,
 		   datatype,
@@ -243,11 +219,9 @@ int AMPI_Reduce (void* sbuf,
 		 void* rbuf, 
 		 int count, 
 		 MPI_Datatype datatype, 
-		 AMPI_Activity isActive,
 		 MPI_Op op, 
 		 int root, 
 		 MPI_Comm comm) { 
-  if (isActive!=AMPI_PASSIVE) MPI_Abort(comm, MPI_ERR_TYPE);
   return MPI_Reduce(sbuf,
 		    rbuf,
 		    count,
