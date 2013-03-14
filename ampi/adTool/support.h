@@ -193,6 +193,15 @@ void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Com
  */
 void ADTOOL_AMPI_setupTypes();
 
+#ifdef AMPI_FORTRANCOMPATIBLE
+/**
+ * fortran routine to figure out what the proper types are on the fortran side
+ * \param adouble returns the integer representation for the fortran version of AMPI_ADOUBLE_PRECISION
+ * \param real returns the integer representation for the fortran version of AMPI_AREAL
+ */
+void adtool_ampi_fortransetuptypes_(MPI_Fint* adouble, MPI_Fint* areal);
+#endif
+
 /**
  * test types for activity
  * \param datatype any data type but particularly also the active data type(s) created by the tool (see \ref AMPI_ADOUBLE etc.)
