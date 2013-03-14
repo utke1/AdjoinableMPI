@@ -8,7 +8,7 @@ void ADTOOL_AMPI_pushSRinfo(void* buf,
 			    MPI_Datatype datatype, 
 			    int src, 
 			    int tag,
-			    enum AMPI_PairedWith_E pairedWith,
+			    AMPI_PairedWith pairedWith,
 			    MPI_Comm comm) { 
 }
 
@@ -17,7 +17,7 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   MPI_Datatype* datatype, 
 			   int* src, 
 			   int* tag,
-			   enum AMPI_PairedWith_E* pairedWith,
+			   AMPI_PairedWith* pairedWith,
 			   MPI_Comm* comm,
 			   void **idx) { 
 }
@@ -97,6 +97,8 @@ void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Com
 
 void ADTOOL_AMPI_writeData(void *buf,int *count) { };
 
-AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype) {};
+AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype) {
+  return AMPI_PASSIVE;
+};
 
 void ADTOOL_AMPI_setupTypes() {};
