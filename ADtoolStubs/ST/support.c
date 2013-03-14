@@ -206,11 +206,16 @@ void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Com
 void ADTOOL_AMPI_writeData(void *buf,int *count) { };
 
 void ADTOOL_AMPI_setupTypes() {
+#ifdef AMPI_FORTRANCOMPATIBLE
+  MPI_Fint adouble;
+  MPI_Fint areal;
+#endif
   AMPI_ADOUBLE=MPI_DOUBLE;
   AMPI_AFLOAT=MPI_FLOAT;
 #ifdef AMPI_FORTRANCOMPATIBLE
-  AMPI_ADOUBLE_PRECISION=MPI_DOUBLE_PRECISION;
-  AMPI_AREAL=MPI_REAL;
+  adtool_ampi_fortransetuptypes_(&adouble, &areal);
+  AMPI_ADOUBLE_PRECISION=MPI_Type_f2c(adouble);
+  AMPI_AREAL=MPI_Type_f2c(areal);
 #endif
 }
 
