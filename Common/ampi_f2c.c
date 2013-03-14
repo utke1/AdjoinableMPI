@@ -22,8 +22,6 @@ void ampi_init_nt_(int* err_code) {
   /* [llh] Incoherent: why AMPI_Init_NT has "argc,argv" args, whereas fortran MPI_INIT
    * has only one "out" arg for the error code ? */
   *err_code = AMPI_Init_NT(0, 0);
-  ampi_adouble_precision_=MPI_DOUBLE_PRECISION;
-  ampi_areal_=MPI_REAL;
 }
 
 void ampi_finalize_nt_(int* err_code) {
