@@ -1,6 +1,8 @@
 #include <mpi.h>
 #include "ampi/userIF/nt.h"
 
+extern void ADTOOL_AMPI_setupTypes();
+
 int AMPI_Init_NT(int* argc, 
 	      char*** argv) { 
   int rc;
