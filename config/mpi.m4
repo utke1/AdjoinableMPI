@@ -12,6 +12,26 @@ then
   MPIROOT="$with_mpi_root"
 fi
 
+AC_ARG_WITH(mpif77,
+[AC_HELP_STRING([--with-mpif77=MPIF77],
+                [name of the MPI Fortran77 compiler to use; needed only for --enable-fortranCompatible ; (default mpif77)])])
+
+if test "x$fortranCompatible" = "x#define AMPI_FORTRANCOMPATIBLE"; 
+then 
+  if test x"$with_mpif77" != "x"; 
+  then 
+    MPIF77="$with_mpif77"
+  else 
+    MPIF77="mpif77"
+  fi
+
+  if test x"$with_mpi_root" != "x"; 
+  then 
+    MPIF77="$with_mpi_root/bin/$MPIF77"
+  fi
+  F77=$MPIF77
+fi
+
 AC_ARG_WITH(mpicc,
 [AC_HELP_STRING([--with-mpicc=MPICC],
 		[name of the MPI C++ compiler to use (default mpicc)])])

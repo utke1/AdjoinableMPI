@@ -25,7 +25,7 @@ void ADTOOL_AMPI_pushSRinfo(void* buf,
 			    MPI_Datatype datatype, 
 			    int src, 
 			    int tag,
-			    enum AMPI_PairedWith_E pairedWith,
+			    AMPI_PairedWith pairedWith,
 			    MPI_Comm comm) {
 }
 
@@ -34,7 +34,7 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   MPI_Datatype* datatype, 
 			   int* src, 
 			   int* tag,
-			   enum AMPI_PairedWith_E* pairedWith,
+			   AMPI_PairedWith* pairedWith,
 			   MPI_Comm* comm,
 			   void **idx) { 
 }
@@ -206,11 +206,16 @@ void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Com
 void ADTOOL_AMPI_writeData(void *buf,int *count) { };
 
 void ADTOOL_AMPI_setupTypes() {
+#ifdef AMPI_FORTRANCOMPATIBLE
+  MPI_Fint adouble;
+  MPI_Fint areal;
+#endif
   AMPI_ADOUBLE=MPI_DOUBLE;
   AMPI_AFLOAT=MPI_FLOAT;
 #ifdef AMPI_FORTRANCOMPATIBLE
-  AMPI_ADOUBLE_PRECISION=MPI_DOUBLE_PRECISION;
-  AMPI_AREAL=MPI_REAL;
+  adtool_ampi_fortransetuptypes_(&adouble, &areal);
+  AMPI_ADOUBLE_PRECISION=MPI_Type_f2c(adouble);
+  AMPI_AREAL=MPI_Type_f2c(areal);
 #endif
 }
 

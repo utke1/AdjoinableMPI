@@ -44,6 +44,11 @@ esac],
 
 AM_CONDITIONAL(ISFORTRANCOMPATIBLE, [ test "x$fortranCompatible" = "x#define AMPI_FORTRANCOMPATIBLE" ] )
 
+if test "x$fortranCompatible" = "x#define AMPI_FORTRANCOMPATIBLE"; 
+then 
+AC_PROG_F77
+fi
+
 AC_SUBST(requestOnTrace)
 AC_ARG_ENABLE(requestOnTrace,
 [AS_HELP_STRING([--enable-requestOnTrace],

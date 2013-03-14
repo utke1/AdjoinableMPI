@@ -3,6 +3,10 @@
 #include <mpi.h>
 #include "ampi/userIF/modified.h"
 
+MPI_Datatype AMPI_ADOUBLE_PRECISION;
+MPI_Datatype AMPI_AREAL;
+
+
 int AMPI_Init(int* argc, 
 	      char*** argv) { 
   return MPI_Init(argc,argv);

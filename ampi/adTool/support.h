@@ -28,7 +28,7 @@ void ADTOOL_AMPI_pushSRinfo(void* buf,
 			    MPI_Datatype datatype, 
 			    int src, 
 			    int tag,
-			    enum AMPI_PairedWith_E pairedWith,
+			    AMPI_PairedWith pairedWith,
 			    MPI_Comm comm);
 
 /**
@@ -41,7 +41,7 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   MPI_Datatype* datatype, 
 			   int* src, 
 			   int* tag,
-			   enum AMPI_PairedWith_E* pairedWith,
+			   AMPI_PairedWith* pairedWith,
 			   MPI_Comm* comm,
 			   void **idx);
 
@@ -192,6 +192,15 @@ void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Com
  * initialize predefined active types
  */
 void ADTOOL_AMPI_setupTypes();
+
+#ifdef AMPI_FORTRANCOMPATIBLE
+/**
+ * fortran routine to figure out what the proper types are on the fortran side
+ * \param adouble returns the integer representation for the fortran version of AMPI_ADOUBLE_PRECISION
+ * \param real returns the integer representation for the fortran version of AMPI_AREAL
+ */
+void adtool_ampi_fortransetuptypes_(MPI_Fint* adouble, MPI_Fint* areal);
+#endif
 
 /**
  * test types for activity

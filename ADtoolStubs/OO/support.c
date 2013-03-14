@@ -98,7 +98,7 @@ void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Com
 void ADTOOL_AMPI_writeData(void *buf,int *count) { };
 
 AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype) {
-    return 0;
+  return AMPI_PASSIVE;
 };
 
 void ADTOOL_AMPI_setupTypes() {};
