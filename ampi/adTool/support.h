@@ -28,7 +28,7 @@ void ADTOOL_AMPI_pushSRinfo(void* buf,
 			    MPI_Datatype datatype, 
 			    int src, 
 			    int tag,
-			    enum AMPI_PairedWith_E pairedWith,
+			    AMPI_PairedWith pairedWith,
 			    MPI_Comm comm);
 
 /**
@@ -41,7 +41,7 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   MPI_Datatype* datatype, 
 			   int* src, 
 			   int* tag,
-			   enum AMPI_PairedWith_E* pairedWith,
+			   AMPI_PairedWith* pairedWith,
 			   MPI_Comm* comm,
 			   void **idx);
 
