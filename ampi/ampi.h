@@ -234,10 +234,51 @@
  * has to be done anyway in the differentiated application code, and is passed
  * to the communication call, the AMPI communication implementation will
  * check this bundle MPI_Type to discover activity and trace/not trace accordingly.
-
+ *
  * For the operator overloading, the tool needs to supply the active MPI types
  * for the built-in MPI_datatypes and using the active types, one can achieve
  * type conformance between the buffer and the type parameter passed.
+ *
+ * \subsection onesided One-Sided Active Targets
+ * Idea - use an <tt>AMPI_Win</tt> instance (similar to the \ref AMPI_Request ) to attach more 
+ * information about the things that are applied to the window and completed on the fence; 
+ * we execute/trace/collect-for-later-execution operations on the window in the following fashion
+ * 
+ * forward: 
+ * - MPI_Get record op/args on the window (buffer called 'x')  
+ * - MPI_Put/MPI_Accumulate(z,,...): record op/args on the window; during forward: replace with MPI_Get of the remote target value into temporary 't' ; postpone to the  fence;
+ * 
+ * upon hitting a fence in the forward sweep:
+ * 1. put all ops on the stack 
+ * 2. run the fence 
+ * 3. for earch accum/put:
+ * 3.1:  push 't'
+ * 3.2: do the postponed accumulate/put
+ * 4. run a fence for 3.2
+ * 5. for each accum*: 
+ * 5.1 get accumlation result 'r'
+ * 6. run a fence for 5.1 
+ * 7. for each accum*:
+ * 7.1 push 'r'
+ * 
+ * for the adjoint of a fence :
+ * 0. for each operation on the window coming from the previous fence: 
+ * 0.1 op isa GET then x_bar=0.0
+ * 0.2 op isa PUT/accum= then x_bar+=t21
+ * 0.3 op isa accum+ then x_bar+=t22
+ * 1. run a fence
+ * 2. pop  op from the stack and put onto adjoint window
+ * 2.1 op isa PUT/accum=: then   GET('t21')
+ * 2.2 op isa accum+; then get('t22') from adjoint target 
+ * 2.3 op isa accum*, then pop('r'),  GET('t23') from adjoint target
+ * 3. run a fence
+ * 4. for each op on the adjoint window
+ * 4.1 op isa GET, then accum+ into remote
+ * 4.2 op isa PUT/accum: pop(t); accu(t,'=') to the value in the target
+ * 4.3 op isa PUT/accum=; then acc(0.0,'=') to adjoint target
+ * 4.4 op isa accum*: then accumulate( r*t23/t,'=', to the target) AND do z_bar+=r*t23/z  (this is the old local z ); 
+ * 
+ * 
  */
 
 
