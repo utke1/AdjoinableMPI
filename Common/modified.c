@@ -35,15 +35,22 @@ int FW_AMPI_Recv(void* buf,
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else { 
     MPI_Status myStatus;
-    rc=MPI_Recv(ADTOOL_AMPI_rawData(buf,&count),
+    double* mappedbuf=NULL;
+    if(ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+      mappedbuf=ADTOOL_AMPI_rawData(buf,&count);
+    }
+    else {
+      mappedbuf=buf;
+    }
+    rc=MPI_Recv(mappedbuf,
 		count,
 		datatype,
 		src,
 		tag,
 		comm,
 		&myStatus); /* because status as passed in may be MPI_STATUS_IGNORE */
-    ADTOOL_AMPI_writeData(buf,&count);
     if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+      ADTOOL_AMPI_writeData(buf,&count);
       if(tag==MPI_ANY_TAG) tag=myStatus.MPI_TAG;
       if(src==MPI_ANY_SOURCE) src=myStatus.MPI_SOURCE;
       ADTOOL_AMPI_pushSRinfo(buf,
@@ -129,7 +136,14 @@ int FW_AMPI_Irecv (void* buf,
 	pairedWith==AMPI_ISEND_WAITALL
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else {
-    rc= MPI_Irecv(ADTOOL_AMPI_rawData(buf,&count),
+    double* mappedbuf=NULL;
+    if(ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+      mappedbuf=ADTOOL_AMPI_rawData(buf,&count);
+    }
+    else {
+      mappedbuf=buf;
+    }
+    rc= MPI_Irecv(mappedbuf,
 		  count,
 		  datatype,
 		  source,
@@ -248,7 +262,14 @@ int FW_AMPI_Send (void* buf,
 	pairedWith==AMPI_IRECV_WAITALL
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else { 
-    rc=MPI_Send(ADTOOL_AMPI_rawData(buf,&count),
+    double* mappedbuf=NULL;
+    if(ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+      mappedbuf=ADTOOL_AMPI_rawData(buf,&count);
+    }
+    else {
+      mappedbuf=buf;
+    }
+    rc=MPI_Send(mappedbuf,
 		count,
 		datatype,
 		dest,
@@ -340,7 +361,14 @@ int FW_AMPI_Isend (void* buf,
 	pairedWith==AMPI_IRECV_WAITALL
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
   else { 
-    rc= MPI_Isend(ADTOOL_AMPI_rawData(buf,&count),
+    double* mappedbuf=NULL;
+    if(ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+      mappedbuf=ADTOOL_AMPI_rawData(buf,&count);
+    }
+    else {
+      mappedbuf=buf;
+    }
+    rc= MPI_Isend(mappedbuf,
 		  count,
 		  datatype,
 		  dest,
