@@ -18,7 +18,7 @@ extern "C" {
 /**
  * the implementation of pushing the required elements for send/recv
  * to the AD-tool-internal stack;
- * For souce transformation this may remain unimplemented provided all the parameters
+ * For source transformation this may remain unimplemented provided all the parameters
  * are recovered by TBR and <tt>buf</tt> is mapped explicitly.
  * the operator overloading implementation maps <tt>buf</tt> to the adjoint address space.
  * The source transformation implementation ignores <tt>buf</tt> 
@@ -44,6 +44,70 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   AMPI_PairedWith* pairedWith,
 			   MPI_Comm* comm,
 			   void **idx);
+
+/**
+ * the implementation of pushing the required elements for gatherv/scatterv
+ * to the AD-tool-internal stack;
+ * the implementation rationale follows \ref  ADTOOL_AMPI_pushSRinfo
+ * NOTE: for non-root ranks the root specific parameters are ignored
+ * which implies in particular that the pointers passed may not be valid
+ * therefore we use commSizeForRootOrNull to discriminate
+ * \param commSizeForRootOrNull is the communicator size for rank root or 0
+ * \param rbuf the buffer on rank root
+ * \param rcnts the counters per rank on rank root
+ * \param displs the displacements for rbuf on rank root
+ * \param rtype the data type on rank root
+ * \param buf the buffer on non-root ranks
+ * \param count the counter for buf on non-root ranks
+ * \param type the data type on non-root ranks
+ * \param root the root rank
+ * \param comm the communicator
+ */
+void ADTOOL_AMPI_pushGSVinfo(int commSizeForRootOrNull,
+                             void *rbuf,
+                             int *rcnts,
+                             int *displs,
+                             MPI_Datatype rtype,
+                             void *buf,
+                             int  count,
+                             MPI_Datatype type,
+                             int  root,
+                             MPI_Comm comm);
+
+/**
+ * this must be called before \ref ADTOOL_AMPI_popGSVinfo
+ * \param commSizeForRootOrNull this is popped so that we may allocate buffers for
+ * rcnts and displs in the subsequent call to \ref ADTOOL_AMPI_popGSVinfo
+ */
+void ADTOOL_AMPI_popGSVcommSizeForRootOrNull(int *commSizeForRootOrNull);
+
+/**
+ * the implementation of popping the required elements for gatherv/scatterv
+ * from the AD-tool-internal stack;
+ * see comments of \ref ADTOOL_AMPI_pushGSVinfo;
+ * following the note there we will not be setting the values for root specific
+ * arguments on non-root ranks
+ * \param commSizeForRootOrNull retrieved via \ref ADTOOL_AMPI_popGSVcommSizeForRootOrNull
+ * \param rbuf the buffer on rank rook, set if commSizeForRootOrNull>0
+ * \param rcnts the array of size commSizeForRootOrNull for rank root, set if commSizeForRootOrNull>0
+ * \param displs the array of size commSizeForRootOrNull  for rank root, set if commSizeForRootOrNull>0
+ * \param rtype the data type for rank root, set if commSizeForRootOrNull>0
+ * \param buf the buffer for all ranks
+ * \param count the count for all ranks
+ * \param type the type for all ranks
+ * \param root the root rank
+ * \param comm the communicator for all ranks
+ */
+void ADTOOL_AMPI_popGSVinfo(int commSizeForRootOrNull,
+                            void **rbuf,
+                            int *rcnts,
+                            int *displs,
+                            MPI_Datatype *rtype,
+                            void **buf,
+                            int *count,
+                            MPI_Datatype *type,
+                            int *root,
+                            MPI_Comm *comm);
 
 /**
  * the implementation of pushing an operation code to the 
@@ -96,7 +160,23 @@ MPI_Request ADTOOL_AMPI_pop_request();
  * for tools using association-by-name the same address should be returned;   
  */
 void * ADTOOL_AMPI_rawData(void* activeData, int *size);
+
+/**
+ * map active data to raw data; functionality similar to \ref ADTOOL_AMPI_rawData
+ * except it is handling vector buffers with arrays of counts and displacements as
+ * used in \ref MPI_Gatherv or \ref MPI_Scatterv
+ */
+void * ADTOOL_AMPI_rawDataV(void* activeData, int *counts, int* displs);
+
+/** \todo add description
+ *
+ */
 void ADTOOL_AMPI_writeData(void* activeData, int *size);
+
+/** \todo add description
+ *
+ */
+void ADTOOL_AMPI_writeDataV(void* activeData, int *counts, int* displs);
 
 /**
  * map active data to adjoint data; this is to be implemented for the backward

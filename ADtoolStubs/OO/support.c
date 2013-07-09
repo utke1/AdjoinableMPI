@@ -22,6 +22,33 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   void **idx) { 
 }
 
+void ADTOOL_AMPI_pushGSVinfo(int commSizeForRootOrNull,
+                             void *rbuf,
+                             int *rcnts,
+                             int *displs,
+                             MPI_Datatype rtype,
+                             void *buf,
+                             int  count,
+                             MPI_Datatype type,
+                             int  root,
+                             MPI_Comm comm) {
+}
+
+void ADTOOL_AMPI_popGSVcommSizeForRootOrNull(int *commSizeForRootOrNull) {
+}
+
+void ADTOOL_AMPI_popGSVinfo(int commSizeForRootOrNull,
+                            void **rbuf,
+                            int *rcnts,
+                            int *displs,
+                            MPI_Datatype *rtype,
+                            void **buf,
+                            int *count,
+                            MPI_Datatype *type,
+                            int *root,
+                            MPI_Comm *comm) {
+}
+
 void ADTOOL_AMPI_push_CallCode(enum AMPI_PairedWith_E thisCall) { 
 }
 
@@ -42,6 +69,10 @@ MPI_Request ADTOOL_AMPI_pop_request() {
 }
 
 void* ADTOOL_AMPI_rawData(void* activeData, int *size) { 
+  return activeData;
+}
+
+void* ADTOOL_AMPI_rawDataV(void* activeData, int *counts, int* displs) {
   return activeData;
 }
 
@@ -95,10 +126,12 @@ void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_C
 void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget) { 
 }
 
-void ADTOOL_AMPI_writeData(void *buf,int *count) { };
+void ADTOOL_AMPI_writeData(void *buf,int *count) { }
+
+void ADTOOL_AMPI_writeDataV(void* activeData, int *counts, int* displs) {}
 
 AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype) {
   return AMPI_PASSIVE;
-};
+}
 
 void ADTOOL_AMPI_setupTypes() {};
