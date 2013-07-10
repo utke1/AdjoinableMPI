@@ -234,3 +234,42 @@ int AMPI_Reduce (void* sbuf,
 		    root,
 		    comm);
 }
+
+int AMPI_Gatherv(void *sendbuf,
+                 int sendcnt,
+                 MPI_Datatype sendtype,
+                 void *recvbuf,
+                 int *recvcnts,
+                 int *displs,
+                 MPI_Datatype recvtype,
+                 int root,
+                 MPI_Comm comm) {
+  return MPI_Gatherv(sendbuf,
+                     sendcnt,
+                     sendtype,
+                     recvbuf,
+                     recvcnts,
+                     displs,
+                     recvtype,
+                     root,
+                     comm);
+}
+
+int AMPI_Scatterv(void *sendbuf,
+                  int *sendcnts,
+                  int *displs,
+                  MPI_Datatype sendtype,
+                  void *recvbuf,
+                  int recvcnt,
+                  MPI_Datatype recvtype,
+                  int root, MPI_Comm comm) {
+  return MPI_Scatterv(sendbuf,
+                      sendcnts,
+                      displs,
+                      sendtype,
+                      recvbuf,
+                      recvcnt,
+                      recvtype,
+                      root,
+                      comm);
+}
