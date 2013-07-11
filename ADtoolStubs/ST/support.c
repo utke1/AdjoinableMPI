@@ -39,6 +39,33 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   void **idx) { 
 }
 
+void ADTOOL_AMPI_pushGSVinfo(int commSizeForRootOrNull,
+                             void *rbuf,
+                             int *rcnts,
+                             int *displs,
+                             MPI_Datatype rtype,
+                             void *buf,
+                             int  count,
+                             MPI_Datatype type,
+                             int  root,
+                             MPI_Comm comm) {
+}
+
+void ADTOOL_AMPI_popGSVcommSizeForRootOrNull(int *commSizeForRootOrNull) {
+}
+
+void ADTOOL_AMPI_popGSVinfo(int commSizeForRootOrNull,
+                            void **rbuf,
+                            int *rcnts,
+                            int *displs,
+                            MPI_Datatype *rtype,
+                            void **buf,
+                            int *count,
+                            MPI_Datatype *type,
+                            int *root,
+                            MPI_Comm *comm) {
+}
+
 void ADTOOL_AMPI_push_CallCode(enum AMPI_PairedWith_E thisCall) { 
 }
 
@@ -88,6 +115,13 @@ MPI_Request ADTOOL_AMPI_pop_request() {
  * the communication buffer itself (association by name) */
 void* ADTOOL_AMPI_rawData(void* activeData, int *size) { 
   return activeData ;
+}
+
+/**
+ * see \ref ADTOOL_AMPI_rawData
+ */
+void* ADTOOL_AMPI_rawDataV(void* activeData, int *counts, int* displs) {
+  return activeData;
 }
 
 /** Returns the diff part of the adjoint of a communication buffer
@@ -203,7 +237,9 @@ void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Com
     MPI_Abort(comm, MPI_ERR_TYPE);
 }
 
-void ADTOOL_AMPI_writeData(void *buf,int *count) { };
+void ADTOOL_AMPI_writeData(void *buf,int *count) {};
+
+void ADTOOL_AMPI_writeDataV(void* activeData, int *counts, int* displs) {}
 
 void ADTOOL_AMPI_setupTypes() {
 #ifdef AMPI_FORTRANCOMPATIBLE
