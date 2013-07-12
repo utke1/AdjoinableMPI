@@ -19,6 +19,51 @@ struct AMPI_Request_stack {
 } ;
 
 static struct AMPI_Request_stack* requestStackTop=0 ;
+void ADTOOL_AMPI_pushBcastInfo(void* buf,
+			       int count,
+			       MPI_Datatype datatype,
+			       int root,
+			       MPI_Comm comm) {
+}
+
+void ADTOOL_AMPI_popBcastInfo(void** buf,
+			      int* count,
+			      MPI_Datatype* datatype,
+			      int* root,
+			      MPI_Comm* comm,
+			      void **idx) {
+}
+
+void ADTOOL_AMPI_pushDoubleArray(void* buf,
+				 int count) {
+}
+
+void ADTOOL_AMPI_popDoubleArray(void** buf,
+				int* count) {
+}
+
+void ADTOOL_AMPI_pushReduceInfo(void* sbuf,
+				void* rbuf,
+				void* resultData,
+				int pushResultData, /* push resultData if true */
+				int count,
+				MPI_Datatype datatype,
+				MPI_Op op,
+				int root,
+				MPI_Comm comm) {
+}
+
+void ADTOOL_AMPI_popReduceInfo(void** sbuf,
+			       void** rbuf,
+			       void** prevData,
+			       void** resultData,
+			       int* count,
+			       MPI_Datatype* datatype,
+			       MPI_Op* op,
+			       int* root,
+			       MPI_Comm* comm,
+			       void **idx) {
+}
 
 void ADTOOL_AMPI_pushSRinfo(void* buf, 
 			    int count,
@@ -210,6 +255,54 @@ void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_C
     int i ;
     for (i=0 ; i<adjointCount ; ++i) {
       *vb = *vb + *nb ;
+      ++vb ;
+      ++nb ;
+    }
+  } else
+    MPI_Abort(comm, MPI_ERR_TYPE);
+}
+
+void ADTOOL_AMPI_adjointMultiply(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) { 
+  assert(adjointTarget==checkAdjointTarget) ;
+  if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
+    double *vb = (double *)adjointTarget ;
+    double *nb = (double *)source ;
+    int i ;
+    for (i=0 ; i<adjointCount ; ++i) {
+      *vb = *vb * (*nb) ;
+      ++vb ;
+      ++nb ;
+    }
+  } else if (datatype==MPI_FLOAT) {
+    float *vb = (float *)adjointTarget ;
+    float *nb = (float *)source ;
+    int i ;
+    for (i=0 ; i<adjointCount ; ++i) {
+      *vb = *vb * (*nb) ;
+      ++vb ;
+      ++nb ;
+    }
+  } else
+    MPI_Abort(comm, MPI_ERR_TYPE);
+}
+
+void ADTOOL_AMPI_adjointDivide(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) { 
+  assert(adjointTarget==checkAdjointTarget) ;
+  if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
+    double *vb = (double *)adjointTarget ;
+    double *nb = (double *)source ;
+    int i ;
+    for (i=0 ; i<adjointCount ; ++i) {
+      *vb = *vb / *nb ;
+      ++vb ;
+      ++nb ;
+    }
+  } else if (datatype==MPI_FLOAT) {
+    float *vb = (float *)adjointTarget ;
+    float *nb = (float *)source ;
+    int i ;
+    for (i=0 ; i<adjointCount ; ++i) {
+      *vb = *vb / *nb ;
       ++vb ;
       ++nb ;
     }
