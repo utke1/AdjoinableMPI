@@ -160,6 +160,9 @@ int FW_AMPI_Scatterv(void *sendbuf,
                      MPI_Datatype recvtype,
                      int root, MPI_Comm comm);
 
+/**
+ * forward sweep variant of \ref AMPI_Bcast
+ */
 int FW_AMPI_Bcast(void* buf,
 		  int count,
 		  MPI_Datatype datatype,
