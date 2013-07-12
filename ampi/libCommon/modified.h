@@ -121,6 +121,45 @@ int FW_AMPI_Wait(AMPI_Request *request,
 int BW_AMPI_Wait(AMPI_Request *request, 
 		 MPI_Status *status);
 
+/**
+ * forward sweep variant of \ref AMPI_Bcast
+ */
+int FW_AMPI_Bcast(void* buf,
+		  int count,
+		  MPI_Datatype datatype,
+		  int root,
+		  MPI_Comm comm);
+
+/**
+ * backward sweep variant of \ref AMPI_Bcast
+ */
+int BW_AMPI_Bcast(void* buf,
+		  int count,
+		  MPI_Datatype datatype,
+		  int root,
+		  MPI_Comm comm);
+
+/**
+ * forward sweep variant of \ref AMPI_Reduce
+ */
+int FW_AMPI_Reduce(void* sbuf,
+		   void* rbuf,
+		   int count,
+		   MPI_Datatype datatype,
+		   MPI_Op op,
+		   int root,
+		   MPI_Comm comm);
+
+/**
+ * backward sweep variant of \ref AMPI_Reduce
+ */
+int BW_AMPI_Reduce(void* sbuf,
+		   void* rbuf,
+		   int count,
+		   MPI_Datatype datatype,
+		   MPI_Op op,
+		   int root,
+		   MPI_Comm comm);
 
 
 #if defined(__cplusplus)

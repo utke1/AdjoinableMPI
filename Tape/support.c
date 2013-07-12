@@ -79,3 +79,11 @@ void TAPE_AMPI_read_MPI_Comm(MPI_Comm* an_MPI_Comm) { readBlob((void*)(an_MPI_Co
 void TAPE_AMPI_push_MPI_Request(MPI_Request an_MPI_Request)  { writeBlob((void*)(&an_MPI_Request),sizeof(MPI_Request)); }
 void TAPE_AMPI_pop_MPI_Request(MPI_Request *an_MPI_Request)  { popBlob((void*)(an_MPI_Request),sizeof(MPI_Request)); }
 void TAPE_AMPI_read_MPI_Request(MPI_Request* an_MPI_Request) { readBlob((void*)(an_MPI_Request),sizeof(MPI_Request)); }
+
+void TAPE_AMPI_push_MPI_Op(MPI_Op an_MPI_Op)  { writeBlob((void*)(&an_MPI_Op),sizeof(MPI_Op)); }
+void TAPE_AMPI_pop_MPI_Op(MPI_Op *an_MPI_Op)  { popBlob((void*)(an_MPI_Op),sizeof(MPI_Op)); }
+void TAPE_AMPI_read_MPI_Op(MPI_Op* an_MPI_Op) { readBlob((void*)(an_MPI_Op),sizeof(MPI_Op)); }
+
+void TAPE_AMPI_push_double(double a_double)  { writeBlob((void*)(&a_double),sizeof(double)); }
+void TAPE_AMPI_pop_double(double *a_double)  { popBlob((void*)(a_double),sizeof(double)); }
+void TAPE_AMPI_read_double(double* a_double) { readBlob((void*)(a_double),sizeof(double)); }
