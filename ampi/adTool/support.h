@@ -16,6 +16,64 @@ extern "C" {
  */ 
 
 /**
+ * The implementation of pushing the required elements for Bcast calls.
+ * Might rework for conciseness. Wrote this to avoid pushing too much stuff with _pushSRinfo.
+ */
+void ADTOOL_AMPI_pushBcastInfo(void* buf,
+			       int count,
+			       MPI_Datatype datatype,
+			       int root,
+			       MPI_Comm comm);
+
+/**
+ * Popping the required elements for Bcast calls.
+ */
+void ADTOOL_AMPI_popBcastInfo(void** buf,
+			      int* count,
+			      MPI_Datatype* datatype,
+			      int* root,
+			      MPI_Comm* comm,
+			      void **idx);
+
+/**
+ * Pushing and popping a block of double values, specifically for reduction results.
+ */
+void ADTOOL_AMPI_pushDoubleArray(void* buf,
+				 int count);
+
+void ADTOOL_AMPI_popDoubleArray(void** buf,
+				int* count);
+/**
+ * The implementation of pushing the required elements for Reduce calls.
+ * Might rework for conciseness. Note that we require a separate TAPE_AMPI_push_MPI_Op
+ * function to push the reduce operation. I defined _push_MPI_Op in
+ * AdjoinableMPI/Tape/support.c w/ header AdjoinableMPI/ampi/tape/support.h.
+ */
+void ADTOOL_AMPI_pushReduceInfo(void* sbuf,
+				void* rbuf,
+				void* resultData,
+				int pushResultData,
+				int count,
+				MPI_Datatype datatype,
+				MPI_Op op,
+				int root,
+				MPI_Comm comm);
+
+/**
+ * Popping the required elements for Reduce calls.
+ */
+void ADTOOL_AMPI_popReduceInfo(void** sbuf,
+			       void** rbuf,
+			       void** prevData,
+			       void** resultData,
+			       int* count,
+			       MPI_Datatype* datatype,
+			       MPI_Op* op,
+			       int* root,
+			       MPI_Comm* comm,
+			       void **idx);
+
+/**
  * the implementation of pushing the required elements for send/recv
  * to the AD-tool-internal stack;
  * For source transformation this may remain unimplemented provided all the parameters
@@ -256,6 +314,14 @@ void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf);
  * \param idx tape index for each element of the non contiguous buffer
  */
 void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
+/**
+ * Adjoint multiply the values in adjointTarget by source.
+ */
+void ADTOOL_AMPI_adjointMultiply(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
+/**
+ * Adjoint divide the values in adjointTarget by source.
+ */
+void ADTOOL_AMPI_adjointDivide(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
 
 /**
  * Adjoint nullify the values in adjointTarget.

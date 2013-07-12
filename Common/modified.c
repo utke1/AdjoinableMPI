@@ -710,6 +710,170 @@ int FW_AMPI_Scatterv(void *sendbuf,
                               root,
                               comm);
       ADTOOL_AMPI_push_CallCode(AMPI_SCATTERV);
+      
+int FW_AMPI_Bcast (void* buf,
+                   int count,
+                   MPI_Datatype datatype,
+                   int root,
+                   MPI_Comm comm) {
+  int rc;
+  double* mappedbuf=NULL;
+  if(ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+    mappedbuf=ADTOOL_AMPI_rawData(buf,&count);
+  }
+  else {
+    mappedbuf=buf;
+  }
+  rc=MPI_Bcast(mappedbuf,
+               count,
+               datatype,
+               root,
+               comm);
+  if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+    ADTOOL_AMPI_pushBcastInfo(buf,
+			      count,
+			      datatype,
+			      root,
+			      comm);
+    ADTOOL_AMPI_push_CallCode(AMPI_BCAST);
+  }
+  return rc;
+}
+
+int BW_AMPI_Bcast (void* buf,
+                   int count,
+                   MPI_Datatype datatype,
+                   int root,
+                   MPI_Comm comm) {
+  int rc,rank;
+  void *idx=NULL;
+  ADTOOL_AMPI_popBcastInfo(&buf,
+			   &count,
+			   &datatype,
+			   &root,
+			   &comm,
+			   &idx);
+  MPI_Comm_rank(comm,&rank);
+  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+  rc=MPI_Reduce(buf,
+                tempBuf,
+                count,
+                datatype,
+                MPI_SUM,
+                root,
+                comm);
+  ADTOOL_AMPI_adjointNullify(count, datatype, comm,
+                             buf, buf, buf);
+  if (rank==root) {
+    ADTOOL_AMPI_adjointIncrement(count, datatype, comm,
+                                 buf, buf, buf, tempBuf, idx);
+  }
+  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+  return rc;
+}
+
+int FW_AMPI_Reduce (void* sbuf,
+		    void* rbuf,
+		    int count,
+		    MPI_Datatype datatype,
+		    MPI_Op op,
+		    int root,
+		    MPI_Comm comm) {
+  int rc,rank;
+  MPI_Comm_rank(comm,&rank);
+  double* mappedsbuf=NULL;
+  double* mappedrbuf=NULL;
+  if(ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+    mappedsbuf=ADTOOL_AMPI_rawData(sbuf,&count);
+    mappedrbuf=ADTOOL_AMPI_rawData(rbuf,&count);
+  }
+  else {
+    mappedsbuf=sbuf;
+    mappedrbuf=rbuf;
+  }
+  rc=MPI_Reduce(mappedsbuf,
+		mappedrbuf,
+		count,
+		datatype,
+		op,
+		root,
+		comm);
+  if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+    ADTOOL_AMPI_pushReduceInfo(sbuf,
+			       rbuf,
+			       rbuf,
+			       rank==root, /* also push contents of rbuf for root */
+			       count,
+			       datatype,
+			       op,
+			       root,
+			       comm);
+    ADTOOL_AMPI_push_CallCode(AMPI_REDUCE);
+  }
+  return rc;
+}
+
+int BW_AMPI_Reduce (void* sbuf,
+		    void* rbuf,
+		    int count,
+		    MPI_Datatype datatype,
+		    MPI_Op op,
+		    int root,
+		    MPI_Comm comm) {
+  int rc,rank;
+  void *idx=NULL;
+  void *prevValBuf = ADTOOL_AMPI_allocateTempBuf(count,MPI_DOUBLE,comm);
+  void *reduceResultBuf = ADTOOL_AMPI_allocateTempBuf(count,MPI_DOUBLE,comm);
+  ADTOOL_AMPI_popReduceInfo(&sbuf,
+			    &rbuf,
+			    &prevValBuf,
+			    &reduceResultBuf,
+			    &count,
+			    &datatype,
+			    &op,
+			    &root,
+			    &comm,
+			    &idx);
+  MPI_Comm_rank(comm,&rank);
+  rc=MPI_Bcast(reduceResultBuf,
+	       count,
+	       MPI_DOUBLE,
+	       root,
+	       comm);
+  if (rc) MPI_Abort(comm, MPI_ERR_ARG);
+  /* ^ root pushed result of reduction, so pop it into reduceResultBuf and
+     broadcast; now everyone has a_i and op(a_i) */
+  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+  if (rank==root) {
+    ADTOOL_AMPI_adjointNullify(count, datatype, comm,
+			       tempBuf, tempBuf, tempBuf);
+    ADTOOL_AMPI_adjointIncrement(count, datatype, comm,
+				 tempBuf, tempBuf, tempBuf, rbuf, idx);
+    ADTOOL_AMPI_adjointNullify(count, datatype, comm,
+			       rbuf, rbuf, rbuf);
+  }
+  rc=MPI_Bcast(tempBuf,
+	       count,
+	       datatype,
+	       root,
+	       comm);
+  switch (op) {
+  case MPI_SUM:
+    break;
+  case MPI_PROD:
+    ADTOOL_AMPI_adjointMultiply(count, datatype, comm,
+				tempBuf, tempBuf, tempBuf, reduceResultBuf, idx);
+    ADTOOL_AMPI_adjointDivide(count, datatype, comm,
+			      tempBuf, tempBuf, tempBuf, prevValBuf, idx);
+    break;
+  default:
+    break;
+  }
+  ADTOOL_AMPI_adjointIncrement(count, datatype, comm,
+			       sbuf, sbuf, sbuf, tempBuf, idx);
+  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+  ADTOOL_AMPI_releaseAdjointTempBuf(reduceResultBuf);
+  ADTOOL_AMPI_releaseAdjointTempBuf(prevValBuf);
     }
   }
   return rc;

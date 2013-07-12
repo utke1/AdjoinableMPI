@@ -21,7 +21,9 @@ enum AMPI_PairedWith_E {
   AMPI_IRECV,
   AMPI_WAIT,
   AMPI_GATHERV,
-  AMPI_SCATTERV
+  AMPI_SCATTERV, 
+  AMPI_BCAST, /* should not be necessary, but currently */
+  AMPI_REDUCE /* used for pushing callcodes */
 };
 
 #ifdef AMPI_FORTRANCOMPATIBLE

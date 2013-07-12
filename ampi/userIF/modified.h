@@ -108,6 +108,20 @@ int AMPI_Rsend(void *buf,
 	       AMPI_PairedWith pairedWith,
 	       MPI_Comm comm);
 
+int AMPI_Bcast (void* buf,
+		int count,
+		MPI_Datatype datatype,
+		int root,
+		MPI_Comm comm);
+
+int AMPI_Reduce (void* sbuf, 
+		 void* rbuf, 
+		 int count, 
+		 MPI_Datatype datatype, 
+		 MPI_Op op, 
+		 int root, 
+		 MPI_Comm comm);
+
 /**
  * before we start reverse we need to make sure there are no pending requests in our userIF bookkeeping 
  */
@@ -122,13 +136,7 @@ int AMPI_Awaitall (int count,
 		   AMPI_Request requests[], 
 		   MPI_Status statuses[]);
 
-int AMPI_Reduce (void* sbuf, 
-		 void* rbuf, 
-		 int count, 
-		 MPI_Datatype datatype, 
-		 MPI_Op op, 
-		 int root, 
-		 MPI_Comm comm); 
+
 
 int AMPI_Gatherv(void *sendbuf,
                  int sendcnt,

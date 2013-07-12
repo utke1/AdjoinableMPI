@@ -36,6 +36,14 @@ void TAPE_AMPI_push_MPI_Request(MPI_Request an_MPI_Request);
 void TAPE_AMPI_pop_MPI_Request(MPI_Request *an_MPI_Request);
 void TAPE_AMPI_read_MPI_Request(MPI_Request* an_MPI_Request);
 
+void TAPE_AMPI_push_MPI_Op(MPI_Op an_MPI_Op);
+void TAPE_AMPI_pop_MPI_Op(MPI_Op *an_MPI_Op);
+void TAPE_AMPI_read_MPI_Op(MPI_Op* an_MPI_Op);
+
+void TAPE_AMPI_push_double(double a_double);
+void TAPE_AMPI_pop_double(double *a_double);
+void TAPE_AMPI_read_double(double* a_double);
+
 #if defined(__cplusplus)
 }
 #endif
