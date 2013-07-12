@@ -935,7 +935,7 @@ int BW_AMPI_Reduce (void* sbuf,
 	       datatype,
 	       root,
 	       comm);
-  if (OP==MPI_PROD) {
+  if (op==MPI_PROD) {
     ADTOOL_AMPI_adjointMultiply(count, datatype, comm,
 				tempBuf, tempBuf, tempBuf, reduceResultBuf, idx);
     ADTOOL_AMPI_adjointDivide(count, datatype, comm,
