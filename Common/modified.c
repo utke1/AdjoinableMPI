@@ -935,18 +935,13 @@ int BW_AMPI_Reduce (void* sbuf,
 	       datatype,
 	       root,
 	       comm);
-  switch (op) {
-  case MPI_SUM:
-    break;
-  case MPI_PROD:
+  if (OP==MPI_PROD) {
     ADTOOL_AMPI_adjointMultiply(count, datatype, comm,
 				tempBuf, tempBuf, tempBuf, reduceResultBuf, idx);
     ADTOOL_AMPI_adjointDivide(count, datatype, comm,
 			      tempBuf, tempBuf, tempBuf, prevValBuf, idx);
-    break;
-  default:
-    break;
   }
+  else {}
   ADTOOL_AMPI_adjointIncrement(count, datatype, comm,
 			       sbuf, sbuf, sbuf, tempBuf, idx);
   ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
