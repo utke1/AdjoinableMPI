@@ -19,6 +19,50 @@ extern MPI_Datatype AMPI_ADOUBLE;
  */
 extern MPI_Datatype AMPI_AFLOAT;
 
+/**
+ * user-defined type data
+ * only one instance of derivedTypeData exists at once
+ * get pointer from getDTypeData, add new stuff with addDTypeData
+ */
+typedef struct {
+  int size;
+  int pos;
+  int* num_actives;
+  int* first_active_indices;
+  int* last_active_indices;
+  MPI_Datatype* derived_types;
+  int* counts;
+  int** arrays_of_blocklengths;
+  MPI_Aint** arrays_of_displacements;
+  MPI_Datatype** arrays_of_types;
+  int* mapsizes;
+  /* corresponding typemaps packed for sending */
+  MPI_Datatype* packed_types;
+  int** arrays_of_p_blocklengths;
+  MPI_Aint** arrays_of_p_displacements;
+  MPI_Datatype** arrays_of_p_types;
+  int* p_mapsizes;
+} derivedTypeData;
+
+derivedTypeData* getDTypeData();
+  /* addDTypeData takes derived type data and adds a new entry; returns
+     position of new type in data struct; returns -1 if struct contains
+     no active types; doubles data struct size every time there's overflow */
+int addDTypeData(derivedTypeData* dat,
+		 int count,
+		 int array_of_blocklengths[],
+		 MPI_Aint array_of_displacements[],
+		 MPI_Datatype array_of_types[],
+		 int mapsize,
+		 int array_of_p_blocklengths[],
+		 MPI_Aint array_of_p_displacements[],
+		 MPI_Datatype array_of_p_types[],
+		 int p_mapsize,
+		 MPI_Datatype* newtype,
+		 MPI_Datatype* packed_type);
+int derivedTypeIdx(MPI_Datatype datatype);
+int isDerivedType(int dt_idx);
+
 #ifdef AMPI_FORTRANCOMPATIBLE
 
 /**
@@ -121,6 +165,14 @@ int AMPI_Reduce (void* sbuf,
 		 MPI_Op op, 
 		 int root, 
 		 MPI_Comm comm);
+
+int AMPI_Type_create_struct (int count,
+			     int array_of_blocklengths[],
+			     MPI_Aint array_of_displacements[],
+			     MPI_Datatype array_of_types[],
+			     MPI_Datatype *newtype);
+
+int AMPI_Type_commit (MPI_Datatype *datatype);
 
 /**
  * before we start reverse we need to make sure there are no pending requests in our userIF bookkeeping 

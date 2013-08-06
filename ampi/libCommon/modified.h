@@ -200,6 +200,12 @@ int BW_AMPI_Reduce(void* sbuf,
 		   int root,
 		   MPI_Comm comm);
 
+int AMPI_Type_create_struct (int count,
+			     int array_of_blocklengths[],
+			     MPI_Aint array_of_displacements[],
+			     MPI_Datatype array_of_types[],
+			     MPI_Datatype *newtype);
+
 /**
  * backward sweep variant of \ref AMPI_Scatterv
  * NOTE: sendcnts and displs are passed with a non-NULL pointer then they must be allocated to the correct size

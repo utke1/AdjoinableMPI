@@ -58,7 +58,7 @@ void ADTOOL_AMPI_pushSRinfo(void* buf,
 			    MPI_Comm comm) { 
 }
 
-void ADTOOL_AMPI_popSRinfo(void** buf, 
+void ADTOOL_AMPI_popSRinfo(void** buf,
 			   int* count,
 			   MPI_Datatype* datatype, 
 			   int* src, 
@@ -67,7 +67,6 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   MPI_Comm* comm,
 			   void **idx) { 
 }
-
 void ADTOOL_AMPI_pushGSVinfo(int commSizeForRootOrNull,
                              void *rbuf,
                              int *rcnts,

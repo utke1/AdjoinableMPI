@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
+#include <stdio.h>
 #include <mpi.h>
 #include "ampi/libCommon/modified.h"
 #include "ampi/bookkeeping/support.h"
@@ -36,20 +38,31 @@ int FW_AMPI_Recv(void* buf,
   else { 
     MPI_Status myStatus;
     double* mappedbuf=NULL;
+    int dt_idx = derivedTypeIdx(datatype);
+    int is_derived = isDerivedType(dt_idx);
+    derivedTypeData* dtd = getDTypeData();
     if(ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
       mappedbuf=ADTOOL_AMPI_rawData(buf,&count);
+    }
+    else if(is_derived) {
+      mappedbuf=ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
     }
     else {
       mappedbuf=buf;
     }
     rc=MPI_Recv(mappedbuf,
 		count,
-		datatype,
+		is_derived ? dtd->packed_types[dt_idx] : datatype,
+		/* if derived then need to replace typemap */
 		src,
 		tag,
 		comm,
 		&myStatus); /* because status as passed in may be MPI_STATUS_IGNORE */
-    if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+    if (rc==MPI_SUCCESS && (ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE || is_derived)) {
+      if (is_derived) {
+	ADTOOL_AMPI_unpackDType(mappedbuf,buf,&count,dt_idx);
+	ADTOOL_AMPI_releaseAdjointTempBuf(mappedbuf);
+      }
       ADTOOL_AMPI_writeData(buf,&count);
       if(tag==MPI_ANY_TAG) tag=myStatus.MPI_TAG;
       if(src==MPI_ANY_SOURCE) src=myStatus.MPI_SOURCE;
@@ -74,10 +87,10 @@ int BW_AMPI_Recv(void* buf,
 		 int tag,
 		 AMPI_PairedWith pairedWith,
 		 MPI_Comm comm,
-		 MPI_Status* status) { 
+		 MPI_Status* status) {
   int rc;
   void *idx=NULL;
-  ADTOOL_AMPI_popSRinfo(&buf, 
+  ADTOOL_AMPI_popSRinfo(&buf,
 			&count,
 			&datatype,
 			&src,
@@ -100,14 +113,24 @@ int BW_AMPI_Recv(void* buf,
     switch(pairedWith) { 
     case AMPI_ISEND_WAIT:
     case AMPI_SEND: { 
+      int propercount, propertype, dt_idx = derivedTypeIdx(datatype);
+      if (isDerivedType(dt_idx)) {
+	derivedTypeData* dtd = getDTypeData();
+	propercount = dtd->num_actives[dt_idx]*count;
+	propertype = MPI_DOUBLE;
+      }
+      else {
+	propercount = count;
+	propertype = datatype;
+      }
       ADTOOL_AMPI_getAdjointCount(&count,datatype);   
       rc=MPI_Send(buf,
-		  count,
-		  datatype,
+		  propercount,
+		  propertype,
 		  src,
 		  tag,
 		  comm);
-      ADTOOL_AMPI_adjointNullify(count,datatype,comm,
+      ADTOOL_AMPI_adjointNullify(propercount,propertype,comm,
 				 buf, buf, buf);
       break;
     }
@@ -261,21 +284,29 @@ int FW_AMPI_Send (void* buf,
 	||
 	pairedWith==AMPI_IRECV_WAITALL
 	)) rc=MPI_Abort(comm, MPI_ERR_ARG);
-  else { 
+  else {
     double* mappedbuf=NULL;
+    int dt_idx = derivedTypeIdx(datatype);
+    int is_derived = isDerivedType(dt_idx);
+    derivedTypeData* dtd = getDTypeData();
     if(ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
       mappedbuf=ADTOOL_AMPI_rawData(buf,&count);
+    }
+    else if(is_derived) {
+      mappedbuf=ADTOOL_AMPI_rawData_DType(buf,&count,dt_idx);
     }
     else {
       mappedbuf=buf;
     }
     rc=MPI_Send(mappedbuf,
 		count,
-		datatype,
+		is_derived ? dtd->packed_types[dt_idx] : datatype,
+		/* if derived then need to replace typemap */
 		dest,
 		tag,
 		comm);
-    if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+    if (is_derived) ADTOOL_AMPI_releaseAdjointTempBuf(mappedbuf);
+    if (rc==MPI_SUCCESS && (ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE || is_derived)) {
       ADTOOL_AMPI_pushSRinfo(buf,
 			     count,
 			     datatype,
@@ -298,7 +329,7 @@ int BW_AMPI_Send (void* buf,
                   MPI_Comm comm) {
   int rc;
   void *idx=NULL;
-  ADTOOL_AMPI_popSRinfo(&buf, 
+  ADTOOL_AMPI_popSRinfo(&buf,
 			&count,
 			&datatype,
 			&dest,
@@ -316,17 +347,27 @@ int BW_AMPI_Send (void* buf,
   else {
     switch(pairedWith) {
     case AMPI_IRECV_WAIT:
-    case AMPI_RECV: {
-      void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm) ;
+    case AMPI_RECV: { 
+      int propercount, propertype, dt_idx = derivedTypeIdx(datatype);
+      if (isDerivedType(dt_idx)) {
+	derivedTypeData* dtd = getDTypeData();
+	propercount = dtd->num_actives[dt_idx]*count;
+	propertype = MPI_DOUBLE;
+      }
+      else {
+	propercount = count;
+	propertype = datatype;
+      }
+      void *tempBuf = ADTOOL_AMPI_allocateTempBuf(propercount,propertype,comm) ;
       rc=MPI_Recv(tempBuf,
-                  count,
-                  datatype,
+                  propercount,
+                  propertype,
                   dest,
                   tag,
                   comm,
                   MPI_STATUS_IGNORE) ;
-      ADTOOL_AMPI_adjointIncrement(count,
-                                   datatype,
+      ADTOOL_AMPI_adjointIncrement(propercount,
+                                   propertype,
                                    comm,
 				   buf,
 				   buf,
@@ -802,9 +843,11 @@ int FW_AMPI_Bcast (void* buf,
   else {
     mappedbuf=buf;
   }
+  MPI_Datatype newtype = AMPI_ADOUBLE==MPI_DOUBLE ? datatype : MPI_DOUBLE;
+  /* ^ very makeshift */
   rc=MPI_Bcast(mappedbuf,
                count,
-               datatype,
+               newtype,
                root,
                comm);
   if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
@@ -833,10 +876,11 @@ int BW_AMPI_Bcast (void* buf,
 			   &idx);
   MPI_Comm_rank(comm,&rank);
   void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+  MPI_Datatype newtype = AMPI_ADOUBLE==MPI_DOUBLE ? datatype : MPI_DOUBLE;
   rc=MPI_Reduce(buf,
                 tempBuf,
                 count,
-                datatype,
+                newtype,
                 MPI_SUM,
                 root,
                 comm);
@@ -869,10 +913,11 @@ int FW_AMPI_Reduce (void* sbuf,
     mappedsbuf=sbuf;
     mappedrbuf=rbuf;
   }
+  MPI_Datatype newtype = AMPI_ADOUBLE==MPI_DOUBLE ? datatype : MPI_DOUBLE;
   rc=MPI_Reduce(mappedsbuf,
 		mappedrbuf,
 		count,
-		datatype,
+		newtype,
 		op,
 		root,
 		comm);
@@ -948,4 +993,211 @@ int BW_AMPI_Reduce (void* sbuf,
   ADTOOL_AMPI_releaseAdjointTempBuf(reduceResultBuf);
   ADTOOL_AMPI_releaseAdjointTempBuf(prevValBuf);
   return rc;
+}
+
+derivedTypeData* getDTypeData() {
+  static derivedTypeData* dat = NULL;
+  if (dat==NULL) {
+    derivedTypeData* newdat = malloc(sizeof(derivedTypeData));
+    newdat->size = 4;
+    newdat->pos = 0;
+    newdat->num_actives = (int*)malloc((newdat->size)*sizeof(int));
+    newdat->first_active_indices = (int*)malloc((newdat->size)*sizeof(int));
+    newdat->last_active_indices = (int*)malloc((newdat->size)*sizeof(int));
+    newdat->derived_types = (MPI_Datatype*)malloc((newdat->size)*sizeof(MPI_Datatype));
+    newdat->counts = (int*)malloc((newdat->size)*sizeof(int));
+    newdat->arrays_of_blocklengths = (int**)malloc((newdat->size)*sizeof(int*));
+    newdat->arrays_of_displacements = (MPI_Aint**)malloc((newdat->size)*sizeof(MPI_Aint*));
+    newdat->arrays_of_types = (MPI_Datatype**)malloc((newdat->size)*sizeof(MPI_Datatype*));
+    newdat->mapsizes = (int*)malloc((newdat->size)*sizeof(int));
+    newdat->packed_types = (MPI_Datatype*)malloc((newdat->size)*sizeof(MPI_Datatype));
+    newdat->arrays_of_p_blocklengths = (int**)malloc((newdat->size)*sizeof(int*));
+    newdat->arrays_of_p_displacements = (MPI_Aint**)malloc((newdat->size)*sizeof(MPI_Aint*));
+    newdat->arrays_of_p_types = (MPI_Datatype**)malloc((newdat->size)*sizeof(MPI_Datatype*));
+    newdat->p_mapsizes = (int*)malloc((newdat->size)*sizeof(int));
+    dat = newdat;
+  }
+  return dat;
+}
+
+int addDTypeData(derivedTypeData* dat,
+		 int count,
+		 int array_of_blocklengths[],
+		 MPI_Aint array_of_displacements[],
+		 MPI_Datatype array_of_types[],
+		 int mapsize,
+		 int array_of_p_blocklengths[],
+		 MPI_Aint array_of_p_displacements[],
+		 MPI_Datatype array_of_p_types[],
+		 int p_mapsize,
+		 MPI_Datatype* newtype,
+		 MPI_Datatype* packed_type) {
+  if (dat==NULL) assert(0);
+  int i;
+  int num_actives=0;
+  int fst_active_idx, fst_aidx_set=0, lst_active_idx;
+  for (i=0;i<count;i++) {
+    if (ADTOOL_AMPI_isActiveType(array_of_types[i])==AMPI_ACTIVE) {
+      num_actives += array_of_blocklengths[i];
+      if (!fst_aidx_set) {
+	fst_active_idx = i;
+	fst_aidx_set = 1;
+      }
+      lst_active_idx = i;
+    }
+  }
+  if (!num_actives) return -1;
+  int pos = dat->pos;
+  if (pos >= dat->size) {
+    dat->size *= 2;
+    dat->num_actives = (int*)realloc((void*)dat->num_actives, (dat->size)*sizeof(int));
+    dat->first_active_indices = (int*)realloc((void*)dat->first_active_indices, (dat->size)*sizeof(int));
+    dat->last_active_indices = (int*)realloc((void*)dat->last_active_indices, (dat->size)*sizeof(int));
+    dat->derived_types = (MPI_Datatype*)realloc((void*)dat->derived_types,
+						(dat->size)*sizeof(MPI_Datatype));
+    dat->counts = (int*)realloc((void*)dat->counts, (dat->size)*sizeof(int));
+    dat->arrays_of_blocklengths = (int**)realloc((void*)dat->arrays_of_blocklengths,
+						 (dat->size)*sizeof(int*));
+    dat->arrays_of_displacements = (MPI_Aint**)realloc((void*)dat->arrays_of_displacements,
+						       (dat->size)*sizeof(MPI_Aint*));
+    dat->arrays_of_types = (MPI_Datatype**)realloc((void*)dat->arrays_of_types,
+						   (dat->size)*sizeof(MPI_Datatype*));
+    dat->mapsizes = (int*)realloc((void*)dat->mapsizes, (dat->size)*sizeof(int));
+    dat->packed_types = (MPI_Datatype*)realloc((void*)dat->packed_types,
+						(dat->size)*sizeof(MPI_Datatype));
+    dat->arrays_of_p_blocklengths = (int**)realloc((void*)dat->arrays_of_p_blocklengths,
+						 (dat->size)*sizeof(int*));
+    dat->arrays_of_p_displacements = (MPI_Aint**)realloc((void*)dat->arrays_of_p_displacements,
+						       (dat->size)*sizeof(MPI_Aint*));
+    dat->arrays_of_p_types = (MPI_Datatype**)realloc((void*)dat->arrays_of_p_types,
+						   (dat->size)*sizeof(MPI_Datatype*));
+    dat->p_mapsizes = (int*)realloc((void*)dat->p_mapsizes, (dat->size)*sizeof(int));
+  }
+  dat->num_actives[pos] = num_actives;
+  dat->first_active_indices[pos] = fst_active_idx;
+  dat->last_active_indices[pos] = lst_active_idx;
+  dat->derived_types[pos] = *newtype;
+  dat->counts[pos] = count;
+  dat->arrays_of_blocklengths[pos] = (int*)malloc(count*sizeof(int));
+  memcpy((void*)dat->arrays_of_blocklengths[pos],(void*)array_of_blocklengths,count*sizeof(int));
+  dat->arrays_of_displacements[pos] = (MPI_Aint*)malloc(count*sizeof(MPI_Aint));
+  memcpy((void*)dat->arrays_of_displacements[pos],(void*)array_of_displacements,count*sizeof(MPI_Aint));
+  dat->arrays_of_types[pos] = (MPI_Datatype*)malloc(count*sizeof(MPI_Datatype));
+  memcpy((void*)dat->arrays_of_types[pos],(void*)array_of_types,count*sizeof(MPI_Datatype));
+  dat->mapsizes[pos] = mapsize;
+  dat->packed_types[pos] = *packed_type;
+  dat->arrays_of_p_blocklengths[pos] = (int*)malloc(count*sizeof(int));
+  memcpy((void*)dat->arrays_of_p_blocklengths[pos],(void*)array_of_p_blocklengths,count*sizeof(int));
+  dat->arrays_of_p_displacements[pos] = (MPI_Aint*)malloc(count*sizeof(MPI_Aint));
+  memcpy((void*)dat->arrays_of_p_displacements[pos],(void*)array_of_p_displacements,count*sizeof(MPI_Aint));
+  dat->arrays_of_p_types[pos] = (MPI_Datatype*)malloc(count*sizeof(MPI_Datatype));
+  memcpy((void*)dat->arrays_of_p_types[pos],(void*)array_of_p_types,count*sizeof(MPI_Datatype));
+  dat->p_mapsizes[pos] = p_mapsize;
+  dat->pos += 1;
+  return pos;
+}
+
+int derivedTypeIdx(MPI_Datatype datatype) {
+  int i;
+  derivedTypeData* dtdata = getDTypeData();
+  for (i=0;i<dtdata->size;i++) {
+    if (dtdata->derived_types[i]==datatype) return i;
+  }
+  return -1;
+}
+
+int isDerivedType(int dt_idx) { return dt_idx!=-1; }
+
+int AMPI_Type_create_struct (int count,
+			     int array_of_blocklengths[],
+			     MPI_Aint array_of_displacements[],
+			     MPI_Datatype array_of_types[],
+			     MPI_Datatype *newtype) {
+  int i, rc;
+  rc = MPI_Type_create_struct (count,
+			       array_of_blocklengths,
+			       array_of_displacements,
+			       array_of_types,
+			       newtype);
+  if (!(rc==MPI_SUCCESS)) assert(0);
+  MPI_Datatype packed_type;
+  int array_of_p_blocklengths[count];
+  MPI_Aint array_of_p_displacements[count];
+  MPI_Datatype array_of_p_types[count];
+  int s, is_active, mapsize=0, p_mapsize=0;
+  for (i=0;i<count;i++) {
+    is_active = ADTOOL_AMPI_isActiveType(array_of_types[i])==AMPI_ACTIVE;
+    array_of_p_blocklengths[i] = array_of_blocklengths[i];
+    array_of_p_displacements[i] = p_mapsize;
+    array_of_p_types[i] = is_active ? MPI_DOUBLE : array_of_types[i];
+    if (is_active) s = sizeof(double);
+    else if (array_of_types[i]==MPI_DOUBLE) s = sizeof(double);
+    else if (array_of_types[i]==MPI_INT) s = sizeof(int);
+    else if (array_of_types[i]==MPI_FLOAT) s = sizeof(float);
+    else if (array_of_types[i]==MPI_CHAR) s = sizeof(char);
+    else if (array_of_types[i]==MPI_UB) {
+      mapsize = (int)array_of_displacements[i];
+      break;
+    }
+    else assert(0);
+    p_mapsize += array_of_blocklengths[i]*s;
+  }
+  if (mapsize==0) {
+    MPI_Aint lb,extent;
+    MPI_Type_get_extent(*newtype,&lb,&extent);
+    mapsize = (int)extent;
+  }
+  rc = MPI_Type_create_struct (count,
+			       array_of_p_blocklengths,
+			       array_of_p_displacements,
+			       array_of_p_types,
+			       &packed_type);
+  if (!(rc==MPI_SUCCESS)) assert(0);
+  derivedTypeData* dat = getDTypeData();  
+  int pos = addDTypeData(dat,
+			 count,
+			 array_of_blocklengths,
+			 array_of_displacements,
+			 array_of_types,
+			 mapsize,
+			 array_of_p_blocklengths,
+			 array_of_p_displacements,
+			 array_of_p_types,
+			 p_mapsize,
+			 newtype,
+			 &packed_type);
+  /* DEBUGGING STUFF, REMOVE LATER*/
+  if (0) {
+    int i,j;
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+    if (rank==0) {
+      printf("So far (pos %d):\n",pos);
+      printf("Size: %d\n",dat->size);
+      for (i=0;i<=pos;i++) {
+	printf("-------\nPos: %d\n",i);
+	printf("Count: %d\n",dat->counts[i]);
+	printf("Blocklengths: ");
+	for (j=0;j<dat->counts[i];j++) printf("%d%c",(int)dat->arrays_of_blocklengths[i][j],j==dat->counts[i]-1?'\n':' ');
+	printf("Displacements: ");
+	for (j=0;j<dat->counts[i];j++) printf("%d%c",(int)dat->arrays_of_displacements[i][j],j==dat->counts[i]-1?'\n':' ');
+	printf("Types: ");
+	for (j=0;j<dat->counts[i];j++) printf("%d%c",(int)dat->arrays_of_types[i][j],j==dat->counts[i]-1?'\n':' ');
+	printf("p_Blocklengths: ");
+	for (j=0;j<dat->counts[i];j++) printf("%d%c",(int)dat->arrays_of_p_blocklengths[i][j],j==dat->counts[i]-1?'\n':' ');
+	printf("p_Displacements: ");
+	for (j=0;j<dat->counts[i];j++) printf("%d%c",(int)dat->arrays_of_p_displacements[i][j],j==dat->counts[i]-1?'\n':' ');
+	printf("p_Types: ");
+	for (j=0;j<dat->counts[i];j++) printf("%d%c",(int)dat->arrays_of_p_types[i][j],j==dat->counts[i]-1?'\n':' ');
+      }
+      printf("\n");
+    }
+  }
+  return rc;
+}
+
+int AMPI_Type_commit (MPI_Datatype *datatype) {
+  int dt_idx = derivedTypeIdx(*datatype);
+  if (isDerivedType(dt_idx)) MPI_Type_commit(&(getDTypeData()->packed_types[dt_idx]));
+  return MPI_Type_commit (datatype);
 }

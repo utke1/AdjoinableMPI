@@ -94,7 +94,7 @@ void ADTOOL_AMPI_pushSRinfo(void* buf,
  * from the AD-tool-internal stack;
  * See comments of \ref ADTOOL_AMPI_pushSRinfo.
  */
-void ADTOOL_AMPI_popSRinfo(void** buf, 
+void ADTOOL_AMPI_popSRinfo(void** buf,
 			   int* count,
 			   MPI_Datatype* datatype, 
 			   int* src, 
@@ -226,6 +226,17 @@ void * ADTOOL_AMPI_rawData(void* activeData, int *size);
  */
 void * ADTOOL_AMPI_rawDataV(void* activeData, int *counts, int* displs);
 
+/**
+ * serialize user-defined struct for sending in forward execution in
+ * association-by-address tools
+ */
+void * ADTOOL_AMPI_rawData_DType(void* indata, int* count, int idx);
+
+/**
+ * unpack serialized user-defined struct data into its original form
+ */
+void * ADTOOL_AMPI_unpackDType(void* indata, void* outdata, int* count, int idx);
+
 /** \todo add description
  *
  */
@@ -314,6 +325,14 @@ void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf);
  * \param idx tape index for each element of the non contiguous buffer
  */
 void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
+void ADTOOL_AMPI_adjointIncrement_DType(int adjointCount,
+					MPI_Datatype datatype,
+					MPI_Comm comm,
+					void* target,
+					void* adjointTarget,
+					void* checkAdjointTarget,
+					void *source,
+					void *idx);
 /**
  * Adjoint multiply the values in adjointTarget by source.
  */
@@ -333,6 +352,12 @@ void ADTOOL_AMPI_adjointDivide(int adjointCount, MPI_Datatype datatype, MPI_Comm
  * \param checkAdjointTarget the adjoint buffer that comes from the bwd sweep. For runtime checking only.
  */ 
 void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget);
+void ADTOOL_AMPI_adjointNullify_DType(int adjointCount,
+				      MPI_Datatype datatype,
+				      MPI_Comm comm,
+				      void* target,
+				      void* adjointTarget,
+				      void* checkAdjointTarget);
 
 /**
  * initialize predefined active types
