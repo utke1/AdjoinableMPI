@@ -120,6 +120,12 @@ void* ADTOOL_AMPI_rawData(void* activeData, int *size) {
 void* ADTOOL_AMPI_rawDataV(void* activeData, int *counts, int* displs) {
   return activeData;
 }
+void * ADTOOL_AMPI_rawData_DType(void* indata, int* count, int idx) {
+  return indata;
+}
+void * ADTOOL_AMPI_unpackDType(void* indata, void* outdata, int* count, int idx) {
+  return indata;
+}
 
 void * ADTOOL_AMPI_rawAdjointData(void* activeData) { 
   return activeData;

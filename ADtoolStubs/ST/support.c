@@ -169,6 +169,20 @@ void* ADTOOL_AMPI_rawDataV(void* activeData, int *counts, int* displs) {
   return activeData;
 }
 
+/**
+ * returns contiguous data from indata
+ */
+void * ADTOOL_AMPI_rawData_DType(void* indata, int* count, int idx) {
+  return indata;
+}
+
+/**
+ * unpacks contiguous data back into structure
+ */
+void * ADTOOL_AMPI_unpackDType(void* indata, void* outdata, int* count, int idx) {
+  return indata;
+}
+
 /** Returns the diff part of the adjoint of a communication buffer
  * passed to AMPI send or recv. For Tapenade, this is
  * the adjoint communication buffer itself (association by name) */
