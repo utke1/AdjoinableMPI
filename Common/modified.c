@@ -1035,7 +1035,7 @@ int addDTypeData(derivedTypeData* dat,
   if (dat==NULL) assert(0);
   int i;
   int num_actives=0;
-  int fst_active_idx, fst_aidx_set=0, lst_active_idx;
+  int fst_active_idx=0, fst_aidx_set=0, lst_active_idx=0;
   for (i=0;i<count;i++) {
     if (ADTOOL_AMPI_isActiveType(array_of_types[i])==AMPI_ACTIVE) {
       num_actives += array_of_blocklengths[i];

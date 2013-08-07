@@ -278,6 +278,23 @@
  * 4.3 op isa PUT/accum=; then acc(0.0,'=') to adjoint target
  * 4.4 op isa accum*: then accumulate( r*t23/t,'=', to the target) AND do z_bar+=r*t23/z  (this is the old local z ); 
  * 
+ * \subsubsection derived Handling of Derived Types
+ * (Written mostly in the context of ADOL-C.) MPI allows the user to create typemaps for arbitrary structures in terms of a block
+ * count and arrays of block lengths, block types, and displacements. For sending an array of active variables, we could get by with
+ * a pointer to their value array; in the case of a struct, we may want to send an arbitrary collection of data as well as some active
+ * variables which we'll need to "dereference". If a struct contains active data, we must manually pack it into a new array because
+ * -# the original datamap alignment is destroyed when we convert active data to real values
+ * -# we would like to send completely contiguous messages
+ * 
+ * When received, the struct is unpacked again.
+ * 
+ * When the user calls the \ref AMPI_Type_create_struct wrapper with a datamap, the map is stored in a structure of type
+ * \ref derivedTypeData; the wrapper also generates an internal typemap that describes the packed data. The packed typemap is used
+ * whenver a derived type is sent and received; it's also used in conjunction with the user-provided map to pack and unpack data.
+ * This typemap is invisible to the user, so the creation of derived datatypes is accomplished entirely with calls to the
+ * \ref AMPI_Type_create_struct and \ref AMPI_Type_commit wrappers. NB: for sending multiple counts of struct s, it is good practice
+ * to include MPI_UB at displacement sizeof(s) as the last element of the typemap.
+ * 
  * 
  */
 

@@ -7,11 +7,7 @@ int AMPI_Init_NT(int* argc,
   int rc;
   rc=MPI_Init(argc,
               argv);
-  /*ADTOOL_AMPI_setupTypes();*/
-  MPI_Type_contiguous(1,MPI_DOUBLE,&AMPI_ADOUBLE);
-  MPI_Type_commit(&AMPI_ADOUBLE);
-  MPI_Type_contiguous(1,MPI_FLOAT,&AMPI_AFLOAT);
-  MPI_Type_commit(&AMPI_AFLOAT);
+  ADTOOL_AMPI_setupTypes();
   return rc;
 }
 

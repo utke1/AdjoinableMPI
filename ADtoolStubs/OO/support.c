@@ -158,10 +158,13 @@ void ADTOOL_AMPI_setAdjointCountAndTempBuf(struct AMPI_Request_S *ampiRequest) {
 
 void* ADTOOL_AMPI_allocateTempBuf(int adjointCount, MPI_Datatype datatype, MPI_Comm comm) {
   size_t s=0;
+  int dt_idx = derivedTypeIdx(datatype);
   if (datatype==MPI_DOUBLE)
     s=sizeof(double);
   else if (datatype==MPI_FLOAT)
     s=sizeof(float);
+  else if (isDerivedType(dt_idx))
+    s = getDTypeData()->p_mapsizes[dt_idx];
   else
     MPI_Abort(comm, MPI_ERR_TYPE);
   return (void*)malloc(adjointCount*s);
