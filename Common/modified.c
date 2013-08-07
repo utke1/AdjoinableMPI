@@ -113,7 +113,8 @@ int BW_AMPI_Recv(void* buf,
     switch(pairedWith) { 
     case AMPI_ISEND_WAIT:
     case AMPI_SEND: { 
-      int propercount, propertype, dt_idx = derivedTypeIdx(datatype);
+      MPI_Datatype propertype;
+      int propercount, dt_idx = derivedTypeIdx(datatype);
       if (isDerivedType(dt_idx)) {
 	derivedTypeData* dtd = getDTypeData();
 	propercount = dtd->num_actives[dt_idx]*count;
@@ -348,7 +349,8 @@ int BW_AMPI_Send (void* buf,
     switch(pairedWith) {
     case AMPI_IRECV_WAIT:
     case AMPI_RECV: { 
-      int propercount, propertype, dt_idx = derivedTypeIdx(datatype);
+      MPI_Datatype propertype;
+      int propercount, dt_idx = derivedTypeIdx(datatype);
       if (isDerivedType(dt_idx)) {
 	derivedTypeData* dtd = getDTypeData();
 	propercount = dtd->num_actives[dt_idx]*count;
@@ -1154,45 +1156,18 @@ int AMPI_Type_create_struct (int count,
 			       &packed_type);
   if (!(rc==MPI_SUCCESS)) assert(0);
   derivedTypeData* dat = getDTypeData();  
-  int pos = addDTypeData(dat,
-			 count,
-			 array_of_blocklengths,
-			 array_of_displacements,
-			 array_of_types,
-			 mapsize,
-			 array_of_p_blocklengths,
-			 array_of_p_displacements,
-			 array_of_p_types,
-			 p_mapsize,
-			 newtype,
-			 &packed_type);
-  /* DEBUGGING STUFF, REMOVE LATER*/
-  if (0) {
-    int i,j;
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-    if (rank==0) {
-      printf("So far (pos %d):\n",pos);
-      printf("Size: %d\n",dat->size);
-      for (i=0;i<=pos;i++) {
-	printf("-------\nPos: %d\n",i);
-	printf("Count: %d\n",dat->counts[i]);
-	printf("Blocklengths: ");
-	for (j=0;j<dat->counts[i];j++) printf("%d%c",(int)dat->arrays_of_blocklengths[i][j],j==dat->counts[i]-1?'\n':' ');
-	printf("Displacements: ");
-	for (j=0;j<dat->counts[i];j++) printf("%d%c",(int)dat->arrays_of_displacements[i][j],j==dat->counts[i]-1?'\n':' ');
-	printf("Types: ");
-	for (j=0;j<dat->counts[i];j++) printf("%d%c",(int)dat->arrays_of_types[i][j],j==dat->counts[i]-1?'\n':' ');
-	printf("p_Blocklengths: ");
-	for (j=0;j<dat->counts[i];j++) printf("%d%c",(int)dat->arrays_of_p_blocklengths[i][j],j==dat->counts[i]-1?'\n':' ');
-	printf("p_Displacements: ");
-	for (j=0;j<dat->counts[i];j++) printf("%d%c",(int)dat->arrays_of_p_displacements[i][j],j==dat->counts[i]-1?'\n':' ');
-	printf("p_Types: ");
-	for (j=0;j<dat->counts[i];j++) printf("%d%c",(int)dat->arrays_of_p_types[i][j],j==dat->counts[i]-1?'\n':' ');
-      }
-      printf("\n");
-    }
-  }
+  addDTypeData(dat,
+	       count,
+	       array_of_blocklengths,
+	       array_of_displacements,
+	       array_of_types,
+	       mapsize,
+	       array_of_p_blocklengths,
+	       array_of_p_displacements,
+	       array_of_p_types,
+	       p_mapsize,
+	       newtype,
+	       &packed_type);
   return rc;
 }
 
