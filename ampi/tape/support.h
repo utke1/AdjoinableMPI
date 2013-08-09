@@ -14,7 +14,8 @@ extern "C" {
  */ 
 
 void TAPE_AMPI_init();
-void TAPE_AMPI_resetRead();
+void TAPE_AMPI_resetBottom();
+void TAPE_AMPI_resetTop();
 
 void TAPE_AMPI_push_int(int an_int);
 void TAPE_AMPI_pop_int(int *an_int);

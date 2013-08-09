@@ -7,6 +7,7 @@ static void* myTapeStorage=0;
 static size_t myTapeStorageSize=0;
 static void* myStack_p=0;
 static void* myRead_p=0;
+static void* myStackTop_p=0;
 
 void TAPE_AMPI_init() {
   /* reset things */
@@ -17,6 +18,7 @@ void TAPE_AMPI_init() {
   myTapeStorageSize=0;
   myStack_p=myTapeStorage;
   myRead_p=myTapeStorage;
+  myStackTop_p=myTapeStorage;
 }
 
 
@@ -42,6 +44,7 @@ void writeBlob(void * aBlob,size_t aSize) {
   }
   memcpy(myStack_p,aBlob,aSize);
   myStack_p+=aSize;
+  myStackTop_p=myStack_p;
 }
 
 void readBlob(void* aBlob,size_t aSize) {
@@ -56,8 +59,12 @@ void popBlob(void* aBlob,size_t aSize) {
   memcpy(aBlob,myStack_p,aSize);
 }
 
-void TAPE_AMPI_resetRead() {
+void TAPE_AMPI_resetBottom() {
   myRead_p=myTapeStorage;
+}
+
+void TAPE_AMPI_resetTop() {
+  myStack_p=myStackTop_p;
 }
 
 void TAPE_AMPI_push_int(int an_int)  { writeBlob((void*)(&an_int),sizeof(int)); }
