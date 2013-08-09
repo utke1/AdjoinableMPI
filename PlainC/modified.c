@@ -183,6 +183,18 @@ int AMPI_Rsend(void *buf,
 		   comm);
 }
 
+int AMPI_Bcast (void* buf,
+                int count,
+                MPI_Datatype datatype,
+                int root,
+                MPI_Comm comm) {
+  return MPI_Bcast(buf,
+                   count,
+                   datatype,
+                   root,
+                   comm);
+}
+
 int AMPI_Wait(AMPI_Request *request,
 	      MPI_Status *status) { 
   return MPI_Wait(
