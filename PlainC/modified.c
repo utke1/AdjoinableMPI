@@ -195,6 +195,22 @@ int AMPI_Bcast (void* buf,
                    comm);
 }
 
+int AMPI_Reduce (void* sbuf, 
+		 void* rbuf, 
+		 int count, 
+		 MPI_Datatype datatype, 
+		 MPI_Op op, 
+		 int root, 
+		 MPI_Comm comm) { 
+  return MPI_Reduce(sbuf,
+		    rbuf,
+		    count,
+		    datatype,
+		    op,
+		    root,
+		    comm);
+}
+
 int AMPI_Wait(AMPI_Request *request,
 	      MPI_Status *status) { 
   return MPI_Wait(
@@ -231,20 +247,40 @@ int AMPI_Awaitall (int count,
   return MPI_SUCCESS;
 }
 
-int AMPI_Reduce (void* sbuf, 
-		 void* rbuf, 
-		 int count, 
-		 MPI_Datatype datatype, 
-		 MPI_Op op, 
-		 int root, 
-		 MPI_Comm comm) { 
-  return MPI_Reduce(sbuf,
-		    rbuf,
-		    count,
-		    datatype,
-		    op,
+int AMPI_Gather(void *sendbuf,
+		int sendcnt,
+		MPI_Datatype sendtype,
+		void *recvbuf,
+		int recvcnt,
+		MPI_Datatype recvtype,
+		int root,
+		MPI_Comm comm) { 
+  return MPI_Gather(sendbuf,
+		    sendcnt,
+		    sendtype,
+		    recvbuf,
+		    recvcnt,
+		    recvtype,
 		    root,
 		    comm);
+}
+
+int AMPI_Scatter(void *sendbuf,
+		 int sendcnt,
+		 MPI_Datatype sendtype,
+		 void *recvbuf,
+		 int recvcnt,
+		 MPI_Datatype recvtype,
+		 int root, 
+		 MPI_Comm comm) { 
+  return MPI_Scatter(sendbuf,
+		     sendcnt,
+		     sendtype,
+		     recvbuf,
+		     recvcnt,
+		     recvtype,
+		     root,
+		     comm);
 }
 
 int AMPI_Gatherv(void *sendbuf,

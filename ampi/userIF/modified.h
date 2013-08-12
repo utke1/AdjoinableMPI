@@ -188,7 +188,23 @@ int AMPI_Awaitall (int count,
 		   AMPI_Request requests[], 
 		   MPI_Status statuses[]);
 
+int AMPI_Gather(void *sendbuf,
+		int sendcnt,
+		MPI_Datatype sendtype,
+		void *recvbuf,
+		int recvcnt,
+		MPI_Datatype recvtype,
+		int root,
+		MPI_Comm comm);
 
+int AMPI_Scatter(void *sendbuf,
+		 int sendcnt,
+		 MPI_Datatype sendtype,
+		 void *recvbuf,
+		 int recvcnt,
+		 MPI_Datatype recvtype,
+		 int root, 
+		 MPI_Comm comm);
 
 int AMPI_Gatherv(void *sendbuf,
                  int sendcnt,
