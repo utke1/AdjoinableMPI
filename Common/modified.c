@@ -632,7 +632,7 @@ int FW_AMPI_Gather(void *sendbuf,
                              sendtype,
                              root,
                              comm);
-      ADTOOL_AMPI_push_CallCode(AMPI_GATHERV);
+      ADTOOL_AMPI_push_CallCode(AMPI_GATHER);
     }
   }
   return rc;
@@ -679,7 +679,7 @@ int BW_AMPI_Gather(void *sendbuf,
                                idx);
   if (commSizeForRootOrNull) {
     MPI_Type_size(recvtype,&rTypeSize);
-    ADTOOL_AMPI_adjointNullify(recvcnt,recvtype,comm,
+    ADTOOL_AMPI_adjointNullify(recvcnt*commSizeForRootOrNull,recvtype,comm,
 			       recvbuf , recvbuf, recvbuf);
   }
   ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
@@ -726,7 +726,7 @@ int FW_AMPI_Scatter(void *sendbuf,
                              recvtype,
                              root,
                              comm);
-      ADTOOL_AMPI_push_CallCode(AMPI_SCATTERV);
+      ADTOOL_AMPI_push_CallCode(AMPI_SCATTER);
     }
   }
   return rc;
@@ -742,8 +742,7 @@ int BW_AMPI_Scatter(void *sendbuf,
                      MPI_Comm comm) {
   int rc=MPI_SUCCESS;
   void *idx=NULL;
-  int sendSize=0, typeSize;
-  int myRank, commSizeForRootOrNull;
+  int commSizeForRootOrNull;
   ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
   ADTOOL_AMPI_popGSinfo(commSizeForRootOrNull,
 			&sendbuf,
@@ -754,9 +753,8 @@ int BW_AMPI_Scatter(void *sendbuf,
 			&recvtype,
 			&root,
 			&comm);
-  MPI_Comm_rank(comm, &myRank);
   void *tempBuf = NULL;
-  if (commSizeForRootOrNull>0) tempBuf=ADTOOL_AMPI_allocateTempBuf(sendSize,sendtype,comm);
+  if (commSizeForRootOrNull>0) tempBuf=ADTOOL_AMPI_allocateTempBuf(sendcnt*commSizeForRootOrNull,sendtype,comm);
   rc=MPI_Gather(recvbuf,
 		recvcnt,
 		recvtype,
@@ -768,13 +766,12 @@ int BW_AMPI_Scatter(void *sendbuf,
   ADTOOL_AMPI_adjointNullify(recvcnt,recvtype,comm,
                              recvbuf, recvbuf, recvbuf);
   if (commSizeForRootOrNull>0) {
-    MPI_Type_size(sendtype,&typeSize);
-    ADTOOL_AMPI_adjointIncrement(sendcnt,
+    ADTOOL_AMPI_adjointIncrement(sendcnt*commSizeForRootOrNull,
 				 sendtype,
 				 comm,
-				 recvbuf,
-				 recvbuf,
-				 recvbuf,
+				 sendbuf,
+				 sendbuf,
+				 sendbuf,
 				 tempBuf,
 				 idx);
     ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
