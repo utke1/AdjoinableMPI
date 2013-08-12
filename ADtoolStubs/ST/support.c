@@ -327,6 +327,34 @@ void ADTOOL_AMPI_adjointDivide(int adjointCount, MPI_Datatype datatype, MPI_Comm
     MPI_Abort(comm, MPI_ERR_TYPE);
 }
 
+void ADTOOL_AMPI_adjointEquals(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source1, void *source2, void *idx) { 
+  assert(adjointTarget==checkAdjointTarget) ;
+  if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
+    double *vb = (double *)adjointTarget ;
+    double *nb = (double *)source1 ;
+    double *fb = (double *)source2 ;
+    int i ;
+    for (i=0 ; i<adjointCount ; ++i) {
+      *vb = *nb == *fb ;
+      ++vb ;
+      ++nb ;
+      ++fb ;
+    }
+  } else if (datatype==MPI_FLOAT) {
+    float *vb = (float *)adjointTarget ;
+    float *nb = (float *)source1 ;
+    float *fb = (float *)source2 ;
+    int i ;
+    for (i=0 ; i<adjointCount ; ++i) {
+      *vb = *nb == *fb ;
+      ++vb ;
+      ++nb ;
+      ++fb ;
+    }
+  } else
+    MPI_Abort(comm, MPI_ERR_TYPE);
+}
+
 void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget) { 
   assert(adjointTarget==checkAdjointTarget) ;
   if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {

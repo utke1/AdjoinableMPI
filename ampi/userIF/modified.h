@@ -63,6 +63,30 @@ int addDTypeData(derivedTypeData* dat,
 int derivedTypeIdx(MPI_Datatype datatype);
 int isDerivedType(int dt_idx);
 
+/**
+ * user-defined reduction op data
+ * only one instance of userDefinedOpData exists at once
+ * get pointer from getUDOpData, add new stuff with addUDOpData
+ */
+typedef struct {
+  int size;
+  int pos;
+  MPI_Op* ops;
+  MPI_User_function** functions;
+  int* commutes;
+} userDefinedOpData;
+
+userDefinedOpData* getUDOpData();
+/* addUDOpData takes user-defined op data and adds a new entry; returns
+   position of new type in data struct; doubles data struct size every
+   time there's overflow */
+int addUDOpData(userDefinedOpData* dat,
+		MPI_Op* op,
+		MPI_User_function* function,
+		int commute);
+int userDefinedOpIdx(MPI_Op op);
+int isUserDefinedOp(int udop_idx);
+
 #ifdef AMPI_FORTRANCOMPATIBLE
 
 /**
@@ -173,6 +197,10 @@ int AMPI_Type_create_struct (int count,
 			     MPI_Datatype *newtype);
 
 int AMPI_Type_commit (MPI_Datatype *datatype);
+
+int AMPI_Op_create(MPI_User_function *function,
+		   int commute,
+		   MPI_Op *op);
 
 /**
  * before we start reverse we need to make sure there are no pending requests in our userIF bookkeeping 

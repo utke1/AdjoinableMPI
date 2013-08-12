@@ -200,11 +200,21 @@ int BW_AMPI_Reduce(void* sbuf,
 		   int root,
 		   MPI_Comm comm);
 
+/**
+ * create struct, calls MPI_Type_create_struct twice (second time for packed typemap) and stores info
+ */
 int AMPI_Type_create_struct (int count,
 			     int array_of_blocklengths[],
 			     MPI_Aint array_of_displacements[],
 			     MPI_Datatype array_of_types[],
 			     MPI_Datatype *newtype);
+
+/**
+ * create reduction op, calls MPI_Op_create, stores info
+ */
+int AMPI_Op_create(MPI_User_function *function,
+		   int commute,
+		   MPI_Op *op);
 
 /**
  * backward sweep variant of \ref AMPI_Scatterv

@@ -343,6 +343,11 @@ void ADTOOL_AMPI_adjointMultiply(int adjointCount, MPI_Datatype datatype, MPI_Co
 void ADTOOL_AMPI_adjointDivide(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
 
 /**
+ * Return equality result between the values in adjointTarget and source.
+ */
+void ADTOOL_AMPI_adjointEquals(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source1, void *source2, void *idx);
+
+/**
  * Adjoint nullify the values in adjointTarget.
  * \param adjointCount is the number of items in the buffer we will nullify
  * \param datatype the data type of the buffer to be nullified
