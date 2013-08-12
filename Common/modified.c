@@ -590,6 +590,195 @@ int BW_AMPI_Wait(AMPI_Request *request,
   return rc;
 }
 
+int FW_AMPI_Gather(void *sendbuf,
+		   int sendcnt,
+		   MPI_Datatype sendtype,
+		   void *recvbuf,
+		   int recvcnt,
+		   MPI_Datatype recvtype,
+		   int root,
+		   MPI_Comm comm) {
+  void *rawSendBuf=NULL, *rawRecvBuf=NULL;
+  int rc=MPI_SUCCESS;
+  int myRank, myCommSize;
+  MPI_Comm_rank(comm, &myRank);
+  MPI_Comm_size(comm, &myCommSize);
+  if (ADTOOL_AMPI_isActiveType(sendtype)!=ADTOOL_AMPI_isActiveType(recvtype)) {
+    rc=MPI_Abort(comm, MPI_ERR_ARG);
+  }
+  else {
+    if (ADTOOL_AMPI_isActiveType(sendtype)==AMPI_ACTIVE)  rawSendBuf=ADTOOL_AMPI_rawData(sendbuf,&sendcnt);
+    else rawSendBuf=sendbuf;
+    if (myRank==root) {
+      if (ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE)  rawRecvBuf=ADTOOL_AMPI_rawData(recvbuf,&recvcnt);
+      else rawRecvBuf=recvbuf;
+    }
+    rc=MPI_Gather(rawSendBuf,
+		  sendcnt,
+		  sendtype,
+		  rawRecvBuf,
+		  recvcnt,
+		  recvtype,
+		  root,
+		  comm);
+    if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE) {
+      if (myRank==root) ADTOOL_AMPI_writeData(recvbuf,&recvcnt);
+      ADTOOL_AMPI_pushGSinfo(((myRank==root)?myCommSize:0),
+                             recvbuf,
+                             recvcnt,
+                             recvtype,
+                             sendbuf,
+                             sendcnt,
+                             sendtype,
+                             root,
+                             comm);
+      ADTOOL_AMPI_push_CallCode(AMPI_GATHER);
+    }
+  }
+  return rc;
+}
+
+int BW_AMPI_Gather(void *sendbuf,
+		   int sendcnt,
+		   MPI_Datatype sendtype,
+		   void *recvbuf,
+		   int recvcnt,
+		   MPI_Datatype recvtype,
+		   int root,
+		   MPI_Comm comm) {
+  void *idx=NULL;
+  int rc=MPI_SUCCESS;
+  int commSizeForRootOrNull, rTypeSize;
+  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
+  ADTOOL_AMPI_popGSinfo(commSizeForRootOrNull,
+			&recvbuf,
+			&recvcnt,
+			&recvtype,
+			&sendbuf,
+			&sendcnt,
+			&sendtype,
+			&root,
+			&comm);
+  ADTOOL_AMPI_getAdjointCount(&sendcnt,sendtype);
+  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(sendcnt,sendtype,comm) ;
+  rc=MPI_Scatter(recvbuf,
+		 recvcnt,
+		 recvtype,
+		 tempBuf,
+		 sendcnt,
+		 sendtype,
+		 root,
+		 comm);
+  ADTOOL_AMPI_adjointIncrement(sendcnt,
+                               sendtype,
+                               comm,
+                               sendbuf,
+                               sendbuf,
+                               sendbuf,
+                               tempBuf,
+                               idx);
+  if (commSizeForRootOrNull) {
+    MPI_Type_size(recvtype,&rTypeSize);
+    ADTOOL_AMPI_adjointNullify(recvcnt*commSizeForRootOrNull,recvtype,comm,
+			       recvbuf , recvbuf, recvbuf);
+  }
+  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+  return rc;
+}
+
+int FW_AMPI_Scatter(void *sendbuf,
+                     int sendcnt,
+                     MPI_Datatype sendtype,
+                     void *recvbuf,
+                     int recvcnt,
+                     MPI_Datatype recvtype,
+                     int root,
+                     MPI_Comm comm) {
+  int rc=MPI_SUCCESS;
+  int myRank, myCommSize;
+  void *rawSendBuf=sendbuf, *rawRecvBuf=recvbuf;
+  MPI_Comm_rank(comm, &myRank);
+  MPI_Comm_size(comm, &myCommSize);
+  if (ADTOOL_AMPI_isActiveType(sendtype)!=ADTOOL_AMPI_isActiveType(recvtype)) {
+    rc=MPI_Abort(comm, MPI_ERR_ARG);
+  }
+  else {
+    if (myRank==root) {
+      if (ADTOOL_AMPI_isActiveType(sendtype)==AMPI_ACTIVE)  rawSendBuf=ADTOOL_AMPI_rawData(sendbuf,&sendcnt);
+    }
+    if (ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE)  rawRecvBuf=ADTOOL_AMPI_rawData(recvbuf,&recvcnt);
+    rc=MPI_Scatter(rawSendBuf,
+                   sendcnt,
+                   sendtype,
+                   rawRecvBuf,
+                   recvcnt,
+                   recvtype,
+                   root,
+                   comm);
+    if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE) {
+      ADTOOL_AMPI_writeData(recvbuf,&recvcnt);
+      ADTOOL_AMPI_pushGSinfo(((myRank==root)?myCommSize:0),
+                             sendbuf,
+                             sendcnt,
+                             sendtype,
+                             recvbuf,
+                             recvcnt,
+                             recvtype,
+                             root,
+                             comm);
+      ADTOOL_AMPI_push_CallCode(AMPI_SCATTER);
+    }
+  }
+  return rc;
+}
+
+int BW_AMPI_Scatter(void *sendbuf,
+                     int sendcnt,
+                     MPI_Datatype sendtype,
+                     void *recvbuf,
+                     int recvcnt,
+                     MPI_Datatype recvtype,
+                     int root,
+                     MPI_Comm comm) {
+  int rc=MPI_SUCCESS;
+  void *idx=NULL;
+  int commSizeForRootOrNull;
+  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
+  ADTOOL_AMPI_popGSinfo(commSizeForRootOrNull,
+			&sendbuf,
+			&sendcnt,
+			&sendtype,
+			&recvbuf,
+			&recvcnt,
+			&recvtype,
+			&root,
+			&comm);
+  void *tempBuf = NULL;
+  if (commSizeForRootOrNull>0) tempBuf=ADTOOL_AMPI_allocateTempBuf(sendcnt*commSizeForRootOrNull,sendtype,comm);
+  rc=MPI_Gather(recvbuf,
+		recvcnt,
+		recvtype,
+		tempBuf,
+                sendcnt,
+		sendtype,
+		root,
+		comm);
+  ADTOOL_AMPI_adjointNullify(recvcnt,recvtype,comm,
+                             recvbuf, recvbuf, recvbuf);
+  if (commSizeForRootOrNull>0) {
+    ADTOOL_AMPI_adjointIncrement(sendcnt*commSizeForRootOrNull,
+				 sendtype,
+				 comm,
+				 sendbuf,
+				 sendbuf,
+				 sendbuf,
+				 tempBuf,
+				 idx);
+    ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+  }
+  return rc;
+}
+
 int FW_AMPI_Gatherv(void *sendbuf,
                     int sendcnt,
                     MPI_Datatype sendtype,
@@ -656,7 +845,7 @@ int BW_AMPI_Gatherv(void *sendbuf,
   int myRank, commSizeForRootOrNull, rTypeSize;
   int *tRecvCnts=recvcnts, *tDispls=displs;
   char tRecvCntsFlag=0, tDisplsFlag=0;
-  ADTOOL_AMPI_popGSVcommSizeForRootOrNull(&commSizeForRootOrNull);
+  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
   if (tRecvCnts==NULL) {
     tRecvCnts=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
     tRecvCntsFlag=1;
@@ -773,7 +962,7 @@ int BW_AMPI_Scatterv(void *sendbuf,
   int myRank, commSizeForRootOrNull, *tempDispls;
   int *tSendCnts=sendcnts, *tDispls=displs;
   char tSendCntsFlag=0, tDisplsFlag=0;
-  ADTOOL_AMPI_popGSVcommSizeForRootOrNull(&commSizeForRootOrNull);
+  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
   if (tSendCnts==NULL && commSizeForRootOrNull>0) {
     tSendCnts=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
     tSendCntsFlag=1;

@@ -67,6 +67,32 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   MPI_Comm* comm,
 			   void **idx) { 
 }
+
+void ADTOOL_AMPI_pushGSinfo(int commSizeForRootOrNull,
+                            void *rbuf,
+                            int rcnt,
+                            MPI_Datatype rtype,
+                            void *buf,
+                            int count,
+                            MPI_Datatype type,
+                            int  root,
+                            MPI_Comm comm) {
+}
+
+void ADTOOL_AMPI_popGScommSizeForRootOrNull(int *commSizeForRootOrNull) {
+}
+
+void ADTOOL_AMPI_popGSinfo(int commSizeForRootOrNull,
+                           void **rbuf,
+                           int *rcnt,
+                           MPI_Datatype *rtype,
+                           void **buf,
+                           int *count,
+                           MPI_Datatype *type,
+                           int *root,
+                           MPI_Comm *comm) {
+}
+
 void ADTOOL_AMPI_pushGSVinfo(int commSizeForRootOrNull,
                              void *rbuf,
                              int *rcnts,
@@ -77,9 +103,6 @@ void ADTOOL_AMPI_pushGSVinfo(int commSizeForRootOrNull,
                              MPI_Datatype type,
                              int  root,
                              MPI_Comm comm) {
-}
-
-void ADTOOL_AMPI_popGSVcommSizeForRootOrNull(int *commSizeForRootOrNull) {
 }
 
 void ADTOOL_AMPI_popGSVinfo(int commSizeForRootOrNull,

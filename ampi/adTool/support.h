@@ -104,6 +104,66 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   void **idx);
 
 /**
+ * the implementation of pushing the required elements for gather/scatter
+ * to the AD-tool-internal stack;
+ * the implementation rationale follows \ref  ADTOOL_AMPI_pushSRinfo
+ * NOTE: for non-root ranks the root specific parameters are ignored
+ * which implies in particular that the pointers passed may not be valid
+ * therefore we use commSizeForRootOrNull to discriminate
+ * \param commSizeForRootOrNull is the communicator size for rank root or 0
+ * \param rbuf the buffer on rank root
+ * \param rcnt the count on rank root 
+ * \param rtype the data type on rank root
+ * \param buf the buffer on non-root ranks
+ * \param count the counter for buf on non-root ranks
+ * \param type the data type on non-root ranks
+ * \param root the root rank
+ * \param comm the communicator
+ */
+void ADTOOL_AMPI_pushGSinfo(int commSizeForRootOrNull,
+			    void *rbuf,
+			    int rcnt,
+			    MPI_Datatype rtype,
+			    void *buf,
+			    int count,
+			    MPI_Datatype type,
+			    int  root,
+			    MPI_Comm comm);
+
+/**
+ * this must be called before \ref ADTOOL_AMPI_popGSinfo and \ref ADTOOL_AMPI_popGSVinfo
+ * \param commSizeForRootOrNull this is popped so that we may allocate buffers for
+ * rcnts and displs in the subsequent call to \ref ADTOOL_AMPI_popGSVinfo
+ */
+void ADTOOL_AMPI_popGScommSizeForRootOrNull(int *commSizeForRootOrNull);
+
+/**
+ * the implementation of popping the required elements for gather/scatter
+ * from the AD-tool-internal stack;
+ * see comments of \ref ADTOOL_AMPI_pushGSinfo;
+ * following the note there we will not be setting the values for root specific
+ * arguments on non-root ranks
+ * \param commSizeForRootOrNull retrieved via \ref ADTOOL_AMPI_popGSVcommSizeForRootOrNull
+ * \param rbuf the buffer on rank rook, set if commSizeForRootOrNull>0
+ * \param rcnt the size  for rank root, set if commSizeForRootOrNull>0
+ * \param rtype the data type for rank root, set if commSizeForRootOrNull>0
+ * \param buf the buffer for all ranks
+ * \param count the count for all ranks
+ * \param type the type for all ranks
+ * \param root the root rank
+ * \param comm the communicator for all ranks
+ */
+void ADTOOL_AMPI_popGSinfo(int commSizeForRootOrNull,
+			   void **rbuf,
+			   int *rcnt,
+			   MPI_Datatype *rtype,
+			   void **buf,
+			   int *count,
+			   MPI_Datatype *type,
+			   int *root,
+			   MPI_Comm *comm);
+
+/**
  * the implementation of pushing the required elements for gatherv/scatterv
  * to the AD-tool-internal stack;
  * the implementation rationale follows \ref  ADTOOL_AMPI_pushSRinfo
@@ -131,13 +191,6 @@ void ADTOOL_AMPI_pushGSVinfo(int commSizeForRootOrNull,
                              MPI_Datatype type,
                              int  root,
                              MPI_Comm comm);
-
-/**
- * this must be called before \ref ADTOOL_AMPI_popGSVinfo
- * \param commSizeForRootOrNull this is popped so that we may allocate buffers for
- * rcnts and displs in the subsequent call to \ref ADTOOL_AMPI_popGSVinfo
- */
-void ADTOOL_AMPI_popGSVcommSizeForRootOrNull(int *commSizeForRootOrNull);
 
 /**
  * the implementation of popping the required elements for gatherv/scatterv

@@ -122,6 +122,52 @@ int BW_AMPI_Wait(AMPI_Request *request,
 		 MPI_Status *status);
 
 /**
+ * forward sweep variant of \ref AMPI_Gather
+ */
+int FW_AMPI_Gather(void *sendbuf,
+                   int sendcnt,
+                   MPI_Datatype sendtype,
+                   void *recvbuf,
+                   int recvcnt,
+                   MPI_Datatype recvtype,
+                   int root,
+                   MPI_Comm comm);
+
+/**
+ * backward sweep variant of \ref AMPI_Gather
+ */
+int BW_AMPI_Gather(void *sendbuf,
+                   int sendcnt,
+                   MPI_Datatype sendtype,
+                   void *recvbuf,
+                   int recvcnt,
+                   MPI_Datatype recvtype,
+                   int root,
+                   MPI_Comm comm);
+
+/**
+ * forward sweep variant of \ref AMPI_Scatter
+ */
+int FW_AMPI_Scatter(void *sendbuf,
+                    int sendcnt,
+                    MPI_Datatype sendtype,
+                    void *recvbuf,
+                    int recvcnt,
+                    MPI_Datatype recvtype,
+                    int root, MPI_Comm comm);
+
+/**
+ * backward sweep variant of \ref AMPI_Scatter
+ */
+int BW_AMPI_Scatter(void *sendbuf,
+                    int sendcnt,
+                    MPI_Datatype sendtype,
+                    void *recvbuf,
+                    int recvcnt,
+                    MPI_Datatype recvtype,
+                    int root, MPI_Comm comm);
+
+/**
  * forward sweep variant of \ref AMPI_Gatherv
  */
 int FW_AMPI_Gatherv(void *sendbuf,
@@ -152,6 +198,19 @@ int BW_AMPI_Gatherv(void *sendbuf,
  * forward sweep variant of \ref AMPI_Scatterv
  */
 int FW_AMPI_Scatterv(void *sendbuf,
+                     int *sendcnts,
+                     int *displs,
+                     MPI_Datatype sendtype,
+                     void *recvbuf,
+                     int recvcnt,
+                     MPI_Datatype recvtype,
+                     int root, MPI_Comm comm);
+
+/**
+ * backward sweep variant of \ref AMPI_Scatterv
+ * NOTE: sendcnts and displs are passed with a non-NULL pointer then they must be allocated to the correct size
+ */
+int BW_AMPI_Scatterv(void *sendbuf,
                      int *sendcnts,
                      int *displs,
                      MPI_Datatype sendtype,
@@ -216,18 +275,7 @@ int AMPI_Op_create(MPI_User_function *function,
 		   int commute,
 		   MPI_Op *op);
 
-/**
- * backward sweep variant of \ref AMPI_Scatterv
- * NOTE: sendcnts and displs are passed with a non-NULL pointer then they must be allocated to the correct size
- */
-int BW_AMPI_Scatterv(void *sendbuf,
-                     int *sendcnts,
-                     int *displs,
-                     MPI_Datatype sendtype,
-                     void *recvbuf,
-                     int recvcnt,
-                     MPI_Datatype recvtype,
-                     int root, MPI_Comm comm);
+
 
 #if defined(__cplusplus)
 }
