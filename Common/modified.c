@@ -656,7 +656,7 @@ int BW_AMPI_Gatherv(void *sendbuf,
   int myRank, commSizeForRootOrNull, rTypeSize;
   int *tRecvCnts=recvcnts, *tDispls=displs;
   char tRecvCntsFlag=0, tDisplsFlag=0;
-  ADTOOL_AMPI_popGSVcommSizeForRootOrNull(&commSizeForRootOrNull);
+  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
   if (tRecvCnts==NULL) {
     tRecvCnts=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
     tRecvCntsFlag=1;
@@ -773,7 +773,7 @@ int BW_AMPI_Scatterv(void *sendbuf,
   int myRank, commSizeForRootOrNull, *tempDispls;
   int *tSendCnts=sendcnts, *tDispls=displs;
   char tSendCntsFlag=0, tDisplsFlag=0;
-  ADTOOL_AMPI_popGSVcommSizeForRootOrNull(&commSizeForRootOrNull);
+  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
   if (tSendCnts==NULL && commSizeForRootOrNull>0) {
     tSendCnts=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
     tSendCntsFlag=1;
