@@ -66,7 +66,7 @@ int isDerivedType(int dt_idx);
 /**
  * user-defined reduction op data
  * only one instance of userDefinedOpData exists at once
- * get pointer from getUDOpData, add new stuff with addUDOpData
+ * get pointer from getUOpData, add new stuff with addUOpData
  */
 typedef struct {
   int size;
@@ -76,16 +76,16 @@ typedef struct {
   int* commutes;
 } userDefinedOpData;
 
-userDefinedOpData* getUDOpData();
-/* addUDOpData takes user-defined op data and adds a new entry; returns
+userDefinedOpData* getUOpData();
+/* addUOpData takes user-defined op data and adds a new entry; returns
    position of new type in data struct; doubles data struct size every
    time there's overflow */
-int addUDOpData(userDefinedOpData* dat,
+int addUOpData(userDefinedOpData* dat,
 		MPI_Op* op,
 		MPI_User_function* function,
 		int commute);
 int userDefinedOpIdx(MPI_Op op);
-int isUserDefinedOp(int udop_idx);
+int isUserDefinedOp(int uop_idx);
 
 #ifdef AMPI_FORTRANCOMPATIBLE
 

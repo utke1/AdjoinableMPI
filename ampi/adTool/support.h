@@ -62,16 +62,19 @@ void ADTOOL_AMPI_pushReduceInfo(void* sbuf,
 /**
  * Popping the required elements for Reduce calls.
  */
+void ADTOOL_AMPI_popReduceCountAndType(int* count,
+				       MPI_Datatype* datatype);
+
 void ADTOOL_AMPI_popReduceInfo(void** sbuf,
 			       void** rbuf,
 			       void** prevData,
 			       void** resultData,
 			       int* count,
-			       MPI_Datatype* datatype,
 			       MPI_Op* op,
 			       int* root,
 			       MPI_Comm* comm,
 			       void **idx);
+
 
 /**
  * the implementation of pushing the required elements for send/recv
@@ -283,7 +286,7 @@ void * ADTOOL_AMPI_rawDataV(void* activeData, int *counts, int* displs);
  * serialize user-defined struct for sending in forward execution in
  * association-by-address tools
  */
-void * ADTOOL_AMPI_rawData_DType(void* indata, int* count, int idx);
+void * ADTOOL_AMPI_rawData_DType(void* indata, void* outdata, int* count, int idx);
 
 /**
  * unpack serialized user-defined struct data into its original form

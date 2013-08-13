@@ -53,12 +53,15 @@ void ADTOOL_AMPI_pushReduceInfo(void* sbuf,
 				MPI_Comm comm) {
 }
 
+void ADTOOL_AMPI_popReduceCountAndType(int* count,
+				       MPI_Datatype* datatype) {
+}
+
 void ADTOOL_AMPI_popReduceInfo(void** sbuf,
 			       void** rbuf,
 			       void** prevData,
 			       void** resultData,
 			       int* count,
-			       MPI_Datatype* datatype,
 			       MPI_Op* op,
 			       int* root,
 			       MPI_Comm* comm,
@@ -194,7 +197,7 @@ void* ADTOOL_AMPI_rawDataV(void* activeData, int *counts, int* displs) {
 /**
  * returns contiguous data from indata
  */
-void * ADTOOL_AMPI_rawData_DType(void* indata, int* count, int idx) {
+void * ADTOOL_AMPI_rawData_DType(void* indata, void* outdata, int* count, int idx) {
   return indata;
 }
 

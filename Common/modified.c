@@ -294,7 +294,8 @@ int FW_AMPI_Send (void* buf,
       mappedbuf=ADTOOL_AMPI_rawData(buf,&count);
     }
     else if(is_derived) {
-      mappedbuf=ADTOOL_AMPI_rawData_DType(buf,&count,dt_idx);
+      mappedbuf=ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+      ADTOOL_AMPI_rawData_DType(buf,mappedbuf,&count,dt_idx);
     }
     else {
       mappedbuf=buf;
@@ -1136,14 +1137,14 @@ int BW_AMPI_Reduce (void* sbuf,
 		    MPI_Comm comm) {
   int rc,rank;
   void *idx=NULL;
-  void *prevValBuf = ADTOOL_AMPI_allocateTempBuf(count,MPI_DOUBLE,comm);
-  void *reduceResultBuf = ADTOOL_AMPI_allocateTempBuf(count,MPI_DOUBLE,comm);
+  ADTOOL_AMPI_popReduceCountAndType(&count,&datatype);
+  void *prevValBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+  void *reduceResultBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
   ADTOOL_AMPI_popReduceInfo(&sbuf,
 			    &rbuf,
 			    &prevValBuf,
 			    &reduceResultBuf,
 			    &count,
-			    &datatype,
 			    &op,
 			    &root,
 			    &comm,
@@ -1385,10 +1386,10 @@ int AMPI_Type_create_struct (int count,
 int AMPI_Type_commit (MPI_Datatype *datatype) {
   int dt_idx = derivedTypeIdx(*datatype);
   if (isDerivedType(dt_idx)) MPI_Type_commit(&(getDTypeData()->packed_types[dt_idx]));
-  return MPI_Type_commit (datatype);
+  return MPI_Type_commit(datatype);
 }
 
-userDefinedOpData* getUDOpData() {
+userDefinedOpData* getUOpData() {
   static userDefinedOpData* dat = NULL;
   if (dat==NULL) {
     userDefinedOpData* newdat = malloc(sizeof(userDefinedOpData));
@@ -1402,10 +1403,10 @@ userDefinedOpData* getUDOpData() {
   return dat;
 }
 
-int addUDOpData(userDefinedOpData* dat,
-		MPI_Op* op,
-		MPI_User_function* function,
-		int commute) {
+int addUOpData(userDefinedOpData* dat,
+	       MPI_Op* op,
+	       MPI_User_function* function,
+	       int commute) {
   if (dat==NULL) assert(0);
   int pos = dat->pos;
   if (pos >= dat->size) {
@@ -1423,14 +1424,14 @@ int addUDOpData(userDefinedOpData* dat,
 
 int userDefinedOpIdx(MPI_Op op) {
   int i;
-  userDefinedOpData* udopdata = getUDOpData();
-  for (i=0;i<udopdata->size;i++) {
-    if (udopdata->ops[i]==op) return i;
+  userDefinedOpData* uopdata = getUOpData();
+  for (i=0;i<uopdata->size;i++) {
+    if (uopdata->ops[i]==op) return i;
   }
   return -1;
 }
 
-int isUserDefinedOp(int udop_idx) { return udop_idx!=-1; }
+int isUserDefinedOp(int uop_idx) { return uop_idx!=-1; }
 
 int AMPI_Op_create(MPI_User_function *function,
 		   int commute,
@@ -1440,10 +1441,10 @@ int AMPI_Op_create(MPI_User_function *function,
 		     commute,
 		     op);
   if (!(rc==MPI_SUCCESS)) assert(0);
-  userDefinedOpData* dat = getUDOpData();
-  addUDOpData(dat,
-	      op,
-	      function,
-	      commute);
+  userDefinedOpData* dat = getUOpData();
+  addUOpData(dat,
+	     op,
+	     function,
+	     commute);
   return rc;
 }
