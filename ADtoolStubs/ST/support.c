@@ -38,7 +38,7 @@ void ADTOOL_AMPI_pushDoubleArray(void* buf,
 				 int count) {
 }
 
-void ADTOOL_AMPI_popDoubleArray(void** buf,
+void ADTOOL_AMPI_popDoubleArray(double* buf,
 				int* count) {
 }
 

@@ -41,7 +41,7 @@ void ADTOOL_AMPI_popBcastInfo(void** buf,
 void ADTOOL_AMPI_pushDoubleArray(void* buf,
 				 int count);
 
-void ADTOOL_AMPI_popDoubleArray(void** buf,
+void ADTOOL_AMPI_popDoubleArray(double* buf,
 				int* count);
 /**
  * The implementation of pushing the required elements for Reduce calls.
