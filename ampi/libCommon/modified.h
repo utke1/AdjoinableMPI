@@ -244,6 +244,31 @@ int BW_AMPI_Scatterv(void *sendbuf,
                      int root, MPI_Comm comm);
 
 /**
+ * forward sweep variant of \ref AMPI_Allgatherv
+ */
+int FW_AMPI_Allgatherv(void *sendbuf,
+                       int sendcnt,
+                       MPI_Datatype sendtype,
+                       void *recvbuf,
+                       int *recvcnts,
+                       int *displs,
+                       MPI_Datatype recvtype,
+                       MPI_Comm comm);
+
+/**
+ * backward sweep variant of \ref AMPI_Allgatherv
+ * NOTE: recvcnts and displs are passed with a non-NULL pointer then they must be allocated to the correct size
+ */
+int BW_AMPI_Allgatherv(void *sendbuf,
+                       int sendcnt,
+                       MPI_Datatype sendtype,
+                       void *recvbuf,
+                       int *recvcnts,
+                       int *displs,
+                       MPI_Datatype recvtype,
+                       MPI_Comm comm);
+
+/**
  * forward sweep variant of \ref AMPI_Bcast
  */
 int FW_AMPI_Bcast(void* buf,

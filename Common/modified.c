@@ -1115,6 +1115,117 @@ int BW_AMPI_Scatterv(void *sendbuf,
   return rc;
 }
 
+int FW_AMPI_Allgatherv(void *sendbuf,
+                       int sendcnt,
+                       MPI_Datatype sendtype,
+                       void *recvbuf,
+                       int *recvcnts,
+                       int *displs,
+                       MPI_Datatype recvtype,
+                       MPI_Comm comm) {
+  void *rawSendBuf=NULL, *rawRecvBuf=NULL;
+  int rc=MPI_SUCCESS;
+  int myRank, myCommSize;
+  MPI_Comm_rank(comm, &myRank);
+  MPI_Comm_size(comm, &myCommSize);
+  if (ADTOOL_AMPI_isActiveType(sendtype)!=ADTOOL_AMPI_isActiveType(recvtype)) {
+    rc=MPI_Abort(comm, MPI_ERR_ARG);
+  }
+  else {
+    if (ADTOOL_AMPI_isActiveType(sendtype)==AMPI_ACTIVE)  rawSendBuf=ADTOOL_AMPI_rawData(sendbuf,&sendcnt);
+    else rawSendBuf=sendbuf;
+    if (ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE)  rawRecvBuf=ADTOOL_AMPI_rawDataV(recvbuf,recvcnts, displs);
+    else rawRecvBuf=recvbuf;
+    rc=MPI_Allgatherv(rawSendBuf,
+                      sendcnt,
+                      sendtype,
+                      rawRecvBuf,
+                      recvcnts,
+                      displs,
+                      recvtype,
+                      comm);
+    if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE) {
+      ADTOOL_AMPI_writeDataV(recvbuf,recvcnts, displs);
+      ADTOOL_AMPI_pushGSVinfo(myCommSize,
+                              recvbuf,
+                              recvcnts,
+                              displs,
+                              recvtype,
+                              sendbuf,
+                              sendcnt,
+                              sendtype,
+                              0,
+                              comm);
+      ADTOOL_AMPI_push_CallCode(AMPI_ALLGATHERV);
+    }
+  }
+  return rc;
+}
+
+int BW_AMPI_Allgatherv(void *sendbuf,
+                       int sendcnt,
+                       MPI_Datatype sendtype,
+                       void *recvbuf,
+                       int *recvcnts,
+                       int *displs,
+                       MPI_Datatype recvtype,
+                       MPI_Comm comm) {
+  void *idx=NULL;
+  int i;
+  int rc=MPI_SUCCESS;
+  int myRank, commSizeForRootOrNull, rTypeSize,rootPlaceholder;
+  int *tRecvCnts=recvcnts, *tDispls=displs;
+  char tRecvCntsFlag=0, tDisplsFlag=0;
+  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
+  if (tRecvCnts==NULL) {
+    tRecvCnts=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
+    tRecvCntsFlag=1;
+  }
+  if (tDispls==NULL) {
+    tDispls=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
+    tDisplsFlag=1;
+  }
+  ADTOOL_AMPI_popGSVinfo(commSizeForRootOrNull,
+                         &recvbuf,
+                         tRecvCnts,
+                         tDispls,
+                         &recvtype,
+                         &sendbuf,
+                         &sendcnt,
+                         &sendtype,
+                         &rootPlaceholder,
+                         &comm);
+  MPI_Comm_rank(comm, &myRank);
+  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(tRecvCnts[myRank],sendtype,comm) ;
+  /**
+   * \todo shortcut taken below by assuming AMPI_ADOUBLE is equivalent to MPI_DOUBLE, need type map.
+   */
+  rc=MPI_Reduce_scatter(recvbuf,
+                        tempBuf,
+                        tRecvCnts,
+                        MPI_DOUBLE, /* <<< here is the offending bit */
+                        MPI_SUM,
+                        comm);
+  ADTOOL_AMPI_adjointIncrement(sendcnt,
+                               sendtype,
+                               comm,
+                               sendbuf,
+                               sendbuf,
+                               sendbuf,
+                               tempBuf,
+                               idx);
+  MPI_Type_size(recvtype,&rTypeSize);
+  for (i=0;i<commSizeForRootOrNull;++i) {
+    void* buf=recvbuf+(rTypeSize*tDispls[i]); /* <----------  very iffy! */
+    ADTOOL_AMPI_adjointNullify(tRecvCnts[i],recvtype,comm,
+                               buf , buf, buf);
+  }
+  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+  if (tRecvCntsFlag) free((void*)(tRecvCnts));
+  if (tDisplsFlag) free((void*)(tDispls));
+  return rc;
+}
+
 int FW_AMPI_Bcast (void* buf,
                    int count,
                    MPI_Datatype datatype,

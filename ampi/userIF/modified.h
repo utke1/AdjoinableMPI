@@ -261,4 +261,13 @@ int AMPI_Scatterv(void *sendbuf,
                   MPI_Datatype recvtype,
                   int root, MPI_Comm comm);
 
+int AMPI_Allgatherv(void *sendbuf,
+                    int sendcnt,
+                    MPI_Datatype sendtype,
+                    void *recvbuf,
+                    int *recvcnts,
+                    int *displs,
+                    MPI_Datatype recvtype,
+                    MPI_Comm comm);
+
 #endif

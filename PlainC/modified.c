@@ -337,3 +337,21 @@ int AMPI_Scatterv(void *sendbuf,
                       root,
                       comm);
 }
+
+int AMPI_Allgatherv(void *sendbuf,
+                    int sendcnt,
+                    MPI_Datatype sendtype,
+                    void *recvbuf,
+                    int *recvcnts,
+                    int *displs,
+                    MPI_Datatype recvtype,
+                    MPI_Comm comm) {
+  return MPI_Allgatherv(sendbuf,
+                        sendcnt,
+                        sendtype,
+                        recvbuf,
+                        recvcnts,
+                        displs,
+                        recvtype,
+                        comm);
+}
