@@ -780,6 +780,99 @@ int BW_AMPI_Scatter(void *sendbuf,
   return rc;
 }
 
+int FW_AMPI_Allgather(void *sendbuf,
+                      int sendcount,
+                      MPI_Datatype sendtype,
+                      void *recvbuf,
+                      int recvcount,
+                      MPI_Datatype recvtype,
+                      MPI_Comm comm) {
+  void *rawSendBuf=NULL, *rawRecvBuf=NULL;
+  int rc=MPI_SUCCESS;
+  int myRank, myCommSize;
+  MPI_Comm_rank(comm, &myRank);
+  MPI_Comm_size(comm, &myCommSize);
+  if (ADTOOL_AMPI_isActiveType(sendtype)!=ADTOOL_AMPI_isActiveType(recvtype)) {
+    rc=MPI_Abort(comm, MPI_ERR_ARG);
+  }
+  else {
+    if (ADTOOL_AMPI_isActiveType(sendtype)==AMPI_ACTIVE)  rawSendBuf=ADTOOL_AMPI_rawData(sendbuf,&sendcount);
+    else rawSendBuf=sendbuf;
+    if (ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE)  rawRecvBuf=ADTOOL_AMPI_rawData(recvbuf,&recvcount);
+    else rawRecvBuf=recvbuf;
+    rc=MPI_Allgather(rawSendBuf,
+                     sendcount,
+                     sendtype,
+                     rawRecvBuf,
+                     recvcount,
+                     recvtype,
+                     comm);
+    if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE) {
+      ADTOOL_AMPI_writeData(recvbuf,&recvcount);
+      ADTOOL_AMPI_pushGSinfo((myCommSize),
+                             recvbuf,
+                             recvcount,
+                             recvtype,
+                             sendbuf,
+                             sendcount,
+                             sendtype,
+                             0,
+                             comm);
+      ADTOOL_AMPI_push_CallCode(AMPI_ALLGATHER);
+    }
+  }
+  return rc;
+}
+
+int BW_AMPI_Allgather(void *sendbuf,
+                      int sendcount,
+                      MPI_Datatype sendtype,
+                      void *recvbuf,
+                      int recvcount,
+                      MPI_Datatype recvtype,
+                      MPI_Comm comm) {
+  void *idx=NULL;
+  int rc=MPI_SUCCESS, rootPlaceholder;
+  int commSizeForRootOrNull, rTypeSize, *recvcounts,i;
+  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
+  ADTOOL_AMPI_popGSinfo(commSizeForRootOrNull,
+                        &recvbuf,
+                        &recvcount,
+                        &recvtype,
+                        &sendbuf,
+                        &sendcount,
+                        &sendtype,
+                        &rootPlaceholder,
+                        &comm);
+  recvcounts=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
+  for (i=0;i<commSizeForRootOrNull;++i) recvcounts[i]=sendcount;
+  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(sendcount,sendtype,comm);
+  /**
+   * \todo shortcut taken below by assuming AMPI_ADOUBLE is equivalent to MPI_DOUBLE, need type map.
+   */
+  rc=MPI_Reduce_scatter(recvbuf,
+                        tempBuf,
+                        recvcounts,
+                        MPI_DOUBLE, /* <<< here is the offending bit */
+                        MPI_SUM,
+                        comm);
+  ADTOOL_AMPI_adjointIncrement(sendcount,
+                               sendtype,
+                               comm,
+                               sendbuf,
+                               sendbuf,
+                               sendbuf,
+                               tempBuf,
+                               idx);
+  if (commSizeForRootOrNull) {
+    MPI_Type_size(recvtype,&rTypeSize);
+    ADTOOL_AMPI_adjointNullify(recvcount*commSizeForRootOrNull,recvtype,comm,
+                               recvbuf , recvbuf, recvbuf);
+  }
+  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+  return rc;
+}
+
 int FW_AMPI_Gatherv(void *sendbuf,
                     int sendcnt,
                     MPI_Datatype sendtype,
@@ -1068,11 +1161,13 @@ int BW_AMPI_Bcast (void* buf,
 			   &idx);
   MPI_Comm_rank(comm,&rank);
   void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
-  MPI_Datatype newtype = AMPI_ADOUBLE==MPI_DOUBLE ? datatype : MPI_DOUBLE;
+  /**
+  * \todo shortcut taken below by assuming AMPI_ADOUBLE is equivalent to MPI_DOUBLE, need type map.
+  */
   rc=MPI_Reduce(buf,
                 tempBuf,
                 count,
-                newtype,
+                MPI_DOUBLE, /* <<< here is the offending bit */
                 MPI_SUM,
                 root,
                 comm);
