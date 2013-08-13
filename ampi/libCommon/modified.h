@@ -154,7 +154,8 @@ int FW_AMPI_Scatter(void *sendbuf,
                     void *recvbuf,
                     int recvcnt,
                     MPI_Datatype recvtype,
-                    int root, MPI_Comm comm);
+                    int root,
+                    MPI_Comm comm);
 
 /**
  * backward sweep variant of \ref AMPI_Scatter
@@ -165,7 +166,30 @@ int BW_AMPI_Scatter(void *sendbuf,
                     void *recvbuf,
                     int recvcnt,
                     MPI_Datatype recvtype,
-                    int root, MPI_Comm comm);
+                    int root,
+                    MPI_Comm comm);
+
+/**
+ * forward sweep variant of \ref AMPI_Allgather
+ */
+int FW_AMPI_Allgather(void *sendbuf,
+                      int sendcount,
+                      MPI_Datatype sendtype,
+                      void *recvbuf,
+                      int recvcount,
+                      MPI_Datatype recvtype,
+                      MPI_Comm comm);
+
+/**
+ * backward sweep variant of \ref AMPI_Allgather
+ */
+int BW_AMPI_Allgather(void *sendbuf,
+                      int sendcount,
+                      MPI_Datatype sendtype,
+                      void *recvbuf,
+                      int recvcount,
+                      MPI_Datatype recvtype,
+                      MPI_Comm comm);
 
 /**
  * forward sweep variant of \ref AMPI_Gatherv
