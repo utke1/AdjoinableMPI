@@ -283,6 +283,22 @@ int AMPI_Scatter(void *sendbuf,
 		     comm);
 }
 
+int AMPI_Allgather(void *sendbuf,
+                   int sendcount,
+                   MPI_Datatype sendtype,
+                   void *recvbuf,
+                   int recvcount,
+                   MPI_Datatype recvtype,
+                   MPI_Comm comm) {
+  return MPI_Allgather(sendbuf,
+                       sendcount,
+                       sendtype,
+                       recvbuf,
+                       recvcount,
+                       recvtype,
+                       comm);
+}
+
 int AMPI_Gatherv(void *sendbuf,
                  int sendcnt,
                  MPI_Datatype sendtype,
