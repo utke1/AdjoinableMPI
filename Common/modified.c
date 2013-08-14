@@ -1411,6 +1411,118 @@ int BW_AMPI_Reduce (void* sbuf,
   return rc;
 }
 
+int FW_AMPI_Allreduce (void* sbuf,
+                       void* rbuf,
+                       int count,
+                       MPI_Datatype datatype,
+                       MPI_Op op,
+                       MPI_Comm comm) {
+  int rc,rank;
+  MPI_Comm_rank(comm,&rank);
+  double* mappedsbuf=NULL;
+  double* mappedrbuf=NULL;
+  if(ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+    mappedsbuf=ADTOOL_AMPI_rawData(sbuf,&count);
+    mappedrbuf=ADTOOL_AMPI_rawData(rbuf,&count);
+  }
+  else {
+    mappedsbuf=sbuf;
+    mappedrbuf=rbuf;
+  }
+  /**
+   * \todo shortcut taken below by assuming AMPI_ADOUBLE is equivalent to MPI_DOUBLE, need type map.
+   */
+  rc=MPI_Allreduce(mappedsbuf,
+                   mappedrbuf,
+                   count,
+                   MPI_DOUBLE, /* <<< here is the offending bit */
+                   op,
+                   comm);
+  if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+    ADTOOL_AMPI_pushReduceInfo(sbuf,
+                               rbuf,
+                               rbuf,
+                               1,
+                               count,
+                               datatype,
+                               op,
+                               0,
+                               comm);
+    ADTOOL_AMPI_push_CallCode(AMPI_ALLREDUCE);
+  }
+  return rc;
+}
+
+int BW_AMPI_Allreduce (void* sbuf,
+                       void* rbuf,
+                       int count,
+                       MPI_Datatype datatype,
+                       MPI_Op op,
+                       MPI_Comm comm) {
+  int rc=0,rank, rootPlaceHolder;
+  void *idx=NULL;
+  ADTOOL_AMPI_popReduceCountAndType(&count,&datatype);
+  void *prevValBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+  void *reduceResultBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+  ADTOOL_AMPI_popReduceInfo(&sbuf,
+                            &rbuf,
+                            &prevValBuf,
+                            &reduceResultBuf,
+                            &count,
+                            &op,
+                            &rootPlaceHolder,
+                            &comm,
+                            &idx);
+  MPI_Comm_rank(comm,&rank);
+  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+  MPI_Allreduce(rbuf,
+                tempBuf,
+                count,
+                MPI_DOUBLE,
+                MPI_SUM,
+                comm);
+  if (op==MPI_SUM) {
+     ; /* nothing extra to be done here */
+  }
+  else if (op==MPI_PROD) {
+    ADTOOL_AMPI_adjointMultiply(count, datatype, comm,
+                                tempBuf, tempBuf, tempBuf, reduceResultBuf, idx);
+    ADTOOL_AMPI_adjointDivide(count, datatype, comm,
+                              tempBuf, tempBuf, tempBuf, prevValBuf, idx);
+  }
+  else if (op==MPI_MAX || op==MPI_MIN) {
+    void *equalsResultBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+    ADTOOL_AMPI_adjointNullify(count, datatype, comm,
+                               equalsResultBuf, equalsResultBuf, equalsResultBuf);
+    ADTOOL_AMPI_adjointEquals(count, datatype, comm,
+                              equalsResultBuf, equalsResultBuf, equalsResultBuf, prevValBuf, reduceResultBuf, idx);
+    void *contributionTotalsBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+    MPI_Allreduce(equalsResultBuf,
+                  contributionTotalsBuf,
+                  count,
+                  MPI_DOUBLE,
+                  MPI_SUM,
+                  comm);
+    ADTOOL_AMPI_adjointMultiply(count, datatype, comm,
+                                tempBuf, tempBuf, tempBuf, equalsResultBuf, idx);
+    ADTOOL_AMPI_adjointDivide(count, datatype, comm,
+                              tempBuf, tempBuf, tempBuf, contributionTotalsBuf, idx);
+    ADTOOL_AMPI_releaseAdjointTempBuf(equalsResultBuf);
+    ADTOOL_AMPI_releaseAdjointTempBuf(contributionTotalsBuf);
+  }
+  else {
+    assert(0); /* unimplemented */
+  }
+  ADTOOL_AMPI_adjointIncrement(count, datatype, comm,
+                               sbuf, sbuf, sbuf, tempBuf, idx);
+  ADTOOL_AMPI_adjointNullify(count, datatype, comm,
+                             rbuf, rbuf, rbuf);
+  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+  ADTOOL_AMPI_releaseAdjointTempBuf(reduceResultBuf);
+  ADTOOL_AMPI_releaseAdjointTempBuf(prevValBuf);
+  return rc;
+}
+
 derivedTypeData* getDTypeData() {
   static derivedTypeData* dat = NULL;
   if (dat==NULL) {

@@ -309,6 +309,25 @@ int BW_AMPI_Reduce(void* sbuf,
 		   MPI_Comm comm);
 
 /**
+ * forward sweep variant of \ref AMPI_Allreduce
+ */
+int FW_AMPI_Allreduce(void* sbuf,
+                      void* rbuf,
+                      int count,
+                      MPI_Datatype datatype,
+                      MPI_Op op,
+                      MPI_Comm comm);
+
+/**
+ * backward sweep variant of \ref AMPI_Allreduce
+ */
+int BW_AMPI_Allreduce(void* sbuf,
+                      void* rbuf,
+                      int count,
+                      MPI_Datatype datatype,
+                      MPI_Op op,
+                      MPI_Comm comm);
+/**
  * create struct, calls MPI_Type_create_struct twice (second time for packed typemap) and stores info
  */
 int AMPI_Type_create_struct (int count,
