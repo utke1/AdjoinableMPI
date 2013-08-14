@@ -211,6 +211,20 @@ int AMPI_Reduce (void* sbuf,
 		    comm);
 }
 
+int AMPI_Allreduce (void* sbuf,
+                    void* rbuf,
+                    int count,
+                    MPI_Datatype datatype,
+                    MPI_Op op,
+                    MPI_Comm comm) {
+  return MPI_Allreduce(sbuf,
+                       rbuf,
+                       count,
+                       datatype,
+                       op,
+                       comm);
+}
+
 int AMPI_Wait(AMPI_Request *request,
 	      MPI_Status *status) { 
   return MPI_Wait(

@@ -190,6 +190,13 @@ int AMPI_Reduce (void* sbuf,
 		 int root, 
 		 MPI_Comm comm);
 
+int AMPI_Allreduce (void* sbuf,
+                    void* rbuf,
+                    int count,
+                    MPI_Datatype datatype,
+                    MPI_Op op,
+                    MPI_Comm comm);
+
 int AMPI_Type_create_struct (int count,
 			     int array_of_blocklengths[],
 			     MPI_Aint array_of_displacements[],
