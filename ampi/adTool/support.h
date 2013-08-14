@@ -256,7 +256,7 @@ void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
   
 /** Push the MPI_Request on the AD tool internal stack.
  * This is used as a key to the request bookkeeping 
-to keep correspondence between the request Id of the FW sweep
+ * to keep correspondence between the request Id of the FW sweep
  * to the request Id in BW sweep.
  * if we need to trace requests for a pure (operator overloading) trace evaluation
  * the Common implementation uses this to push the request 
@@ -267,6 +267,13 @@ void ADTOOL_AMPI_push_request(MPI_Request request);
  * the companion to \ref ADTOOL_AMPI_push_request
  */
 MPI_Request ADTOOL_AMPI_pop_request();
+
+void ADTOOL_AMPI_push_comm(MPI_Request request);
+
+/**
+ * the companion to \ref ADTOOL_AMPI_push_request
+ */
+MPI_Comm ADTOOL_AMPI_pop_comm();
 
 /**
  * map active data to raw data; this is to be implemented for the forward 

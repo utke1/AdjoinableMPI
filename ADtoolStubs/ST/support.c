@@ -180,6 +180,13 @@ MPI_Request ADTOOL_AMPI_pop_request() {
   return 0;
 }
 
+void ADTOOL_AMPI_push_comm(MPI_Comm comm) {
+}
+
+MPI_Comm ADTOOL_AMPI_pop_comm() {
+  return 0;
+}
+
 /** Returns the non-diff part of a communication buffer
  * passed to AMPI send or recv. For Tapenade, this is
  * the communication buffer itself (association by name) */

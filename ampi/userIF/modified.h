@@ -223,6 +223,8 @@ int AMPI_Awaitall (int count,
 		   AMPI_Request requests[], 
 		   MPI_Status statuses[]);
 
+int AMPI_Barrier(MPI_Comm comm);
+
 int AMPI_Gather(void *sendbuf,
 		int sendcnt,
 		MPI_Datatype sendtype,

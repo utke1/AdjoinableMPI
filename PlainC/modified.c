@@ -261,6 +261,10 @@ int AMPI_Awaitall (int count,
   return MPI_SUCCESS;
 }
 
+int AMPI_Barrier(MPI_Comm comm) {
+  return MPI_Barrier(comm);
+}
+
 int AMPI_Gather(void *sendbuf,
 		int sendcnt,
 		MPI_Datatype sendtype,

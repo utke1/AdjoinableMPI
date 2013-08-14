@@ -591,6 +591,21 @@ int BW_AMPI_Wait(AMPI_Request *request,
   return rc;
 }
 
+int FW_AMPI_Barrier(MPI_Comm comm){
+  int rc;
+  rc=MPI_Barrier(comm);
+  ADTOOL_AMPI_push_CallCode(AMPI_BARRIER);
+  ADTOOL_AMPI_push_comm(comm);
+  return rc;
+}
+
+int BW_AMPI_Barrier(MPI_Comm comm){
+  int rc;
+  comm=ADTOOL_AMPI_pop_comm();
+  rc=MPI_Barrier(comm);
+  return rc;
+}
+
 int FW_AMPI_Gather(void *sendbuf,
 		   int sendcnt,
 		   MPI_Datatype sendtype,

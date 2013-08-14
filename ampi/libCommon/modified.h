@@ -122,6 +122,16 @@ int BW_AMPI_Wait(AMPI_Request *request,
 		 MPI_Status *status);
 
 /**
+ * forward sweep variant of \ref AMPI_Barrier
+ */
+int FW_AMPI_Barrier(MPI_Comm comm);
+
+/**
+ * backward sweep variant of \ref AMPI_Barrier
+ */
+int BW_AMPI_Barrier(MPI_Comm comm);
+
+/**
  * forward sweep variant of \ref AMPI_Gather
  */
 int FW_AMPI_Gather(void *sendbuf,

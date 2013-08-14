@@ -138,6 +138,13 @@ MPI_Request ADTOOL_AMPI_pop_request() {
   return 0;
 }
 
+void ADTOOL_AMPI_push_comm(MPI_Comm comm) {
+}
+
+MPI_Comm ADTOOL_AMPI_pop_comm() {
+  return 0;
+}
+
 void* ADTOOL_AMPI_rawData(void* activeData, int *size) { 
   return activeData;
 }
