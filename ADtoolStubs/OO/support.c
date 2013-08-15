@@ -230,3 +230,11 @@ AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype) {
 }
 
 void ADTOOL_AMPI_setupTypes() {};
+
+MPI_Datatype ADTOOL_AMPI_FW_rawType(MPI_Datatype datatype) {
+  return datatype;
+}
+
+MPI_Datatype ADTOOL_AMPI_BW_rawType(MPI_Datatype datatype) {
+  return datatype;
+}

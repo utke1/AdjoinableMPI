@@ -416,6 +416,7 @@ void ADTOOL_AMPI_setupTypes() {
   MPI_Fint adouble;
   MPI_Fint areal;
 #endif
+  /* Change AMPI_ADOUBLE to something else? Need AMPI_ADOUBLE!=MPI_DOUBLE for derived types. */
   AMPI_ADOUBLE=MPI_DOUBLE;
   AMPI_AFLOAT=MPI_FLOAT;
 #ifdef AMPI_FORTRANCOMPATIBLE
@@ -423,6 +424,22 @@ void ADTOOL_AMPI_setupTypes() {
   AMPI_ADOUBLE_PRECISION=MPI_Type_f2c(adouble);
   AMPI_AREAL=MPI_Type_f2c(areal);
 #endif
+}
+
+MPI_Datatype ADTOOL_AMPI_FW_rawType(MPI_Datatype datatype) {
+  int dt_idx = derivedTypeIdx(datatype);
+  if (datatype==AMPI_ADOUBLE) return MPI_DOUBLE;
+  else if (datatype==AMPI_AFLOAT) return MPI_FLOAT;
+  else if (isDerivedType(dt_idx)) return getDTypeData()->packed_types[dt_idx];
+  else return datatype;
+}
+
+MPI_Datatype ADTOOL_AMPI_BW_rawType(MPI_Datatype datatype) {
+  int dt_idx = derivedTypeIdx(datatype);
+  if (datatype==AMPI_ADOUBLE) return MPI_DOUBLE;
+  else if (datatype==AMPI_AFLOAT) return MPI_FLOAT;
+  else if (isDerivedType(dt_idx)) return MPI_DOUBLE;
+  else return datatype;
 }
 
 AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype) {

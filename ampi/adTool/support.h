@@ -388,14 +388,6 @@ void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf);
  * \param idx tape index for each element of the non contiguous buffer
  */
 void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
-void ADTOOL_AMPI_adjointIncrement_DType(int adjointCount,
-					MPI_Datatype datatype,
-					MPI_Comm comm,
-					void* target,
-					void* adjointTarget,
-					void* checkAdjointTarget,
-					void *source,
-					void *idx);
 /**
  * Adjoint multiply the values in adjointTarget by source.
  */
@@ -420,17 +412,21 @@ void ADTOOL_AMPI_adjointEquals(int adjointCount, MPI_Datatype datatype, MPI_Comm
  * \param checkAdjointTarget the adjoint buffer that comes from the bwd sweep. For runtime checking only.
  */ 
 void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget);
-void ADTOOL_AMPI_adjointNullify_DType(int adjointCount,
-				      MPI_Datatype datatype,
-				      MPI_Comm comm,
-				      void* target,
-				      void* adjointTarget,
-				      void* checkAdjointTarget);
 
 /**
  * initialize predefined active types
  */
 void ADTOOL_AMPI_setupTypes();
+
+/**
+ * Take datatype for forward mode, return datatype for transfer.
+ */
+MPI_Datatype ADTOOL_AMPI_FW_rawType(MPI_Datatype datatype);
+
+/**
+ * Take datatype for reverse mode, return datatype for transfer.
+ */
+MPI_Datatype ADTOOL_AMPI_BW_rawType(MPI_Datatype datatype);
 
 #ifdef AMPI_FORTRANCOMPATIBLE
 /**
