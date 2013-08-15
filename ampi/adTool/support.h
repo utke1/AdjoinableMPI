@@ -268,7 +268,7 @@ void ADTOOL_AMPI_push_request(MPI_Request request);
  */
 MPI_Request ADTOOL_AMPI_pop_request();
 
-void ADTOOL_AMPI_push_comm(MPI_Request request);
+void ADTOOL_AMPI_push_comm(MPI_Comm comm);
 
 /**
  * the companion to \ref ADTOOL_AMPI_push_request
