@@ -1238,7 +1238,6 @@ int FW_AMPI_Bcast (void* buf,
   else {
     mappedbuf=buf;
   }
-  /* ^ very makeshift */
   rc=MPI_Bcast(mappedbuf,
                count,
                ADTOOL_AMPI_FW_rawType(datatype),
@@ -1275,16 +1274,13 @@ int BW_AMPI_Bcast (void* buf,
   int dt_idx = derivedTypeIdx(datatype);
   int is_derived = isDerivedType(dt_idx);
   MPI_Comm_rank(comm,&rank);
-  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
-  /**
-  * \todo shortcut taken below by assuming AMPI_ADOUBLE is equivalent to MPI_DOUBLE, need type map.
-  */
   MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
   ADTOOL_AMPI_getAdjointCount(&count,datatype);
+  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
   rc=MPI_Reduce(buf,
                 tempBuf,
                 count,
-                mappedtype, /* <<< here is the offending bit */
+                mappedtype,
                 MPI_SUM,
                 root,
                 comm);
@@ -1309,24 +1305,27 @@ int FW_AMPI_Reduce (void* sbuf,
   int uop_idx = userDefinedOpIdx(op);
   int dt_idx = derivedTypeIdx(datatype);
   MPI_Comm_rank(comm,&rank);
+  MPI_Status s;
   if (isUserDefinedOp(uop_idx)) {
-    /*if(rank==1) {
-      AMPI_Send(sbuf,count,datatype,0,10,AMPI_RECV,comm);
+    if(rank==0) {
+      AMPI_Send(sbuf,count,datatype,1,10,AMPI_RECV,comm);
     }
-    else if(rank==0) {
+    else if(rank==1) {
       void* tempbuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
-      AMPI_Recv(tempbuf,count,datatype,1,10,AMPI_SEND,comm,MPI_STATUS_IGNORE);
+      printf("rank %d sbuf: %f\n",rank,((double*)ADTOOL_AMPI_rawData(sbuf,&count))[0]);
+      AMPI_Recv(tempbuf,count,datatype,0,10,AMPI_SEND,comm,&s);
+      printf("rank %d sbuf: %f\n",rank,((double*)ADTOOL_AMPI_rawData(sbuf,&count))[0]);
       MPI_User_function* uop = getUOpData()->functions[uop_idx];
-      (*uop)(tempbuf,sbuf,&count,&datatype);
-      memcpy(ADTOOL_AMPI_rawData(rbuf,&count),ADTOOL_AMPI_rawData(sbuf,&count),2*sizeof(double));
-      }*/
-    /*int comm_size, is_commutative;
+      /*(*uop)(tempbuf,sbuf,&count,&datatype);*/
+      /*printf("rank %d rbuf: %f %f\n",rank,((double*)ADTOOL_AMPI_rawData(rbuf,&count))[0],((double*)ADTOOL_AMPI_rawData(rbuf,&count))[1]);*/
+    }/*
+    int comm_size, is_commutative;
     int mask, relrank, source, lroot;
     void *tmp_buf;
     userDefinedOpData* uopdata = getUOpData();
     MPI_Comm_size(comm,&comm_size);
     is_commutative = uopdata->commutes[uop_idx];*/
-    /*continue here*/
+    
     
     return 0;
   }
@@ -1373,6 +1372,8 @@ int BW_AMPI_Reduce (void* sbuf,
   int rc,rank;
   void *idx=NULL;
   ADTOOL_AMPI_popReduceCountAndType(&count,&datatype);
+  MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
+  ADTOOL_AMPI_getAdjointCount(&count,datatype);
   void *prevValBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
   void *reduceResultBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
   ADTOOL_AMPI_popReduceInfo(&sbuf,
@@ -1385,14 +1386,13 @@ int BW_AMPI_Reduce (void* sbuf,
 			    &comm,
 			    &idx);
   MPI_Comm_rank(comm,&rank);
-  MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
   rc=MPI_Bcast(reduceResultBuf,
 	       count,
 	       mappedtype,
 	       root,
 	       comm);
   if (rc!=MPI_SUCCESS) MPI_Abort(comm, MPI_ERR_ARG);
-  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
   if (rank==root) {
     ADTOOL_AMPI_adjointNullify(count, mappedtype, comm,
 			       tempBuf, tempBuf, tempBuf);
@@ -1413,12 +1413,12 @@ int BW_AMPI_Reduce (void* sbuf,
 			      tempBuf, tempBuf, tempBuf, prevValBuf, idx);
   }
   else if (op==MPI_MAX || op==MPI_MIN) {
-    void *equalsResultBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+    void *equalsResultBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
     ADTOOL_AMPI_adjointNullify(count, mappedtype, comm,
 			       equalsResultBuf, equalsResultBuf, equalsResultBuf);
     ADTOOL_AMPI_adjointEquals(count, mappedtype, comm,
 			      equalsResultBuf, equalsResultBuf, equalsResultBuf, prevValBuf, reduceResultBuf, idx);
-    void *contributionTotalsBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+    void *contributionTotalsBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
     MPI_Allreduce(equalsResultBuf,
 		  contributionTotalsBuf,
 		  count,
@@ -1459,13 +1459,10 @@ int FW_AMPI_Allreduce (void* sbuf,
     mappedsbuf=sbuf;
     mappedrbuf=rbuf;
   }
-  /**
-   * \todo shortcut taken below by assuming AMPI_ADOUBLE is equivalent to MPI_DOUBLE, need type map.
-   */
   rc=MPI_Allreduce(mappedsbuf,
                    mappedrbuf,
                    count,
-                   MPI_DOUBLE, /* <<< here is the offending bit */
+                   ADTOOL_AMPI_FW_rawType(datatype),
                    op,
                    comm);
   if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
@@ -1492,8 +1489,10 @@ int BW_AMPI_Allreduce (void* sbuf,
   int rc=0,rank, rootPlaceHolder;
   void *idx=NULL;
   ADTOOL_AMPI_popReduceCountAndType(&count,&datatype);
-  void *prevValBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
-  void *reduceResultBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+  MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
+  ADTOOL_AMPI_getAdjointCount(&count,datatype);
+  void *prevValBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
+  void *reduceResultBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
   ADTOOL_AMPI_popReduceInfo(&sbuf,
                             &rbuf,
                             &prevValBuf,
@@ -1504,38 +1503,38 @@ int BW_AMPI_Allreduce (void* sbuf,
                             &comm,
                             &idx);
   MPI_Comm_rank(comm,&rank);
-  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
   MPI_Allreduce(rbuf,
                 tempBuf,
                 count,
-                MPI_DOUBLE,
+                mappedtype,
                 MPI_SUM,
                 comm);
   if (op==MPI_SUM) {
      ; /* nothing extra to be done here */
   }
   else if (op==MPI_PROD) {
-    ADTOOL_AMPI_adjointMultiply(count, datatype, comm,
+    ADTOOL_AMPI_adjointMultiply(count, mappedtype, comm,
                                 tempBuf, tempBuf, tempBuf, reduceResultBuf, idx);
-    ADTOOL_AMPI_adjointDivide(count, datatype, comm,
+    ADTOOL_AMPI_adjointDivide(count, mappedtype, comm,
                               tempBuf, tempBuf, tempBuf, prevValBuf, idx);
   }
   else if (op==MPI_MAX || op==MPI_MIN) {
-    void *equalsResultBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
-    ADTOOL_AMPI_adjointNullify(count, datatype, comm,
+    void *equalsResultBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
+    ADTOOL_AMPI_adjointNullify(count, mappedtype, comm,
                                equalsResultBuf, equalsResultBuf, equalsResultBuf);
-    ADTOOL_AMPI_adjointEquals(count, datatype, comm,
+    ADTOOL_AMPI_adjointEquals(count, mappedtype, comm,
                               equalsResultBuf, equalsResultBuf, equalsResultBuf, prevValBuf, reduceResultBuf, idx);
-    void *contributionTotalsBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+    void *contributionTotalsBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
     MPI_Allreduce(equalsResultBuf,
                   contributionTotalsBuf,
                   count,
-                  MPI_DOUBLE,
+                  mappedtype,
                   MPI_SUM,
                   comm);
-    ADTOOL_AMPI_adjointMultiply(count, datatype, comm,
+    ADTOOL_AMPI_adjointMultiply(count, mappedtype, comm,
                                 tempBuf, tempBuf, tempBuf, equalsResultBuf, idx);
-    ADTOOL_AMPI_adjointDivide(count, datatype, comm,
+    ADTOOL_AMPI_adjointDivide(count, mappedtype, comm,
                               tempBuf, tempBuf, tempBuf, contributionTotalsBuf, idx);
     ADTOOL_AMPI_releaseAdjointTempBuf(equalsResultBuf);
     ADTOOL_AMPI_releaseAdjointTempBuf(contributionTotalsBuf);
@@ -1543,9 +1542,9 @@ int BW_AMPI_Allreduce (void* sbuf,
   else {
     assert(0); /* unimplemented */
   }
-  ADTOOL_AMPI_adjointIncrement(count, datatype, comm,
+  ADTOOL_AMPI_adjointIncrement(count, mappedtype, comm,
                                sbuf, sbuf, sbuf, tempBuf, idx);
-  ADTOOL_AMPI_adjointNullify(count, datatype, comm,
+  ADTOOL_AMPI_adjointNullify(count, mappedtype, comm,
                              rbuf, rbuf, rbuf);
   ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
   ADTOOL_AMPI_releaseAdjointTempBuf(reduceResultBuf);
@@ -1682,7 +1681,7 @@ int AMPI_Type_create_struct (int count,
   int array_of_p_blocklengths[count];
   MPI_Aint array_of_p_displacements[count];
   MPI_Datatype array_of_p_types[count];
-  int s, is_active, in_map_lb=0, in_map_ub=0, mapsize=0, p_mapsize=0;
+  int s, is_active, mapsize=0, p_mapsize=0;
   for (i=0;i<count;i++) {
     is_active = ADTOOL_AMPI_isActiveType(array_of_types[i])==AMPI_ACTIVE;
     array_of_p_blocklengths[i] = array_of_blocklengths[i];
@@ -1693,23 +1692,13 @@ int AMPI_Type_create_struct (int count,
     else if (array_of_types[i]==MPI_INT) s = sizeof(int);
     else if (array_of_types[i]==MPI_FLOAT) s = sizeof(float);
     else if (array_of_types[i]==MPI_CHAR) s = sizeof(char);
-    else if (array_of_types[i]==MPI_UB) {
-      in_map_ub = (int)array_of_displacements[i];
-      break;
-    }
-    else if (array_of_types[i]==MPI_LB) {
-      in_map_lb = (int)array_of_displacements[i];
-      continue;
-    }
     else assert(0);
     p_mapsize += array_of_blocklengths[i]*s;
   }
-  mapsize = in_map_ub - in_map_lb;
-  if (mapsize==0) {
-    MPI_Aint lb,extent;
-    MPI_Type_get_extent(*newtype,&lb,&extent);
-    mapsize = (int)extent;
-  }
+  /* we'll take a guess at the struct size, but it's best to specify with MPI_Type_create_resized */
+  MPI_Aint lb, extent;
+  MPI_Type_get_extent(*newtype,&lb,&extent);
+  mapsize = (int)extent - (int)lb;
   rc = MPI_Type_create_struct (count,
 			       array_of_p_blocklengths,
 			       array_of_p_displacements,
@@ -1736,6 +1725,24 @@ int AMPI_Type_commit (MPI_Datatype *datatype) {
   int dt_idx = derivedTypeIdx(*datatype);
   if (isDerivedType(dt_idx)) MPI_Type_commit(&(getDTypeData()->packed_types[dt_idx]));
   return MPI_Type_commit(datatype);
+}
+
+int AMPI_Type_create_resized (MPI_Datatype oldtype,
+			      MPI_Aint lb,
+			      MPI_Aint extent,
+			      MPI_Datatype *newtype) {
+  int rc;
+  rc = MPI_Type_create_resized(oldtype,
+			       lb,
+			       extent,
+			       newtype);
+  int dt_idx = derivedTypeIdx(oldtype);
+  if (isDerivedType(dt_idx)) {
+    derivedTypeData* dtd = getDTypeData();
+    dtd->mapsizes[dt_idx] = (int)(extent-lb);
+    dtd->derived_types[dt_idx] = *newtype;
+  }
+  return rc;
 }
 
 userDefinedOpData* getUOpData() {
