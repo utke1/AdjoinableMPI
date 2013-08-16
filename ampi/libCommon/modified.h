@@ -346,6 +346,11 @@ int AMPI_Type_create_struct (int count,
 			     MPI_Datatype array_of_types[],
 			     MPI_Datatype *newtype);
 
+int AMPI_Type_create_resized (MPI_Datatype oldtype,
+			      MPI_Aint lb,
+			      MPI_Aint extent,
+			      MPI_Datatype *newtype);
+
 /**
  * create reduction op, calls MPI_Op_create, stores info
  */

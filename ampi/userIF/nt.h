@@ -29,4 +29,22 @@ int AMPI_Buffer_attach_NT(void *buffer,
 int AMPI_Buffer_detach_NT(void *buffer, 
 			  int *size);
 
+int AMPI_Type_create_struct_NT(int count,
+			       int array_of_blocklengths[],
+			       MPI_Aint array_of_displacements[],
+			       MPI_Datatype array_of_types[],
+			       MPI_Datatype *newtype);
+
+int AMPI_Type_create_resized_NT(MPI_Datatype oldtype,
+				MPI_Aint lb,
+				MPI_Aint extent,
+				MPI_Datatype *newtype);
+
+int AMPI_Type_commit_NT(MPI_Datatype *datatype);
+
+int AMPI_Op_create_NT(MPI_User_function *function,
+		      int commute,
+		      MPI_Op *op);
+
+
 #endif
