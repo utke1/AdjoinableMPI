@@ -1271,8 +1271,6 @@ int BW_AMPI_Bcast (void* buf,
 			   &root,
 			   &comm,
 			   &idx);
-  int dt_idx = derivedTypeIdx(datatype);
-  int is_derived = isDerivedType(dt_idx);
   MPI_Comm_rank(comm,&rank);
   MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
   ADTOOL_AMPI_getAdjointCount(&count,datatype);
@@ -1302,66 +1300,39 @@ int FW_AMPI_Reduce (void* sbuf,
 		    int root,
 		    MPI_Comm comm) {
   int rc,rank;
-  int uop_idx = userDefinedOpIdx(op);
-  int dt_idx = derivedTypeIdx(datatype);
   MPI_Comm_rank(comm,&rank);
-  MPI_Status s;
-  if (isUserDefinedOp(uop_idx)) {
-    if(rank==0) {
-      AMPI_Send(sbuf,count,datatype,1,10,AMPI_RECV,comm);
-    }
-    else if(rank==1) {
-      void* tempbuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
-      printf("rank %d sbuf: %f\n",rank,((double*)ADTOOL_AMPI_rawData(sbuf,&count))[0]);
-      AMPI_Recv(tempbuf,count,datatype,0,10,AMPI_SEND,comm,&s);
-      printf("rank %d sbuf: %f\n",rank,((double*)ADTOOL_AMPI_rawData(sbuf,&count))[0]);
-      MPI_User_function* uop = getUOpData()->functions[uop_idx];
-      /*(*uop)(tempbuf,sbuf,&count,&datatype);*/
-      /*printf("rank %d rbuf: %f %f\n",rank,((double*)ADTOOL_AMPI_rawData(rbuf,&count))[0],((double*)ADTOOL_AMPI_rawData(rbuf,&count))[1]);*/
-    }/*
-    int comm_size, is_commutative;
-    int mask, relrank, source, lroot;
-    void *tmp_buf;
-    userDefinedOpData* uopdata = getUOpData();
-    MPI_Comm_size(comm,&comm_size);
-    is_commutative = uopdata->commutes[uop_idx];*/
-    
-    
-    return 0;
+  double* mappedsbuf=NULL;
+  double* mappedrbuf=NULL;
+  if(ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+    mappedsbuf=ADTOOL_AMPI_rawData(sbuf,&count);
+    mappedrbuf=ADTOOL_AMPI_rawData(rbuf,&count);
   }
   else {
-    double* mappedsbuf=NULL;
-    double* mappedrbuf=NULL;
-    if(ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
-      mappedsbuf=ADTOOL_AMPI_rawData(sbuf,&count);
-      mappedrbuf=ADTOOL_AMPI_rawData(rbuf,&count);
-    }
-    else {
-      mappedsbuf=sbuf;
-      mappedrbuf=rbuf;
-    }
-    rc=MPI_Reduce(mappedsbuf,
-		  mappedrbuf,
-		  count,
-		  ADTOOL_AMPI_FW_rawType(datatype),
-		  op,
-		  root,
-		  comm);
-    if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
-      ADTOOL_AMPI_pushReduceInfo(sbuf,
-				 rbuf,
-				 rbuf,
-				 rank==root, /* also push contents of rbuf for root */
-				 count,
-				 datatype,
-				 op,
-				 root,
-				 comm);
-      ADTOOL_AMPI_push_CallCode(AMPI_REDUCE);
-    }
-    return rc;
+    mappedsbuf=sbuf;
+    mappedrbuf=rbuf;
   }
+  rc=MPI_Reduce(mappedsbuf,
+		mappedrbuf,
+		count,
+		ADTOOL_AMPI_FW_rawType(datatype),
+		op,
+		root,
+		comm);
+  if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
+    ADTOOL_AMPI_pushReduceInfo(sbuf,
+			       rbuf,
+			       rbuf,
+			       rank==root, /* also push contents of rbuf for root */
+			       count,
+			       datatype,
+			       op,
+			       root,
+			       comm);
+    ADTOOL_AMPI_push_CallCode(AMPI_REDUCE);
+  }
+  return rc;
 }
+
 int BW_AMPI_Reduce (void* sbuf,
 		    void* rbuf,
 		    int count,
