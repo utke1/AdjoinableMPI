@@ -10,19 +10,6 @@ extern "C" {
 #include "ampi/userIF/activity.h"
 #include "ampi/userIF/modified.h"
 
-typedef void (ADTOOL_AMPI_pushBcastInfoF) (void*,int, MPI_Datatype, int, MPI_Comm);
-typedef void (ADTOOL_AMPI_popBcastInfoF) (void**, int*, MPI_Datatype*, int*, MPI_Comm*, void**);
-
-struct ADTOOL_AMPI_FPCollection{
-    ADTOOL_AMPI_pushBcastInfoF *pushBcastInfo_fp;
-    ADTOOL_AMPI_popBcastInfoF *popBcastInfo_fp;
-};
-
-/**
- * the single instance of ADTOOL_AMPI_FPCollection
- */
-extern struct ADTOOL_AMPI_FPCollection ourADTOOL_AMPI_FPCollection;
-
 /**
  * \file 
  * \brief methods that an AD tool needs to implement in order to use the implementation in Common
@@ -37,6 +24,8 @@ void ADTOOL_AMPI_pushBcastInfo(void* buf,
 			       MPI_Datatype datatype,
 			       int root,
 			       MPI_Comm comm);
+typedef void (ADTOOL_AMPI_pushBcastInfoF) (void*,int, MPI_Datatype, int, MPI_Comm);
+
 
 /**
  * Popping the required elements for Bcast calls.
@@ -47,6 +36,8 @@ void ADTOOL_AMPI_popBcastInfo(void** buf,
 			      int* root,
 			      MPI_Comm* comm,
 			      void **idx);
+typedef void (ADTOOL_AMPI_popBcastInfoF) (void**, int*, MPI_Datatype*, int*, MPI_Comm*, void**);
+
 
 /**
  * Pushing and popping a block of double values, specifically for reduction results.
@@ -456,6 +447,18 @@ void adtool_ampi_fortransetuptypes_(MPI_Fint* adouble, MPI_Fint* areal);
  * \returns the respective enum value based on the type's activity
  */
 AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype);
+
+
+struct ADTOOL_AMPI_FPCollection{
+    ADTOOL_AMPI_pushBcastInfoF *pushBcastInfo_fp;
+    ADTOOL_AMPI_popBcastInfoF *popBcastInfo_fp;
+};
+
+/**
+ * the single instance of ADTOOL_AMPI_FPCollection
+ */
+extern struct ADTOOL_AMPI_FPCollection ourADTOOL_AMPI_FPCollection;
+
 
 #if defined(__cplusplus)
 }
