@@ -44,9 +44,12 @@ typedef void (ADTOOL_AMPI_popBcastInfoF) (void**, int*, MPI_Datatype*, int*, MPI
  */
 void ADTOOL_AMPI_pushDoubleArray(void* buf,
 				 int count);
+typedef void (ADTOOL_AMPI_pushDoubleArrayF) (void*, int);
 
 void ADTOOL_AMPI_popDoubleArray(double* buf,
 				int* count);
+typedef void (ADTOOL_AMPI_popDoubleArrayF) (double*, int*);
+
 /**
  * The implementation of pushing the required elements for Reduce calls.
  * Might rework for conciseness. Note that we require a separate TAPE_AMPI_push_MPI_Op
@@ -62,12 +65,14 @@ void ADTOOL_AMPI_pushReduceInfo(void* sbuf,
 				MPI_Op op,
 				int root,
 				MPI_Comm comm);
+typedef void (ADTOOL_AMPI_pushReduceInfoF) (void*, void*, void*, int, int, MPI_Datatype, MPI_Op, int, MPI_Comm);
 
 /**
  * Popping the required elements for Reduce calls.
  */
 void ADTOOL_AMPI_popReduceCountAndType(int* count,
 				       MPI_Datatype* datatype);
+typedef void (ADTOOL_AMPI_popReduceCountAndTypeF) (int*, MPI_Datatype*);
 
 void ADTOOL_AMPI_popReduceInfo(void** sbuf,
 			       void** rbuf,
@@ -78,6 +83,7 @@ void ADTOOL_AMPI_popReduceInfo(void** sbuf,
 			       int* root,
 			       MPI_Comm* comm,
 			       void **idx);
+typedef void (ADTOOL_AMPI_popReduceInfoF) (void**, void**, void**, void**, int*, MPI_Op*, int*, MPI_Comm*, void **);
 
 
 /**
@@ -95,6 +101,7 @@ void ADTOOL_AMPI_pushSRinfo(void* buf,
 			    int tag,
 			    AMPI_PairedWith pairedWith,
 			    MPI_Comm comm);
+typedef void (ADTOOL_AMPI_pushSRinfoF) (void*, int, MPI_Datatype, int, int, AMPI_PairedWith, MPI_Comm);
 
 /**
  * the implementation of popping the required elements for send/recv
@@ -109,6 +116,7 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   AMPI_PairedWith* pairedWith,
 			   MPI_Comm* comm,
 			   void **idx);
+typedef void (ADTOOL_AMPI_popSRinfoF) (void**, int*, MPI_Datatype*, int*, int*, AMPI_PairedWith*, MPI_Comm*, void**);
 
 /**
  * the implementation of pushing the required elements for gather/scatter
@@ -136,6 +144,7 @@ void ADTOOL_AMPI_pushGSinfo(int commSizeForRootOrNull,
 			    MPI_Datatype type,
 			    int  root,
 			    MPI_Comm comm);
+typedef void (ADTOOL_AMPI_pushGSinfoF) (int, void*, int, MPI_Datatype, void*, int, MPI_Datatype, int, MPI_Comm);
 
 /**
  * this must be called before \ref ADTOOL_AMPI_popGSinfo and \ref ADTOOL_AMPI_popGSVinfo
@@ -143,6 +152,7 @@ void ADTOOL_AMPI_pushGSinfo(int commSizeForRootOrNull,
  * rcnts and displs in the subsequent call to \ref ADTOOL_AMPI_popGSVinfo
  */
 void ADTOOL_AMPI_popGScommSizeForRootOrNull(int *commSizeForRootOrNull);
+typedef void (ADTOOL_AMPI_popGScommSizeForRootOrNullF) (int*);
 
 /**
  * the implementation of popping the required elements for gather/scatter
@@ -169,6 +179,7 @@ void ADTOOL_AMPI_popGSinfo(int commSizeForRootOrNull,
 			   MPI_Datatype *type,
 			   int *root,
 			   MPI_Comm *comm);
+typedef void (ADTOOL_AMPI_popGSinfoF) (int, void**, int*, MPI_Datatype*, void**, int*, MPI_Datatype*, int*, MPI_Comm*);
 
 /**
  * the implementation of pushing the required elements for gatherv/scatterv
@@ -198,6 +209,7 @@ void ADTOOL_AMPI_pushGSVinfo(int commSizeForRootOrNull,
                              MPI_Datatype type,
                              int  root,
                              MPI_Comm comm);
+typedef void (ADTOOL_AMPI_pushGSVinfoF) (int, void*, int*, int*, MPI_Datatype, void*, int, MPI_Datatype, int, MPI_Comm);
 
 /**
  * the implementation of popping the required elements for gatherv/scatterv
@@ -226,6 +238,7 @@ void ADTOOL_AMPI_popGSVinfo(int commSizeForRootOrNull,
                             MPI_Datatype *type,
                             int *root,
                             MPI_Comm *comm);
+typedef void (ADTOOL_AMPI_popGSVinfoF) (int, void**, int*, int*, MPI_Datatype*, void**, int*, MPI_Datatype*, int*, MPI_Comm*);
 
 /**
  * the implementation of pushing an operation code to the 
@@ -450,8 +463,20 @@ AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype);
 
 
 struct ADTOOL_AMPI_FPCollection{
-    ADTOOL_AMPI_pushBcastInfoF *pushBcastInfo_fp;
-    ADTOOL_AMPI_popBcastInfoF *popBcastInfo_fp;
+  ADTOOL_AMPI_pushBcastInfoF *pushBcastInfo_fp;
+  ADTOOL_AMPI_popBcastInfoF *popBcastInfo_fp;
+  ADTOOL_AMPI_pushDoubleArrayF *pushDoubleArray_fp;
+  ADTOOL_AMPI_popDoubleArrayF *popDoubleArray_fp;
+  ADTOOL_AMPI_pushReduceInfoF *pushReduceInfo_fp;
+  ADTOOL_AMPI_popReduceCountAndTypeF *popReduceCountAndType_fp;
+  ADTOOL_AMPI_popReduceInfoF *popReduceInfo_fp;
+  ADTOOL_AMPI_pushSRinfoF *pushSRinfo_fp;
+  ADTOOL_AMPI_popSRinfoF *popSRinfo_fp;
+  ADTOOL_AMPI_pushGSinfoF *pushGSinfo_fp;
+  ADTOOL_AMPI_popGScommSizeForRootOrNullF *popGScommSizeForRootOrNull_fp;
+  ADTOOL_AMPI_popGSinfoF *popGSinfo_fp;
+  ADTOOL_AMPI_pushGSVinfoF *pushGSVinfo_fp;
+  ADTOOL_AMPI_popGSVinfoF *popGSVinfo_fp;
 };
 
 /**

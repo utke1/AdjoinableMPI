@@ -64,13 +64,13 @@ int FW_AMPI_Recv(void* buf,
       ADTOOL_AMPI_writeData(buf,&count);
       if(tag==MPI_ANY_TAG) tag=myStatus.MPI_TAG;
       if(src==MPI_ANY_SOURCE) src=myStatus.MPI_SOURCE;
-      ADTOOL_AMPI_pushSRinfo(buf,
-			     count,
-			     datatype,
-			     src,
-			     tag,
-			     pairedWith,
-			     comm);
+      (*ourADTOOL_AMPI_FPCollection.pushSRinfo_fp)(buf,
+						   count,
+						   datatype,
+						   src,
+						   tag,
+						   pairedWith,
+						   comm);
       ADTOOL_AMPI_push_CallCode(AMPI_RECV);
     }
     if (status!=MPI_STATUS_IGNORE) *status=myStatus;
@@ -88,14 +88,14 @@ int BW_AMPI_Recv(void* buf,
 		 MPI_Status* status) {
   int rc;
   void *idx=NULL;
-  ADTOOL_AMPI_popSRinfo(&buf,
-			&count,
-			&datatype,
-			&src,
-			&tag,
-			&pairedWith,
-			&comm,
-			&idx);
+  (*ourADTOOL_AMPI_FPCollection.popSRinfo_fp)(&buf,
+					      &count,
+					      &datatype,
+					      &src,
+					      &tag,
+					      &pairedWith,
+					      &comm,
+					      &idx);
   if (!(
 	pairedWith==AMPI_SEND 
 	|| 
@@ -296,13 +296,13 @@ int FW_AMPI_Send (void* buf,
 		comm);
     if (is_derived) ADTOOL_AMPI_releaseAdjointTempBuf(mappedbuf);
     if (rc==MPI_SUCCESS && (ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE || is_derived)) {
-      ADTOOL_AMPI_pushSRinfo(buf,
-			     count,
-			     datatype,
-			     dest,
-			     tag,
-			     pairedWith,
-			     comm);
+      (*ourADTOOL_AMPI_FPCollection.pushSRinfo_fp)(buf,
+						   count,
+						   datatype,
+						   dest,
+						   tag,
+						   pairedWith,
+						   comm);
       ADTOOL_AMPI_push_CallCode(AMPI_SEND);
     }
   }
@@ -318,14 +318,14 @@ int BW_AMPI_Send (void* buf,
                   MPI_Comm comm) {
   int rc;
   void *idx=NULL;
-  ADTOOL_AMPI_popSRinfo(&buf,
-			&count,
-			&datatype,
-			&dest,
-			&tag,
-			&pairedWith,
-			&comm,
-			&idx);
+  (*ourADTOOL_AMPI_FPCollection.popSRinfo_fp)(&buf,
+					      &count,
+					      &datatype,
+					      &dest,
+					      &tag,
+					      &pairedWith,
+					      &comm,
+					      &idx);
   if (!(
 	pairedWith==AMPI_RECV 
 	|| 
@@ -617,15 +617,15 @@ int FW_AMPI_Gather(void *sendbuf,
 		  comm);
     if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE) {
       if (myRank==root) ADTOOL_AMPI_writeData(recvbuf,&recvcnt);
-      ADTOOL_AMPI_pushGSinfo(((myRank==root)?myCommSize:0),
-                             recvbuf,
-                             recvcnt,
-                             recvtype,
-                             sendbuf,
-                             sendcnt,
-                             sendtype,
-                             root,
-                             comm);
+      (*ourADTOOL_AMPI_FPCollection.pushGSinfo_fp)(((myRank==root)?myCommSize:0),
+						   recvbuf,
+						   recvcnt,
+						   recvtype,
+						   sendbuf,
+						   sendcnt,
+						   sendtype,
+						   root,
+						   comm);
       ADTOOL_AMPI_push_CallCode(AMPI_GATHER);
     }
   }
@@ -643,16 +643,16 @@ int BW_AMPI_Gather(void *sendbuf,
   void *idx=NULL;
   int rc=MPI_SUCCESS;
   int commSizeForRootOrNull, rTypeSize;
-  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
-  ADTOOL_AMPI_popGSinfo(commSizeForRootOrNull,
-			&recvbuf,
-			&recvcnt,
-			&recvtype,
-			&sendbuf,
-			&sendcnt,
-			&sendtype,
-			&root,
-			&comm);
+  (*ourADTOOL_AMPI_FPCollection.popGScommSizeForRootOrNull_fp)(&commSizeForRootOrNull);
+  (*ourADTOOL_AMPI_FPCollection.popGSinfo_fp)(commSizeForRootOrNull,
+					      &recvbuf,
+					      &recvcnt,
+					      &recvtype,
+					      &sendbuf,
+					      &sendcnt,
+					      &sendtype,
+					      &root,
+					      &comm);
   ADTOOL_AMPI_getAdjointCount(&sendcnt,sendtype);
   void *tempBuf = ADTOOL_AMPI_allocateTempBuf(sendcnt,sendtype,comm) ;
   rc=MPI_Scatter(recvbuf,
@@ -711,15 +711,15 @@ int FW_AMPI_Scatter(void *sendbuf,
                    comm);
     if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE) {
       ADTOOL_AMPI_writeData(recvbuf,&recvcnt);
-      ADTOOL_AMPI_pushGSinfo(((myRank==root)?myCommSize:0),
-                             sendbuf,
-                             sendcnt,
-                             sendtype,
-                             recvbuf,
-                             recvcnt,
-                             recvtype,
-                             root,
-                             comm);
+      (*ourADTOOL_AMPI_FPCollection.pushGSinfo_fp)(((myRank==root)?myCommSize:0),
+						   sendbuf,
+						   sendcnt,
+						   sendtype,
+						   recvbuf,
+						   recvcnt,
+						   recvtype,
+						   root,
+						   comm);
       ADTOOL_AMPI_push_CallCode(AMPI_SCATTER);
     }
   }
@@ -737,16 +737,16 @@ int BW_AMPI_Scatter(void *sendbuf,
   int rc=MPI_SUCCESS;
   void *idx=NULL;
   int commSizeForRootOrNull;
-  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
-  ADTOOL_AMPI_popGSinfo(commSizeForRootOrNull,
-			&sendbuf,
-			&sendcnt,
-			&sendtype,
-			&recvbuf,
-			&recvcnt,
-			&recvtype,
-			&root,
-			&comm);
+  (*ourADTOOL_AMPI_FPCollection.popGScommSizeForRootOrNull_fp)(&commSizeForRootOrNull);
+  (*ourADTOOL_AMPI_FPCollection.popGSinfo_fp)(commSizeForRootOrNull,
+					      &sendbuf,
+					      &sendcnt,
+					      &sendtype,
+					      &recvbuf,
+					      &recvcnt,
+					      &recvtype,
+					      &root,
+					      &comm);
   void *tempBuf = NULL;
   if (commSizeForRootOrNull>0) tempBuf=ADTOOL_AMPI_allocateTempBuf(sendcnt*commSizeForRootOrNull,sendtype,comm);
   rc=MPI_Gather(recvbuf,
@@ -802,15 +802,15 @@ int FW_AMPI_Allgather(void *sendbuf,
                      comm);
     if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE) {
       ADTOOL_AMPI_writeData(recvbuf,&recvcount);
-      ADTOOL_AMPI_pushGSinfo((myCommSize),
-                             recvbuf,
-                             recvcount,
-                             recvtype,
-                             sendbuf,
-                             sendcount,
-                             sendtype,
-                             0,
-                             comm);
+      (*ourADTOOL_AMPI_FPCollection.pushGSinfo_fp)((myCommSize),
+						   recvbuf,
+						   recvcount,
+						   recvtype,
+						   sendbuf,
+						   sendcount,
+						   sendtype,
+						   0,
+						   comm);
       ADTOOL_AMPI_push_CallCode(AMPI_ALLGATHER);
     }
   }
@@ -827,16 +827,16 @@ int BW_AMPI_Allgather(void *sendbuf,
   void *idx=NULL;
   int rc=MPI_SUCCESS, rootPlaceholder;
   int commSizeForRootOrNull, rTypeSize, *recvcounts,i;
-  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
-  ADTOOL_AMPI_popGSinfo(commSizeForRootOrNull,
-                        &recvbuf,
-                        &recvcount,
-                        &recvtype,
-                        &sendbuf,
-                        &sendcount,
-                        &sendtype,
-                        &rootPlaceholder,
-                        &comm);
+  (*ourADTOOL_AMPI_FPCollection.popGScommSizeForRootOrNull_fp)(&commSizeForRootOrNull);
+  (*ourADTOOL_AMPI_FPCollection.popGSinfo_fp)(commSizeForRootOrNull,
+					      &recvbuf,
+					      &recvcount,
+					      &recvtype,
+					      &sendbuf,
+					      &sendcount,
+					      &sendtype,
+					      &rootPlaceholder,
+					      &comm);
   recvcounts=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
   for (i=0;i<commSizeForRootOrNull;++i) recvcounts[i]=sendcount;
   void *tempBuf = ADTOOL_AMPI_allocateTempBuf(sendcount,sendtype,comm);
@@ -901,16 +901,16 @@ int FW_AMPI_Gatherv(void *sendbuf,
                    comm);
     if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE) {
       if (myRank==root) ADTOOL_AMPI_writeDataV(recvbuf,recvcnts, displs);
-      ADTOOL_AMPI_pushGSVinfo(((myRank==root)?myCommSize:0),
-                              recvbuf,
-                              recvcnts,
-                              displs,
-                              recvtype,
-                              sendbuf,
-                              sendcnt,
-                              sendtype,
-                              root,
-                              comm);
+      (*ourADTOOL_AMPI_FPCollection.pushGSVinfo_fp)(((myRank==root)?myCommSize:0),
+						    recvbuf,
+						    recvcnts,
+						    displs,
+						    recvtype,
+						    sendbuf,
+						    sendcnt,
+						    sendtype,
+						    root,
+						    comm);
       ADTOOL_AMPI_push_CallCode(AMPI_GATHERV);
     }
   }
@@ -932,7 +932,7 @@ int BW_AMPI_Gatherv(void *sendbuf,
   int myRank, commSizeForRootOrNull, rTypeSize;
   int *tRecvCnts=recvcnts, *tDispls=displs;
   char tRecvCntsFlag=0, tDisplsFlag=0;
-  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
+  (*ourADTOOL_AMPI_FPCollection.popGScommSizeForRootOrNull_fp)(&commSizeForRootOrNull);
   if (tRecvCnts==NULL) {
     tRecvCnts=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
     tRecvCntsFlag=1;
@@ -941,16 +941,16 @@ int BW_AMPI_Gatherv(void *sendbuf,
     tDispls=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
     tDisplsFlag=1;
   }
-  ADTOOL_AMPI_popGSVinfo(commSizeForRootOrNull,
-                         &recvbuf,
-                         tRecvCnts,
-                         tDispls,
-                         &recvtype,
-                         &sendbuf,
-                         &sendcnt,
-                         &sendtype,
-                         &root,
-                         &comm);
+  (*ourADTOOL_AMPI_FPCollection.popGSVinfo_fp)(commSizeForRootOrNull,
+					       &recvbuf,
+					       tRecvCnts,
+					       tDispls,
+					       &recvtype,
+					       &sendbuf,
+					       &sendcnt,
+					       &sendtype,
+					       &root,
+					       &comm);
   MPI_Comm_rank(comm, &myRank);
   ADTOOL_AMPI_getAdjointCount(&sendcnt,sendtype);
   void *tempBuf = ADTOOL_AMPI_allocateTempBuf(sendcnt,sendtype,comm) ;
@@ -1018,16 +1018,16 @@ int FW_AMPI_Scatterv(void *sendbuf,
                     comm);
     if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE) {
       ADTOOL_AMPI_writeData(recvbuf,&recvcnt);
-      ADTOOL_AMPI_pushGSVinfo(((myRank==root)?myCommSize:0),
-                              sendbuf,
-                              sendcnts,
-                              displs,
-                              sendtype,
-                              recvbuf,
-                              recvcnt,
-                              recvtype,
-                              root,
-                              comm);
+      (*ourADTOOL_AMPI_FPCollection.pushGSVinfo_fp)(((myRank==root)?myCommSize:0),
+						    sendbuf,
+						    sendcnts,
+						    displs,
+						    sendtype,
+						    recvbuf,
+						    recvcnt,
+						    recvtype,
+						    root,
+						    comm);
       ADTOOL_AMPI_push_CallCode(AMPI_SCATTERV);
     }
   }
@@ -1049,7 +1049,7 @@ int BW_AMPI_Scatterv(void *sendbuf,
   int myRank, commSizeForRootOrNull, *tempDispls;
   int *tSendCnts=sendcnts, *tDispls=displs;
   char tSendCntsFlag=0, tDisplsFlag=0;
-  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
+  (*ourADTOOL_AMPI_FPCollection.popGScommSizeForRootOrNull_fp)(&commSizeForRootOrNull);
   if (tSendCnts==NULL && commSizeForRootOrNull>0) {
     tSendCnts=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
     tSendCntsFlag=1;
@@ -1058,16 +1058,16 @@ int BW_AMPI_Scatterv(void *sendbuf,
     tDispls=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
     tDisplsFlag=1;
   }
-  ADTOOL_AMPI_popGSVinfo(commSizeForRootOrNull,
-                         &sendbuf,
-                         tSendCnts,
-                         tDispls,
-                         &sendtype,
-                         &recvbuf,
-                         &recvcnt,
-                         &recvtype,
-                         &root,
-                         &comm);
+  (*ourADTOOL_AMPI_FPCollection.popGSVinfo_fp)(commSizeForRootOrNull,
+					       &sendbuf,
+					       tSendCnts,
+					       tDispls,
+					       &sendtype,
+					       &recvbuf,
+					       &recvcnt,
+					       &recvtype,
+					       &root,
+					       &comm);
   MPI_Comm_rank(comm, &myRank);
   tempDispls=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
   for (i=0;i<commSizeForRootOrNull;++i) {
@@ -1139,16 +1139,16 @@ int FW_AMPI_Allgatherv(void *sendbuf,
                       comm);
     if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(recvtype)==AMPI_ACTIVE) {
       ADTOOL_AMPI_writeDataV(recvbuf,recvcnts, displs);
-      ADTOOL_AMPI_pushGSVinfo(myCommSize,
-                              recvbuf,
-                              recvcnts,
-                              displs,
-                              recvtype,
-                              sendbuf,
-                              sendcnt,
-                              sendtype,
-                              0,
-                              comm);
+      (*ourADTOOL_AMPI_FPCollection.pushGSVinfo_fp)(myCommSize,
+						    recvbuf,
+						    recvcnts,
+						    displs,
+						    recvtype,
+						    sendbuf,
+						    sendcnt,
+						    sendtype,
+						    0,
+						    comm);
       ADTOOL_AMPI_push_CallCode(AMPI_ALLGATHERV);
     }
   }
@@ -1169,7 +1169,7 @@ int BW_AMPI_Allgatherv(void *sendbuf,
   int myRank, commSizeForRootOrNull, rTypeSize,rootPlaceholder;
   int *tRecvCnts=recvcnts, *tDispls=displs;
   char tRecvCntsFlag=0, tDisplsFlag=0;
-  ADTOOL_AMPI_popGScommSizeForRootOrNull(&commSizeForRootOrNull);
+  (*ourADTOOL_AMPI_FPCollection.popGScommSizeForRootOrNull_fp)(&commSizeForRootOrNull);
   if (tRecvCnts==NULL) {
     tRecvCnts=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
     tRecvCntsFlag=1;
@@ -1178,16 +1178,16 @@ int BW_AMPI_Allgatherv(void *sendbuf,
     tDispls=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
     tDisplsFlag=1;
   }
-  ADTOOL_AMPI_popGSVinfo(commSizeForRootOrNull,
-                         &recvbuf,
-                         tRecvCnts,
-                         tDispls,
-                         &recvtype,
-                         &sendbuf,
-                         &sendcnt,
-                         &sendtype,
-                         &rootPlaceholder,
-                         &comm);
+  (*ourADTOOL_AMPI_FPCollection.popGSVinfo_fp)(commSizeForRootOrNull,
+					       &recvbuf,
+					       tRecvCnts,
+					       tDispls,
+					       &recvtype,
+					       &sendbuf,
+					       &sendcnt,
+					       &sendtype,
+					       &rootPlaceholder,
+					       &comm);
   MPI_Comm_rank(comm, &myRank);
   void *tempBuf = ADTOOL_AMPI_allocateTempBuf(tRecvCnts[myRank],sendtype,comm) ;
   /**
@@ -1319,15 +1319,15 @@ int FW_AMPI_Reduce (void* sbuf,
 		root,
 		comm);
   if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
-    ADTOOL_AMPI_pushReduceInfo(sbuf,
-			       rbuf,
-			       rbuf,
-			       rank==root, /* also push contents of rbuf for root */
-			       count,
-			       datatype,
-			       op,
-			       root,
-			       comm);
+    (*ourADTOOL_AMPI_FPCollection.pushReduceInfo_fp)(sbuf,
+						     rbuf,
+						     rbuf,
+						     rank==root, /* also push contents of rbuf for root */
+						     count,
+						     datatype,
+						     op,
+						     root,
+						     comm);
     ADTOOL_AMPI_push_CallCode(AMPI_REDUCE);
   }
   return rc;
@@ -1343,20 +1343,20 @@ int BW_AMPI_Reduce (void* sbuf,
 		    MPI_Comm comm) {
   int rc,rank;
   void *idx=NULL;
-  ADTOOL_AMPI_popReduceCountAndType(&count,&datatype);
+  (*ourADTOOL_AMPI_FPCollection.popReduceCountAndType_fp)(&count,&datatype);
   MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
   ADTOOL_AMPI_getAdjointCount(&count,datatype);
   void *prevValBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
   void *reduceResultBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
-  ADTOOL_AMPI_popReduceInfo(&sbuf,
-			    &rbuf,
-			    &prevValBuf,
-			    &reduceResultBuf,
-			    &count,
-			    &op,
-			    &root,
-			    &comm,
-			    &idx);
+  (*ourADTOOL_AMPI_FPCollection.popReduceInfo_fp)(&sbuf,
+						  &rbuf,
+						  &prevValBuf,
+						  &reduceResultBuf,
+						  &count,
+						  &op,
+						  &root,
+						  &comm,
+						  &idx);
   MPI_Comm_rank(comm,&rank);
   rc=MPI_Bcast(reduceResultBuf,
 	       count,
@@ -1438,15 +1438,15 @@ int FW_AMPI_Allreduce (void* sbuf,
                    op,
                    comm);
   if (rc==MPI_SUCCESS && ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE) {
-    ADTOOL_AMPI_pushReduceInfo(sbuf,
-                               rbuf,
-                               rbuf,
-                               1,
-                               count,
-                               datatype,
-                               op,
-                               0,
-                               comm);
+    (*ourADTOOL_AMPI_FPCollection.pushReduceInfo_fp)(sbuf,
+						     rbuf,
+						     rbuf,
+						     1,
+						     count,
+						     datatype,
+						     op,
+						     0,
+						     comm);
     ADTOOL_AMPI_push_CallCode(AMPI_ALLREDUCE);
   }
   return rc;
@@ -1460,20 +1460,20 @@ int BW_AMPI_Allreduce (void* sbuf,
                        MPI_Comm comm) {
   int rc=0,rank, rootPlaceHolder;
   void *idx=NULL;
-  ADTOOL_AMPI_popReduceCountAndType(&count,&datatype);
+  (*ourADTOOL_AMPI_FPCollection.popReduceCountAndType_fp)(&count,&datatype);
   MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
   ADTOOL_AMPI_getAdjointCount(&count,datatype);
   void *prevValBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
   void *reduceResultBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
-  ADTOOL_AMPI_popReduceInfo(&sbuf,
-                            &rbuf,
-                            &prevValBuf,
-                            &reduceResultBuf,
-                            &count,
-                            &op,
-                            &rootPlaceHolder,
-                            &comm,
-                            &idx);
+  (*ourADTOOL_AMPI_FPCollection.popReduceInfo_fp)(&sbuf,
+						  &rbuf,
+						  &prevValBuf,
+						  &reduceResultBuf,
+						  &count,
+						  &op,
+						  &rootPlaceHolder,
+						  &comm,
+						  &idx);
   MPI_Comm_rank(comm,&rank);
   void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
   MPI_Allreduce(rbuf,
