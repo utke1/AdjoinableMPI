@@ -1248,11 +1248,11 @@ int FW_AMPI_Bcast (void* buf,
       ADTOOL_AMPI_unpackDType(mappedbuf,buf,&count,dt_idx);
       ADTOOL_AMPI_releaseAdjointTempBuf(mappedbuf);
     }
-    ADTOOL_AMPI_pushBcastInfo(buf,
-			      count,
-			      datatype,
-			      root,
-			      comm);
+    (*ourADTOOL_AMPI_FPCollection.pushBcastInfo_fp)(buf,
+						    count,
+						    datatype,
+						    root,
+						    comm);
     ADTOOL_AMPI_push_CallCode(AMPI_BCAST);
   }
   return rc;
@@ -1265,12 +1265,12 @@ int BW_AMPI_Bcast (void* buf,
                    MPI_Comm comm) {
   int rc,rank;
   void *idx=NULL;
-  ADTOOL_AMPI_popBcastInfo(&buf,
-			   &count,
-			   &datatype,
-			   &root,
-			   &comm,
-			   &idx);
+  (*ourADTOOL_AMPI_FPCollection.popBcastInfo_fp)(&buf,
+						 &count,
+						 &datatype,
+						 &root,
+						 &comm,
+						 &idx);
   MPI_Comm_rank(comm,&rank);
   MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
   ADTOOL_AMPI_getAdjointCount(&count,datatype);

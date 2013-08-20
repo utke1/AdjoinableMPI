@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include <mpi.h>
 #include "ampi/adTool/support.h"
 
 struct AMPI_Request_stack {
@@ -17,6 +16,17 @@ struct AMPI_Request_stack {
   enum AMPI_Activity_E isActive;
   enum AMPI_Request_origin_E origin;
 } ;
+
+int AMPI_Init_NT(int* argc,
+		 char*** argv) {
+  int rc;
+  rc=MPI_Init(argc,
+              argv);
+  ADTOOL_AMPI_setupTypes();
+  ourADTOOL_AMPI_FPCollection.pushBcastInfo_fp=&ADTOOL_AMPI_pushBcastInfo;
+  ourADTOOL_AMPI_FPCollection.popBcastInfo_fp=&ADTOOL_AMPI_popBcastInfo;
+  return rc;
+}
 
 static struct AMPI_Request_stack* requestStackTop=0 ;
 void ADTOOL_AMPI_pushBcastInfo(void* buf,
