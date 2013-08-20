@@ -248,6 +248,7 @@ typedef void (ADTOOL_AMPI_popGSVinfoF) (int, void**, int*, int*, MPI_Datatype*, 
  * implemented in <tt>Common</tt>
  */
 void ADTOOL_AMPI_push_CallCode(enum AMPI_PairedWith_E thisCall);
+typedef void (ADTOOL_AMPI_push_CallCodeF) (enum AMPI_PairedWith_E);
 
 /**
  * the implementation of popping an operation code from the 
@@ -258,20 +259,27 @@ void ADTOOL_AMPI_push_CallCode(enum AMPI_PairedWith_E thisCall);
  * variant of the operatiorn represented by <tt>thisCall</tt> 
  */
 void ADTOOL_AMPI_pop_CallCode(enum AMPI_PairedWith_E *thisCall);
+typedef void (ADTOOL_AMPI_pop_CallCodeF) (enum AMPI_PairedWith_E*);
+  
+
 
 /**
  * the implementation of pushing the required elements of an \ref  AMPI_Request_S
  * to the AD-tool-internal stack
  */
 void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
+typedef void (ADTOOL_AMPI_push_AMPI_RequestF) (struct AMPI_Request_S*);
 
 /**
  * the implementation of popping the required elements of an \ref  AMPI_Request_S
  * from the AD-tool-internal stack
  */
 void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
+typedef void (ADTOOL_AMPI_pop_AMPI_RequestF) (struct AMPI_Request_S*);
+
   
-/** Push the MPI_Request on the AD tool internal stack.
+/** 
+ * Push the MPI_Request on the AD tool internal stack.
  * This is used as a key to the request bookkeeping 
  * to keep correspondence between the request Id of the FW sweep
  * to the request Id in BW sweep.
@@ -279,11 +287,13 @@ void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest);
  * the Common implementation uses this to push the request 
  */
 void ADTOOL_AMPI_push_request(MPI_Request request);
+typedef void (ADTOOL_AMPI_push_requestF) (MPI_Request);
 
 /**
  * the companion to \ref ADTOOL_AMPI_push_request
  */
 MPI_Request ADTOOL_AMPI_pop_request();
+typedef MPI_Request (ADTOOL_AMPI_pop_requestF) ();
 
 void ADTOOL_AMPI_push_comm(MPI_Comm comm);
 
@@ -477,6 +487,12 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_popGSinfoF *popGSinfo_fp;
   ADTOOL_AMPI_pushGSVinfoF *pushGSVinfo_fp;
   ADTOOL_AMPI_popGSVinfoF *popGSVinfo_fp;
+  ADTOOL_AMPI_push_CallCodeF *push_CallCode_fp;
+  ADTOOL_AMPI_pop_CallCodeF *pop_CallCode_fp;
+  ADTOOL_AMPI_push_AMPI_RequestF *push_AMPI_Request_fp;
+  ADTOOL_AMPI_pop_AMPI_RequestF *pop_AMPI_Request_fp;
+  ADTOOL_AMPI_push_requestF *push_request_fp;
+  ADTOOL_AMPI_pop_requestF *pop_request_fp;
 };
 
 /**
