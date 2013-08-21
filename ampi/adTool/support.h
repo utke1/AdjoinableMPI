@@ -432,19 +432,25 @@ typedef void (ADTOOL_AMPI_releaseAdjointTempBufF) (void *);
  * \param idx tape index for each element of the non contiguous buffer
  */
 void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
+typedef void (ADTOOL_AMPI_adjointIncrementF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*);
+
 /**
  * Adjoint multiply the values in adjointTarget by source.
  */
 void ADTOOL_AMPI_adjointMultiply(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
+typedef void (ADTOOL_AMPI_adjointMultiplyF)(int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*);
+
 /**
  * Adjoint divide the values in adjointTarget by source.
  */
 void ADTOOL_AMPI_adjointDivide(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
+typedef void (ADTOOL_AMPI_adjointDivideF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*);
 
 /**
  * Return equality result between the values in adjointTarget and source.
  */
 void ADTOOL_AMPI_adjointEquals(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source1, void *source2, void *idx);
+typedef void (ADTOOL_AMPI_adjointEqualsF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*, void*);
 
 /**
  * Adjoint nullify the values in adjointTarget.
@@ -456,21 +462,25 @@ void ADTOOL_AMPI_adjointEquals(int adjointCount, MPI_Datatype datatype, MPI_Comm
  * \param checkAdjointTarget the adjoint buffer that comes from the bwd sweep. For runtime checking only.
  */ 
 void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget);
+typedef void (ADTOOL_AMPI_adjointNullifyF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*);
 
 /**
  * initialize predefined active types
  */
 void ADTOOL_AMPI_setupTypes();
+typedef void (ADTOOL_AMPI_setupTypesF)();
 
 /**
  * Take datatype for forward mode, return datatype for transfer.
  */
 MPI_Datatype ADTOOL_AMPI_FW_rawType(MPI_Datatype datatype);
+typedef MPI_Datatype (ADTOOL_AMPI_FW_rawTypeF) (MPI_Datatype);
 
 /**
  * Take datatype for reverse mode, return datatype for transfer.
  */
 MPI_Datatype ADTOOL_AMPI_BW_rawType(MPI_Datatype datatype);
+typedef MPI_Datatype (ADTOOL_AMPI_BW_rawTypeF) (MPI_Datatype);
 
 #ifdef AMPI_FORTRANCOMPATIBLE
 /**
@@ -479,6 +489,8 @@ MPI_Datatype ADTOOL_AMPI_BW_rawType(MPI_Datatype datatype);
  * \param real returns the integer representation for the fortran version of AMPI_AREAL
  */
 void adtool_ampi_fortransetuptypes_(MPI_Fint* adouble, MPI_Fint* areal);
+typedef void (adtool_ampi_fortransetuptypes_F) (MPI_Fint*, MPI_Fint*);
+
 #endif
 
 /**
@@ -487,6 +499,7 @@ void adtool_ampi_fortransetuptypes_(MPI_Fint* adouble, MPI_Fint* areal);
  * \returns the respective enum value based on the type's activity
  */
 AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype);
+typedef AMPI_Activity (ADTOOL_AMPI_isActiveTypeF) (MPI_Datatype);
 
 
 struct ADTOOL_AMPI_FPCollection{
@@ -527,6 +540,18 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_setAdjointCountAndTempBufF *setAdjointCountAndTempBuf_fp;
   ADTOOL_AMPI_allocateTempBufF *allocateTempBuf_fp;
   ADTOOL_AMPI_releaseAdjointTempBufF *releaseAdjointTempBuf_fp;
+  ADTOOL_AMPI_adjointIncrementF *adjointIncrement_fp;
+  ADTOOL_AMPI_adjointMultiplyF *adjointMultiply_fp;
+  ADTOOL_AMPI_adjointDivideF *adjointDivide_fp;
+  ADTOOL_AMPI_adjointEqualsF *adjointEquals_fp;
+  ADTOOL_AMPI_adjointNullifyF *adjointNullify_fp;
+  ADTOOL_AMPI_setupTypesF *setupTypes_fp;
+  ADTOOL_AMPI_FW_rawTypeF *FW_rawType_fp;
+  ADTOOL_AMPI_BW_rawTypeF *BW_rawType_fp;
+#ifdef AMPI_FORTRANCOMPATIBLE
+  adtool_ampi_fortransetuptypes_F *fortransetuptypes__fp;
+#endif
+  ADTOOL_AMPI_isActiveTypeF *isActiveType_fp;
 };
 
 /**
