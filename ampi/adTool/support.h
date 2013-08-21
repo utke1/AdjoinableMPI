@@ -362,6 +362,7 @@ typedef void * (ADTOOL_AMPI_rawAdjointDataF) (void*);
  * \param adjointBuf the corresponding adjoint buffer.
  */
 void ADTOOL_AMPI_Turn(void* buf, void* adjointBuf) ;
+typedef void (ADTOOL_AMPI_TurnF) (void*, void*) ;
 
 /**
  * set it on the request; 
@@ -370,6 +371,7 @@ void ADTOOL_AMPI_Turn(void* buf, void* adjointBuf) ;
  */
 void ADTOOL_AMPI_mapBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
 				  void* buf);
+typedef void (ADTOOL_AMPI_mapBufForAdjointF) (struct AMPI_Request_S*, void*);
 
 /**
  * an operator overloading tool should not do anything in the implementation but see \ref ADTOOL_AMPI_mapBufForAdjoint;
@@ -380,6 +382,7 @@ void ADTOOL_AMPI_mapBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
  */
 void ADTOOL_AMPI_setBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
 				  void* buf);
+typedef void (ADTOOL_AMPI_setBufForAdjointF) (struct AMPI_Request_S *, void*);
 
 /**  
  * this method resets \param count member to represent the buffer in terms of 
@@ -389,28 +392,33 @@ void ADTOOL_AMPI_setBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
  */
 void ADTOOL_AMPI_getAdjointCount(int *count,
 				 MPI_Datatype datatype);
+typedef void (ADTOOL_AMPI_getAdjointCountF) (int*, MPI_Datatype);
 
 /**  
  * \param ampiRequest in this instance this method resets the <tt>adjointCount</tt> member; 
  */
 void ADTOOL_AMPI_setAdjointCount(struct AMPI_Request_S  *ampiRequest);
+typedef void (ADTOOL_AMPI_setAdjointCountF) (struct AMPI_Request_S *);
 
 /**  
  * calls \ref ADTOOL_AMPI_setAdjointCount and sets up a temporary buffer into which the adjoint data is received, see e.g. \ref BW_AMPI_Wait
  * \param ampiRequest is the request instance that is modified
  */
 void ADTOOL_AMPI_setAdjointCountAndTempBuf(struct AMPI_Request_S *ampiRequest);
+typedef void (ADTOOL_AMPI_setAdjointCountAndTempBufF) (struct AMPI_Request_S*);
 
 /**
  * Allocates a temporary buffer needed to receive adjoint
  * data before adding it to the adjoint variable
  */
 void* ADTOOL_AMPI_allocateTempBuf(int adjointCount, MPI_Datatype dataType, MPI_Comm comm) ;
+typedef void* (ADTOOL_AMPI_allocateTempBufF) (int, MPI_Datatype, MPI_Comm) ;
 
 /**  
  * releases the temporary buffer (allocated by \ref ADTOOL_AMPI_setAdjointCountAndTempBuf)  into which the adjoint data was received 
  */
 void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf);
+typedef void (ADTOOL_AMPI_releaseAdjointTempBufF) (void *);
 
 /**
  * Adjoint increment the values in adjointTarget.
@@ -511,6 +519,14 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_writeDataF *writeData_fp;
   ADTOOL_AMPI_writeDataVF *writeDataV_fp;
   ADTOOL_AMPI_rawAdjointDataF *rawAdjointData_fp;
+  ADTOOL_AMPI_TurnF *Turn_fp;
+  ADTOOL_AMPI_mapBufForAdjointF *mapBufForAdjoint_fp;
+  ADTOOL_AMPI_setBufForAdjointF *setBufForAdjoint_fp;
+  ADTOOL_AMPI_getAdjointCountF *getAdjointCount_fp;
+  ADTOOL_AMPI_setAdjointCountF *setAdjointCount_fp;
+  ADTOOL_AMPI_setAdjointCountAndTempBufF *setAdjointCountAndTempBuf_fp;
+  ADTOOL_AMPI_allocateTempBufF *allocateTempBuf_fp;
+  ADTOOL_AMPI_releaseAdjointTempBufF *releaseAdjointTempBuf_fp;
 };
 
 /**

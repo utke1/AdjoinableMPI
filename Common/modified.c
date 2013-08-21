@@ -44,7 +44,7 @@ int FW_AMPI_Recv(void* buf,
       mappedbuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(buf,&count);
     }
     else if(is_derived) {
-      mappedbuf=ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+      mappedbuf=(*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,datatype,comm);
     }
     else {
       mappedbuf=buf;
@@ -59,7 +59,7 @@ int FW_AMPI_Recv(void* buf,
     if (rc==MPI_SUCCESS && (ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE || is_derived)) {
       if (is_derived) {
 	(ourADTOOL_AMPI_FPCollection.unpackDType_fp)(mappedbuf,buf,&count,dt_idx);
-	ADTOOL_AMPI_releaseAdjointTempBuf(mappedbuf);
+	(*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(mappedbuf);
       }
       (*ourADTOOL_AMPI_FPCollection.writeData_fp)(buf,&count);
       if(tag==MPI_ANY_TAG) tag=myStatus.MPI_TAG;
@@ -112,7 +112,7 @@ int BW_AMPI_Recv(void* buf,
     case AMPI_ISEND_WAIT:
     case AMPI_SEND: {
       MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
-      ADTOOL_AMPI_getAdjointCount(&count,datatype);   
+      (*ourADTOOL_AMPI_FPCollection.getAdjointCount_fp)(&count,datatype);   
       rc=MPI_Send(buf,
 		  count,
 		  mappedtype,
@@ -183,7 +183,7 @@ int FW_AMPI_Irecv (void* buf,
     ampiRequest->comm=comm;
     ampiRequest->origin=AMPI_RECV_ORIGIN;
     ampiRequest->pairedWith=pairedWith;
-    ADTOOL_AMPI_mapBufForAdjoint(ampiRequest,buf);
+    (*ourADTOOL_AMPI_FPCollection.mapBufForAdjoint_fp)(ampiRequest,buf);
     ampiRequest->tracedRequest=ampiRequest->plainRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
     BK_AMPI_put_AMPI_Request(ampiRequest);
@@ -281,7 +281,7 @@ int FW_AMPI_Send (void* buf,
       mappedbuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(buf,&count);
     }
     else if(is_derived) {
-      mappedbuf=ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+      mappedbuf=(*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,datatype,comm);
       (*ourADTOOL_AMPI_FPCollection.rawData_DType_fp)(buf,mappedbuf,&count,dt_idx);
     }
     else {
@@ -294,7 +294,7 @@ int FW_AMPI_Send (void* buf,
 		dest,
 		tag,
 		comm);
-    if (is_derived) ADTOOL_AMPI_releaseAdjointTempBuf(mappedbuf);
+    if (is_derived) (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(mappedbuf);
     if (rc==MPI_SUCCESS && (ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE || is_derived)) {
       (*ourADTOOL_AMPI_FPCollection.pushSRinfo_fp)(buf,
 						   count,
@@ -338,8 +338,8 @@ int BW_AMPI_Send (void* buf,
     case AMPI_IRECV_WAIT:
     case AMPI_RECV: { 
       MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
-      ADTOOL_AMPI_getAdjointCount(&count,datatype);
-      void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm) ;
+      (*ourADTOOL_AMPI_FPCollection.getAdjointCount_fp)(&count,datatype);
+      void *tempBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,mappedtype,comm) ;
       rc=MPI_Recv(tempBuf,
                   count,
                   mappedtype,
@@ -355,7 +355,7 @@ int BW_AMPI_Send (void* buf,
                                    buf,
                                    tempBuf,
 				   idx);
-      ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+      (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
       break;
     }
     default:  
@@ -418,7 +418,7 @@ int FW_AMPI_Isend (void* buf,
     ampiRequest->comm=comm;
     ampiRequest->origin=AMPI_SEND_ORIGIN;
     ampiRequest->pairedWith=pairedWith;
-    ADTOOL_AMPI_mapBufForAdjoint(ampiRequest,buf);
+    (*ourADTOOL_AMPI_FPCollection.mapBufForAdjoint_fp)(ampiRequest,buf);
     ampiRequest->tracedRequest=ampiRequest->plainRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
     BK_AMPI_put_AMPI_Request(ampiRequest);
@@ -485,7 +485,7 @@ int BW_AMPI_Isend (void* buf,
                                    buf,
                                    ampiRequest->adjointTempBuf,
 	                           ampiRequest->idx);
-      ADTOOL_AMPI_releaseAdjointTempBuf(ampiRequest->adjointTempBuf);
+      (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(ampiRequest->adjointTempBuf);
       break;
     }
     default:  
@@ -535,7 +535,7 @@ int BW_AMPI_Wait(AMPI_Request *request,
   (*ourADTOOL_AMPI_FPCollection.pop_AMPI_Request_fp)(ampiRequest);
   switch(ampiRequest->origin) { 
   case AMPI_SEND_ORIGIN: { 
-    ADTOOL_AMPI_setAdjointCountAndTempBuf(ampiRequest);   
+    (*ourADTOOL_AMPI_FPCollection.setAdjointCountAndTempBuf_fp)(ampiRequest);   
     rc=MPI_Irecv(ampiRequest->adjointTempBuf,
 		 ampiRequest->adjointCount,
 		 ampiRequest->datatype,
@@ -546,7 +546,7 @@ int BW_AMPI_Wait(AMPI_Request *request,
     break;
   }
   case AMPI_RECV_ORIGIN: { 
-    ADTOOL_AMPI_setAdjointCount(ampiRequest);
+    (*ourADTOOL_AMPI_FPCollection.setAdjointCount_fp)(ampiRequest);
     rc=MPI_Isend((*ourADTOOL_AMPI_FPCollection.rawAdjointData_fp)(ampiRequest->adjointBuf),
 		 ampiRequest->adjointCount,
 		 ampiRequest->datatype,
@@ -653,8 +653,8 @@ int BW_AMPI_Gather(void *sendbuf,
 					      &sendtype,
 					      &root,
 					      &comm);
-  ADTOOL_AMPI_getAdjointCount(&sendcnt,sendtype);
-  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(sendcnt,sendtype,comm) ;
+  (*ourADTOOL_AMPI_FPCollection.getAdjointCount_fp)(&sendcnt,sendtype);
+  void *tempBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(sendcnt,sendtype,comm) ;
   rc=MPI_Scatter(recvbuf,
 		 recvcnt,
 		 recvtype,
@@ -676,7 +676,7 @@ int BW_AMPI_Gather(void *sendbuf,
     ADTOOL_AMPI_adjointNullify(recvcnt*commSizeForRootOrNull,recvtype,comm,
 			       recvbuf , recvbuf, recvbuf);
   }
-  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+  (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   return rc;
 }
 
@@ -748,7 +748,7 @@ int BW_AMPI_Scatter(void *sendbuf,
 					      &root,
 					      &comm);
   void *tempBuf = NULL;
-  if (commSizeForRootOrNull>0) tempBuf=ADTOOL_AMPI_allocateTempBuf(sendcnt*commSizeForRootOrNull,sendtype,comm);
+  if (commSizeForRootOrNull>0) tempBuf=(*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(sendcnt*commSizeForRootOrNull,sendtype,comm);
   rc=MPI_Gather(recvbuf,
 		recvcnt,
 		recvtype,
@@ -768,7 +768,7 @@ int BW_AMPI_Scatter(void *sendbuf,
 				 sendbuf,
 				 tempBuf,
 				 idx);
-    ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+    (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   }
   return rc;
 }
@@ -839,7 +839,7 @@ int BW_AMPI_Allgather(void *sendbuf,
 					      &comm);
   recvcounts=(int*)malloc(sizeof(int)*commSizeForRootOrNull);
   for (i=0;i<commSizeForRootOrNull;++i) recvcounts[i]=sendcount;
-  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(sendcount,sendtype,comm);
+  void *tempBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(sendcount,sendtype,comm);
   /**
    * \todo shortcut taken below by assuming AMPI_ADOUBLE is equivalent to MPI_DOUBLE, need type map.
    */
@@ -862,7 +862,7 @@ int BW_AMPI_Allgather(void *sendbuf,
     ADTOOL_AMPI_adjointNullify(recvcount*commSizeForRootOrNull,recvtype,comm,
                                recvbuf , recvbuf, recvbuf);
   }
-  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+  (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   return rc;
 }
 
@@ -952,8 +952,8 @@ int BW_AMPI_Gatherv(void *sendbuf,
 					       &root,
 					       &comm);
   MPI_Comm_rank(comm, &myRank);
-  ADTOOL_AMPI_getAdjointCount(&sendcnt,sendtype);
-  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(sendcnt,sendtype,comm) ;
+  (*ourADTOOL_AMPI_FPCollection.getAdjointCount_fp)(&sendcnt,sendtype);
+  void *tempBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(sendcnt,sendtype,comm) ;
   rc=MPI_Scatterv(recvbuf,
                   tRecvCnts,
                   tDispls,
@@ -979,7 +979,7 @@ int BW_AMPI_Gatherv(void *sendbuf,
                                  buf , buf, buf);
     }
   }
-  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+  (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   if (tRecvCntsFlag) free((void*)(tRecvCnts));
   if (tDisplsFlag) free((void*)(tDispls));
   return rc;
@@ -1075,7 +1075,7 @@ int BW_AMPI_Scatterv(void *sendbuf,
     sendSize+=tSendCnts[i];
   }
   void *tempBuf = NULL;
-  if (commSizeForRootOrNull>0) tempBuf=ADTOOL_AMPI_allocateTempBuf(sendSize,sendtype,comm);
+  if (commSizeForRootOrNull>0) tempBuf=(*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(sendSize,sendtype,comm);
   rc=MPI_Gatherv(recvbuf,
                  recvcnt,
                  recvtype,
@@ -1101,7 +1101,7 @@ int BW_AMPI_Scatterv(void *sendbuf,
                                    sourceBuf,
                                    idx);
     }
-    ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+    (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   }
   if (tSendCntsFlag) free((void*)(tSendCnts));
   if (tDisplsFlag) free((void*)(tDispls));
@@ -1189,7 +1189,7 @@ int BW_AMPI_Allgatherv(void *sendbuf,
 					       &rootPlaceholder,
 					       &comm);
   MPI_Comm_rank(comm, &myRank);
-  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(tRecvCnts[myRank],sendtype,comm) ;
+  void *tempBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(tRecvCnts[myRank],sendtype,comm) ;
   /**
    * \todo shortcut taken below by assuming AMPI_ADOUBLE is equivalent to MPI_DOUBLE, need type map.
    */
@@ -1213,7 +1213,7 @@ int BW_AMPI_Allgatherv(void *sendbuf,
     ADTOOL_AMPI_adjointNullify(tRecvCnts[i],recvtype,comm,
                                buf , buf, buf);
   }
-  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+  (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   if (tRecvCntsFlag) free((void*)(tRecvCnts));
   if (tDisplsFlag) free((void*)(tDispls));
   return rc;
@@ -1232,7 +1232,7 @@ int FW_AMPI_Bcast (void* buf,
     mappedbuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(buf,&count);
   }
   else if(is_derived) {
-    mappedbuf=ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+    mappedbuf=(*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,datatype,comm);
     (*ourADTOOL_AMPI_FPCollection.rawData_DType_fp)(buf,mappedbuf,&count,dt_idx);
   }
   else {
@@ -1246,7 +1246,7 @@ int FW_AMPI_Bcast (void* buf,
   if (rc==MPI_SUCCESS && (ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE || is_derived )) {
     if (is_derived) {
       (ourADTOOL_AMPI_FPCollection.unpackDType_fp)(mappedbuf,buf,&count,dt_idx);
-      ADTOOL_AMPI_releaseAdjointTempBuf(mappedbuf);
+      (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(mappedbuf);
     }
     (*ourADTOOL_AMPI_FPCollection.pushBcastInfo_fp)(buf,
 						    count,
@@ -1273,8 +1273,8 @@ int BW_AMPI_Bcast (void* buf,
 						 &idx);
   MPI_Comm_rank(comm,&rank);
   MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
-  ADTOOL_AMPI_getAdjointCount(&count,datatype);
-  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+  (*ourADTOOL_AMPI_FPCollection.getAdjointCount_fp)(&count,datatype);
+  void *tempBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,datatype,comm);
   rc=MPI_Reduce(buf,
                 tempBuf,
                 count,
@@ -1288,7 +1288,7 @@ int BW_AMPI_Bcast (void* buf,
     ADTOOL_AMPI_adjointIncrement(count, mappedtype, comm,
                                  buf, buf, buf, tempBuf, idx);
   }
-  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
+  (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   return rc;
 }
 
@@ -1345,9 +1345,9 @@ int BW_AMPI_Reduce (void* sbuf,
   void *idx=NULL;
   (*ourADTOOL_AMPI_FPCollection.popReduceCountAndType_fp)(&count,&datatype);
   MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
-  ADTOOL_AMPI_getAdjointCount(&count,datatype);
-  void *prevValBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
-  void *reduceResultBuf = ADTOOL_AMPI_allocateTempBuf(count,datatype,comm);
+  (*ourADTOOL_AMPI_FPCollection.getAdjointCount_fp)(&count,datatype);
+  void *prevValBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,datatype,comm);
+  void *reduceResultBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,datatype,comm);
   (*ourADTOOL_AMPI_FPCollection.popReduceInfo_fp)(&sbuf,
 						  &rbuf,
 						  &prevValBuf,
@@ -1364,7 +1364,7 @@ int BW_AMPI_Reduce (void* sbuf,
 	       root,
 	       comm);
   if (rc!=MPI_SUCCESS) MPI_Abort(comm, MPI_ERR_ARG);
-  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
+  void *tempBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,mappedtype,comm);
   if (rank==root) {
     ADTOOL_AMPI_adjointNullify(count, mappedtype, comm,
 			       tempBuf, tempBuf, tempBuf);
@@ -1385,12 +1385,12 @@ int BW_AMPI_Reduce (void* sbuf,
 			      tempBuf, tempBuf, tempBuf, prevValBuf, idx);
   }
   else if (op==MPI_MAX || op==MPI_MIN) {
-    void *equalsResultBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
+    void *equalsResultBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,mappedtype,comm);
     ADTOOL_AMPI_adjointNullify(count, mappedtype, comm,
 			       equalsResultBuf, equalsResultBuf, equalsResultBuf);
     ADTOOL_AMPI_adjointEquals(count, mappedtype, comm,
 			      equalsResultBuf, equalsResultBuf, equalsResultBuf, prevValBuf, reduceResultBuf, idx);
-    void *contributionTotalsBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
+    void *contributionTotalsBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,mappedtype,comm);
     MPI_Allreduce(equalsResultBuf,
 		  contributionTotalsBuf,
 		  count,
@@ -1401,15 +1401,15 @@ int BW_AMPI_Reduce (void* sbuf,
 				tempBuf, tempBuf, tempBuf, equalsResultBuf, idx);
     ADTOOL_AMPI_adjointDivide(count, mappedtype, comm,
 			      tempBuf, tempBuf, tempBuf, contributionTotalsBuf, idx);
-    ADTOOL_AMPI_releaseAdjointTempBuf(equalsResultBuf);
-    ADTOOL_AMPI_releaseAdjointTempBuf(contributionTotalsBuf);
+    (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(equalsResultBuf);
+    (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(contributionTotalsBuf);
   }
   else {}
   ADTOOL_AMPI_adjointIncrement(count, mappedtype, comm,
 			       sbuf, sbuf, sbuf, tempBuf, idx);
-  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
-  ADTOOL_AMPI_releaseAdjointTempBuf(reduceResultBuf);
-  ADTOOL_AMPI_releaseAdjointTempBuf(prevValBuf);
+  (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
+  (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(reduceResultBuf);
+  (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(prevValBuf);
   return rc;
 }
 
@@ -1462,9 +1462,9 @@ int BW_AMPI_Allreduce (void* sbuf,
   void *idx=NULL;
   (*ourADTOOL_AMPI_FPCollection.popReduceCountAndType_fp)(&count,&datatype);
   MPI_Datatype mappedtype = ADTOOL_AMPI_BW_rawType(datatype);
-  ADTOOL_AMPI_getAdjointCount(&count,datatype);
-  void *prevValBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
-  void *reduceResultBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
+  (*ourADTOOL_AMPI_FPCollection.getAdjointCount_fp)(&count,datatype);
+  void *prevValBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,mappedtype,comm);
+  void *reduceResultBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,mappedtype,comm);
   (*ourADTOOL_AMPI_FPCollection.popReduceInfo_fp)(&sbuf,
 						  &rbuf,
 						  &prevValBuf,
@@ -1475,7 +1475,7 @@ int BW_AMPI_Allreduce (void* sbuf,
 						  &comm,
 						  &idx);
   MPI_Comm_rank(comm,&rank);
-  void *tempBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
+  void *tempBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,mappedtype,comm);
   MPI_Allreduce(rbuf,
                 tempBuf,
                 count,
@@ -1492,12 +1492,12 @@ int BW_AMPI_Allreduce (void* sbuf,
                               tempBuf, tempBuf, tempBuf, prevValBuf, idx);
   }
   else if (op==MPI_MAX || op==MPI_MIN) {
-    void *equalsResultBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
+    void *equalsResultBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,mappedtype,comm);
     ADTOOL_AMPI_adjointNullify(count, mappedtype, comm,
                                equalsResultBuf, equalsResultBuf, equalsResultBuf);
     ADTOOL_AMPI_adjointEquals(count, mappedtype, comm,
                               equalsResultBuf, equalsResultBuf, equalsResultBuf, prevValBuf, reduceResultBuf, idx);
-    void *contributionTotalsBuf = ADTOOL_AMPI_allocateTempBuf(count,mappedtype,comm);
+    void *contributionTotalsBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp) (count,mappedtype,comm);
     MPI_Allreduce(equalsResultBuf,
                   contributionTotalsBuf,
                   count,
@@ -1508,8 +1508,8 @@ int BW_AMPI_Allreduce (void* sbuf,
                                 tempBuf, tempBuf, tempBuf, equalsResultBuf, idx);
     ADTOOL_AMPI_adjointDivide(count, mappedtype, comm,
                               tempBuf, tempBuf, tempBuf, contributionTotalsBuf, idx);
-    ADTOOL_AMPI_releaseAdjointTempBuf(equalsResultBuf);
-    ADTOOL_AMPI_releaseAdjointTempBuf(contributionTotalsBuf);
+    (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(equalsResultBuf);
+    (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(contributionTotalsBuf);
   }
   else {
     assert(0); /* unimplemented */
@@ -1518,9 +1518,9 @@ int BW_AMPI_Allreduce (void* sbuf,
                                sbuf, sbuf, sbuf, tempBuf, idx);
   ADTOOL_AMPI_adjointNullify(count, mappedtype, comm,
                              rbuf, rbuf, rbuf);
-  ADTOOL_AMPI_releaseAdjointTempBuf(tempBuf);
-  ADTOOL_AMPI_releaseAdjointTempBuf(reduceResultBuf);
-  ADTOOL_AMPI_releaseAdjointTempBuf(prevValBuf);
+  (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
+  (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(reduceResultBuf);
+  (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(prevValBuf);
   return rc;
 }
 
