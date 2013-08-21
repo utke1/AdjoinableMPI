@@ -296,11 +296,13 @@ MPI_Request ADTOOL_AMPI_pop_request();
 typedef MPI_Request (ADTOOL_AMPI_pop_requestF) ();
 
 void ADTOOL_AMPI_push_comm(MPI_Comm comm);
+typedef void (ADTOOL_AMPI_push_commF) (MPI_Comm);
 
 /**
  * the companion to \ref ADTOOL_AMPI_push_request
  */
 MPI_Comm ADTOOL_AMPI_pop_comm();
+typedef MPI_Comm (ADTOOL_AMPI_pop_commF) ();
 
 /**
  * map active data to raw data; this is to be implemented for the forward 
@@ -308,6 +310,7 @@ MPI_Comm ADTOOL_AMPI_pop_comm();
  * for tools using association-by-name the same address should be returned;   
  */
 void * ADTOOL_AMPI_rawData(void* activeData, int *size);
+typedef void* (ADTOOL_AMPI_rawDataF) (void*, int*);
 
 /**
  * map active data to raw data; functionality similar to \ref ADTOOL_AMPI_rawData
@@ -315,27 +318,32 @@ void * ADTOOL_AMPI_rawData(void* activeData, int *size);
  * used in \ref MPI_Gatherv or \ref MPI_Scatterv
  */
 void * ADTOOL_AMPI_rawDataV(void* activeData, int *counts, int* displs);
+typedef void * (ADTOOL_AMPI_rawDataVF) (void*, int*, int*);
 
 /**
  * serialize user-defined struct for sending in forward execution in
  * association-by-address tools
  */
 void * ADTOOL_AMPI_rawData_DType(void* indata, void* outdata, int* count, int idx);
+typedef void * (ADTOOL_AMPI_rawData_DTypeF) (void*, void*, int*, int);
 
 /**
  * unpack serialized user-defined struct data into its original form
  */
 void * ADTOOL_AMPI_unpackDType(void* indata, void* outdata, int* count, int idx);
+typedef void * (ADTOOL_AMPI_unpackDTypeF) (void*, void*, int*, int);
 
-/** \todo add description
- *
+/** 
+ * \todo add description
  */
 void ADTOOL_AMPI_writeData(void* activeData, int *size);
+typedef void (ADTOOL_AMPI_writeDataF) (void*, int*);
 
-/** \todo add description
- *
+/** 
+ * \todo add description
  */
 void ADTOOL_AMPI_writeDataV(void* activeData, int *counts, int* displs);
+typedef void (ADTOOL_AMPI_writeDataVF) (void*, int*, int*);
 
 /**
  * map active data to adjoint data; this is to be implemented for the backward
@@ -343,6 +351,7 @@ void ADTOOL_AMPI_writeDataV(void* activeData, int *counts, int* displs);
  * for tools using association-by-name the same address should be returned;   
  */
 void * ADTOOL_AMPI_rawAdjointData(void* activeData);
+typedef void * (ADTOOL_AMPI_rawAdjointDataF) (void*);
 
 /**
  * Declares correspondence between a buffer and its counterpart adjoint buffer
@@ -493,6 +502,15 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_pop_AMPI_RequestF *pop_AMPI_Request_fp;
   ADTOOL_AMPI_push_requestF *push_request_fp;
   ADTOOL_AMPI_pop_requestF *pop_request_fp;
+  ADTOOL_AMPI_push_commF *push_comm_fp;
+  ADTOOL_AMPI_pop_commF *pop_comm_fp;
+  ADTOOL_AMPI_rawDataF *rawData_fp;
+  ADTOOL_AMPI_rawDataVF *rawDataV_fp;
+  ADTOOL_AMPI_rawData_DTypeF *rawData_DType_fp;
+  ADTOOL_AMPI_unpackDTypeF *unpackDType_fp;
+  ADTOOL_AMPI_writeDataF *writeData_fp;
+  ADTOOL_AMPI_writeDataVF *writeDataV_fp;
+  ADTOOL_AMPI_rawAdjointDataF *rawAdjointData_fp;
 };
 
 /**
