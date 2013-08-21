@@ -45,6 +45,8 @@ int AMPI_Init_NT(int* argc,
   ourADTOOL_AMPI_FPCollection.setAdjointCountAndTempBuf_fp=&ADTOOL_AMPI_setAdjointCountAndTempBuf;
   ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp=&ADTOOL_AMPI_allocateTempBuf;
   ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp=&ADTOOL_AMPI_releaseAdjointTempBuf;
+  ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp=&ADTOOL_AMPI_allocateTempActiveBuf;
+  ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp=&ADTOOL_AMPI_copyActiveBuf;
   ourADTOOL_AMPI_FPCollection.adjointIncrement_fp=&ADTOOL_AMPI_adjointIncrement;
   ourADTOOL_AMPI_FPCollection.adjointMultiply_fp=&ADTOOL_AMPI_adjointMultiply;
   ourADTOOL_AMPI_FPCollection.adjointDivide_fp=&ADTOOL_AMPI_adjointDivide;
@@ -255,7 +257,7 @@ void* ADTOOL_AMPI_allocateTempBuf(int adjointCount, MPI_Datatype datatype, MPI_C
   else if (datatype==MPI_FLOAT)
     s=sizeof(float);
   else if (isDerivedType(dt_idx))
-    s = getDTypeData()->p_mapsizes[dt_idx];
+    s = getDTypeData()->p_extents[dt_idx];
   else
     MPI_Abort(comm, MPI_ERR_TYPE);
   return (void*)malloc(adjointCount*s);
@@ -263,6 +265,26 @@ void* ADTOOL_AMPI_allocateTempBuf(int adjointCount, MPI_Datatype datatype, MPI_C
 
 void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf) { 
   free(tempBuf) ;
+}
+
+void* ADTOOL_AMPI_allocateTempActiveBuf(int count,
+					MPI_Datatype datatype,
+					MPI_Comm comm) {
+  void* ptr = NULL;
+  if (datatype==MPI_DOUBLE)
+    ptr = malloc(count*sizeof(MPI_DOUBLE));
+  else if (datatype==MPI_FLOAT)
+    ptr = malloc(count*sizeof(MPI_FLOAT));
+  assert(ptr);
+  return ptr;
+}
+
+void * ADTOOL_AMPI_copyActiveBuf(void* source,
+                                 void* target,
+                                 int count,
+                                 MPI_Datatype datatype,
+                                 MPI_Comm comm) {
+  return source;
 }
 
 void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) { 

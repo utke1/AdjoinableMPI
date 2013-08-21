@@ -38,7 +38,8 @@ int AMPI_Type_create_struct_NT(int count,
   int array_of_p_blocklengths[count];
   MPI_Aint array_of_p_displacements[count];
   MPI_Datatype array_of_p_types[count];
-  int s=0, is_active, mapsize=0, p_mapsize=0;
+  int s=0, is_active;
+  MPI_Aint mapsize=0, p_mapsize=0;
   for (i=0;i<count;i++) {
     is_active = ADTOOL_AMPI_isActiveType(array_of_types[i])==AMPI_ACTIVE;
     array_of_p_blocklengths[i] = array_of_blocklengths[i];
@@ -55,7 +56,7 @@ int AMPI_Type_create_struct_NT(int count,
   /* we'll take a guess at the struct size, but it's best to specify with MPI_Type_create_resized */
   MPI_Aint lb, extent;
   MPI_Type_get_extent(*newtype,&lb,&extent);
-  mapsize = (int)extent - (int)lb;
+  mapsize = extent - lb;
   rc = MPI_Type_create_struct (count,
 			       array_of_p_blocklengths,
 			       array_of_p_displacements,
@@ -68,6 +69,7 @@ int AMPI_Type_create_struct_NT(int count,
 	       array_of_blocklengths,
 	       array_of_displacements,
 	       array_of_types,
+	       lb,
 	       mapsize,
 	       array_of_p_blocklengths,
 	       array_of_p_displacements,
@@ -96,7 +98,8 @@ int AMPI_Type_create_resized_NT(MPI_Datatype oldtype,
   int dt_idx = derivedTypeIdx(oldtype);
   if (isDerivedType(dt_idx)) {
     derivedTypeData* dtd = getDTypeData();
-    dtd->mapsizes[dt_idx] = (int)(extent-lb);
+    dtd->lbs[dt_idx] = lb;
+    dtd->extents[dt_idx] = extent-lb;
     dtd->derived_types[dt_idx] = *newtype;
   }
   return rc;

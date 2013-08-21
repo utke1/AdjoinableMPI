@@ -1301,38 +1301,105 @@ int FW_AMPI_Reduce (void* sbuf,
 		    MPI_Comm comm) {
   int rc,rank;
   MPI_Comm_rank(comm,&rank);
-  double* mappedsbuf=NULL;
-  double* mappedrbuf=NULL;
-  if((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(datatype)==AMPI_ACTIVE) {
-    mappedsbuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(sbuf,&count);
-    mappedrbuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(rbuf,&count);
+  int uop_idx = userDefinedOpIdx(op);
+  if (isUserDefinedOp(uop_idx)) {
+    int comm_size, is_commutative;
+    int mask, relrank, source, lroot;
+    int dt_idx = derivedTypeIdx(datatype);
+    MPI_Status status;
+    MPI_Aint lb;
+    void *tmp_buf;
+    userDefinedOpData* uopd = getUOpData();
+    MPI_User_function* uop = uopd->functions[uop_idx];
+    if (count == 0) return MPI_SUCCESS;
+    MPI_Comm_size(comm,&comm_size);
+    if (isDerivedType(dt_idx)) lb = getDTypeData()->lbs[dt_idx];
+    else lb = 0;
+    is_commutative = uopd->commutes[uop_idx];
+    tmp_buf = (*ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp)(count,datatype,comm);
+    tmp_buf = (void*)((char*)tmp_buf - lb);
+    if (rank != root) {
+      rbuf = (*ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp)(count,datatype,comm);
+      rbuf = (void*)((char*)rbuf - lb);
+    }
+    if ((rank != root) || (sbuf != MPI_IN_PLACE)) {
+      (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(sbuf, rbuf, count, datatype, comm);
+    }
+    mask = 0x1;
+    if (is_commutative)
+      lroot = root;
+    else
+      lroot = 0;
+    relrank = (rank - lroot + comm_size) % comm_size;
+    while (mask < comm_size) {
+      if ((mask & relrank) == 0) {
+	source = (relrank | mask);
+	if (source < comm_size) {
+	  
+	  source = (source + lroot) % comm_size;
+	  rc = FW_AMPI_Recv(tmp_buf, count, datatype, source,
+			 11, AMPI_SEND, comm, &status);
+	  assert(rc==MPI_SUCCESS);
+	  if (is_commutative) {
+	    (*uop)(tmp_buf, rbuf, &count, &datatype);
+	  }
+	  else {
+	    (*uop)(rbuf, tmp_buf, &count, &datatype);
+	    (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(sbuf, rbuf, count, datatype, comm);
+	  }
+	}
+      }
+      else {
+	source = ((relrank & (~mask)) + lroot) % comm_size;
+	rc = FW_AMPI_Send(rbuf, count, datatype, source,
+			  11, AMPI_RECV, comm);
+	assert(rc==MPI_SUCCESS);
+	break;
+      }
+      mask<<=1;
+    }
+    if (!is_commutative && (root != 0)) {
+      if (rank == 0) rc = FW_AMPI_Send(rbuf, count, datatype, root,
+				    11, AMPI_RECV, comm);
+      else if (rank==root) rc = FW_AMPI_Recv(rbuf, count, datatype, 0,
+					  11, AMPI_SEND, comm, &status);
+      assert(rc==MPI_SUCCESS);
+    }
+    return 0;
   }
   else {
-    mappedsbuf=sbuf;
-    mappedrbuf=rbuf;
+    double* mappedsbuf=NULL;
+    double* mappedrbuf=NULL;
+    if((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(datatype)==AMPI_ACTIVE) {
+      mappedsbuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(sbuf,&count);
+      mappedrbuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(rbuf,&count);
+    }
+    else {
+      mappedsbuf=sbuf;
+      mappedrbuf=rbuf;
+    }
+    rc=MPI_Reduce(mappedsbuf,
+		  mappedrbuf,
+		  count,
+		  (*ourADTOOL_AMPI_FPCollection.FW_rawType_fp)(datatype),
+		  op,
+		  root,
+		  comm);
+    if (rc==MPI_SUCCESS && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(datatype)==AMPI_ACTIVE) {
+      (*ourADTOOL_AMPI_FPCollection.pushReduceInfo_fp)(sbuf,
+						       rbuf,
+						       rbuf,
+						       rank==root, /* also push contents of rbuf for root */
+						       count,
+						       datatype,
+						       op,
+						       root,
+						       comm);
+      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_REDUCE);
+    }
+    return rc;
   }
-  rc=MPI_Reduce(mappedsbuf,
-		mappedrbuf,
-		count,
-		(*ourADTOOL_AMPI_FPCollection.FW_rawType_fp)(datatype),
-		op,
-		root,
-		comm);
-  if (rc==MPI_SUCCESS && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(datatype)==AMPI_ACTIVE) {
-    (*ourADTOOL_AMPI_FPCollection.pushReduceInfo_fp)(sbuf,
-						     rbuf,
-						     rbuf,
-						     rank==root, /* also push contents of rbuf for root */
-						     count,
-						     datatype,
-						     op,
-						     root,
-						     comm);
-    (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_REDUCE);
-  }
-  return rc;
 }
-
 
 int BW_AMPI_Reduce (void* sbuf,
 		    void* rbuf,
@@ -1538,12 +1605,13 @@ derivedTypeData* getDTypeData() {
     newdat->arrays_of_blocklengths = (int**)malloc((newdat->size)*sizeof(int*));
     newdat->arrays_of_displacements = (MPI_Aint**)malloc((newdat->size)*sizeof(MPI_Aint*));
     newdat->arrays_of_types = (MPI_Datatype**)malloc((newdat->size)*sizeof(MPI_Datatype*));
-    newdat->mapsizes = (int*)malloc((newdat->size)*sizeof(int));
+    newdat->lbs = (MPI_Aint*)malloc((newdat->size)*sizeof(MPI_Aint));
+    newdat->extents = (MPI_Aint*)malloc((newdat->size)*sizeof(MPI_Aint));
     newdat->packed_types = (MPI_Datatype*)malloc((newdat->size)*sizeof(MPI_Datatype));
     newdat->arrays_of_p_blocklengths = (int**)malloc((newdat->size)*sizeof(int*));
     newdat->arrays_of_p_displacements = (MPI_Aint**)malloc((newdat->size)*sizeof(MPI_Aint*));
     newdat->arrays_of_p_types = (MPI_Datatype**)malloc((newdat->size)*sizeof(MPI_Datatype*));
-    newdat->p_mapsizes = (int*)malloc((newdat->size)*sizeof(int));
+    newdat->p_extents = (MPI_Aint*)malloc((newdat->size)*sizeof(MPI_Aint));
     dat = newdat;
   }
   return dat;
@@ -1554,11 +1622,12 @@ int addDTypeData(derivedTypeData* dat,
 		 int array_of_blocklengths[],
 		 MPI_Aint array_of_displacements[],
 		 MPI_Datatype array_of_types[],
-		 int mapsize,
+		 MPI_Aint lb,
+		 MPI_Aint extent,
 		 int array_of_p_blocklengths[],
 		 MPI_Aint array_of_p_displacements[],
 		 MPI_Datatype array_of_p_types[],
-		 int p_mapsize,
+		 MPI_Aint p_extent,
 		 MPI_Datatype* newtype,
 		 MPI_Datatype* packed_type) {
   if (dat==NULL) assert(0);
@@ -1591,7 +1660,8 @@ int addDTypeData(derivedTypeData* dat,
 					   (dat->size)*sizeof(MPI_Aint*));
     dat->arrays_of_types = realloc(dat->arrays_of_types,
 				   (dat->size)*sizeof(MPI_Datatype*));
-    dat->mapsizes = realloc(dat->mapsizes, (dat->size)*sizeof(int));
+    dat->lbs = realloc(dat->lbs, (dat->size)*sizeof(MPI_Aint));
+    dat->extents = realloc(dat->extents, (dat->size)*sizeof(MPI_Aint));
     dat->packed_types = realloc(dat->packed_types,
 				(dat->size)*sizeof(MPI_Datatype));
     dat->arrays_of_p_blocklengths = realloc(dat->arrays_of_p_blocklengths,
@@ -1600,7 +1670,7 @@ int addDTypeData(derivedTypeData* dat,
 					     (dat->size)*sizeof(MPI_Aint*));
     dat->arrays_of_p_types = realloc(dat->arrays_of_p_types,
 				     (dat->size)*sizeof(MPI_Datatype*));
-    dat->p_mapsizes = realloc(dat->p_mapsizes, (dat->size)*sizeof(int));
+    dat->p_extents = realloc(dat->p_extents, (dat->size)*sizeof(MPI_Aint));
   }
   dat->num_actives[pos] = num_actives;
   dat->first_active_indices[pos] = fst_active_idx;
@@ -1613,7 +1683,8 @@ int addDTypeData(derivedTypeData* dat,
   memcpy(dat->arrays_of_displacements[pos], array_of_displacements, count*sizeof(MPI_Aint));
   dat->arrays_of_types[pos] = malloc(count*sizeof(MPI_Datatype));
   memcpy(dat->arrays_of_types[pos], array_of_types, count*sizeof(MPI_Datatype));
-  dat->mapsizes[pos] = mapsize;
+  dat->lbs[pos] = lb;
+  dat->extents[pos] = extent;
   dat->packed_types[pos] = *packed_type;
   dat->arrays_of_p_blocklengths[pos] = malloc(count*sizeof(int));
   memcpy(dat->arrays_of_p_blocklengths[pos], array_of_p_blocklengths, count*sizeof(int));
@@ -1621,7 +1692,7 @@ int addDTypeData(derivedTypeData* dat,
   memcpy(dat->arrays_of_p_displacements[pos], array_of_p_displacements, count*sizeof(MPI_Aint));
   dat->arrays_of_p_types[pos] = malloc(count*sizeof(MPI_Datatype));
   memcpy(dat->arrays_of_p_types[pos], array_of_p_types, count*sizeof(MPI_Datatype));
-  dat->p_mapsizes[pos] = p_mapsize;
+  dat->p_extents[pos] = p_extent;
   dat->pos += 1;
   return pos;
 }

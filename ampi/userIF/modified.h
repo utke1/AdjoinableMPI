@@ -35,13 +35,14 @@ typedef struct {
   int** arrays_of_blocklengths;
   MPI_Aint** arrays_of_displacements;
   MPI_Datatype** arrays_of_types;
-  int* mapsizes;
+  MPI_Aint* lbs;
+  MPI_Aint* extents;
   /* corresponding typemaps packed for sending */
   MPI_Datatype* packed_types;
   int** arrays_of_p_blocklengths;
   MPI_Aint** arrays_of_p_displacements;
   MPI_Datatype** arrays_of_p_types;
-  int* p_mapsizes;
+  MPI_Aint* p_extents;
 } derivedTypeData;
 
 derivedTypeData* getDTypeData();
@@ -53,11 +54,12 @@ int addDTypeData(derivedTypeData* dat,
 		 int array_of_blocklengths[],
 		 MPI_Aint array_of_displacements[],
 		 MPI_Datatype array_of_types[],
-		 int mapsize,
+		 MPI_Aint lower_bound,
+		 MPI_Aint extent,
 		 int array_of_p_blocklengths[],
 		 MPI_Aint array_of_p_displacements[],
 		 MPI_Datatype array_of_p_types[],
-		 int p_mapsize,
+		 MPI_Aint p_extent,
 		 MPI_Datatype* newtype,
 		 MPI_Datatype* packed_type);
 int derivedTypeIdx(MPI_Datatype datatype);
@@ -197,22 +199,6 @@ int AMPI_Allreduce (void* sbuf,
                     MPI_Op op,
                     MPI_Comm comm);
 
-int AMPI_Type_create_struct (int count,
-			     int array_of_blocklengths[],
-			     MPI_Aint array_of_displacements[],
-			     MPI_Datatype array_of_types[],
-			     MPI_Datatype *newtype);
-
-int AMPI_Type_create_resized (MPI_Datatype oldtype,
-			      MPI_Aint lb,
-			      MPI_Aint extent,
-			      MPI_Datatype *newtype);
-
-int AMPI_Type_commit (MPI_Datatype *datatype);
-
-int AMPI_Op_create(MPI_User_function *function,
-		   int commute,
-		   MPI_Op *op);
 
 /**
  * before we start reverse we need to make sure there are no pending requests in our userIF bookkeeping 

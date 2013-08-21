@@ -421,6 +421,18 @@ void ADTOOL_AMPI_releaseAdjointTempBuf(void *tempBuf);
 typedef void (ADTOOL_AMPI_releaseAdjointTempBufF) (void *);
 
 /**
+ * allocates buffer with active variables (needed as a temporary in Reduce)
+ */
+void* ADTOOL_AMPI_allocateTempActiveBuf(int count, MPI_Datatype datatype, MPI_Comm comm);
+typedef void*  (ADTOOL_AMPI_allocateTempActiveBufF) (int, MPI_Datatype, MPI_Comm);
+
+/**
+ * copies contents of buffer including real values of active variables
+ */
+void * ADTOOL_AMPI_copyActiveBuf(void* source, void* target, int count, MPI_Datatype datatype, MPI_Comm comm);
+typedef void* (ADTOOL_AMPI_copyActiveBufF) (void*, void*, int, MPI_Datatype, MPI_Comm);
+
+/**
  * Adjoint increment the values in adjointTarget.
  * \param adjointCount is the number of items in the buffer we will increment
  * \param datatype the data type of the buffer to be incremented
@@ -540,6 +552,8 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_setAdjointCountAndTempBufF *setAdjointCountAndTempBuf_fp;
   ADTOOL_AMPI_allocateTempBufF *allocateTempBuf_fp;
   ADTOOL_AMPI_releaseAdjointTempBufF *releaseAdjointTempBuf_fp;
+  ADTOOL_AMPI_allocateTempActiveBufF *allocateTempActiveBuf_fp;
+  ADTOOL_AMPI_copyActiveBufF *copyActiveBuf_fp;
   ADTOOL_AMPI_adjointIncrementF *adjointIncrement_fp;
   ADTOOL_AMPI_adjointMultiplyF *adjointMultiply_fp;
   ADTOOL_AMPI_adjointDivideF *adjointDivide_fp;
