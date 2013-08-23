@@ -292,8 +292,10 @@
  * \ref derivedTypeData; the wrapper also generates an internal typemap that describes the packed data. The packed typemap is used
  * whenver a derived type is sent and received; it's also used in conjunction with the user-provided map to pack and unpack data.
  * This typemap is invisible to the user, so the creation of derived datatypes is accomplished entirely with calls to the
- * \ref AMPI_Type_create_struct and \ref AMPI_Type_commit wrappers. NB: for sending multiple counts of struct s, it is good practice
- * to include MPI_UB at displacement sizeof(s) as the last element of the typemap.
+ * \ref AMPI_Type_create_struct and \ref AMPI_Type_commit wrappers.
+ * 
+ * \image html dtype_illustration.png
+ * \image latex dtype_illustration.png
  * 
  * 
  */
