@@ -324,14 +324,14 @@ typedef void * (ADTOOL_AMPI_rawDataVF) (void*, int*, int*);
  * serialize user-defined struct for sending in forward execution in
  * association-by-address tools
  */
-void * ADTOOL_AMPI_rawData_DType(void* indata, void* outdata, int* count, int idx);
-typedef void * (ADTOOL_AMPI_rawData_DTypeF) (void*, void*, int*, int);
+void * ADTOOL_AMPI_packDType(void* indata, void* outdata, int count, int idx);
+typedef void * (ADTOOL_AMPI_packDTypeF) (void*, void*, int, int);
 
 /**
  * unpack serialized user-defined struct data into its original form
  */
-void * ADTOOL_AMPI_unpackDType(void* indata, void* outdata, int* count, int idx);
-typedef void * (ADTOOL_AMPI_unpackDTypeF) (void*, void*, int*, int);
+void * ADTOOL_AMPI_unpackDType(void* indata, void* outdata, int count, int idx);
+typedef void * (ADTOOL_AMPI_unpackDTypeF) (void*, void*, int, int);
 
 /** 
  * \todo add description
@@ -425,6 +425,12 @@ typedef void (ADTOOL_AMPI_releaseAdjointTempBufF) (void *);
  */
 void* ADTOOL_AMPI_allocateTempActiveBuf(int count, MPI_Datatype datatype, MPI_Comm comm);
 typedef void*  (ADTOOL_AMPI_allocateTempActiveBufF) (int, MPI_Datatype, MPI_Comm);
+
+/**
+ * releases buffer with active variables (used as a temporary in Reduce)
+ */
+void ADTOOL_AMPI_releaseTempActiveBuf(void *buf, int count, MPI_Datatype datatype);
+typedef void  (ADTOOL_AMPI_releaseTempActiveBufF) (void *, int, MPI_Datatype);
 
 /**
  * copies contents of buffer including real values of active variables
@@ -539,7 +545,7 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_pop_commF *pop_comm_fp;
   ADTOOL_AMPI_rawDataF *rawData_fp;
   ADTOOL_AMPI_rawDataVF *rawDataV_fp;
-  ADTOOL_AMPI_rawData_DTypeF *rawData_DType_fp;
+  ADTOOL_AMPI_packDTypeF *packDType_fp;
   ADTOOL_AMPI_unpackDTypeF *unpackDType_fp;
   ADTOOL_AMPI_writeDataF *writeData_fp;
   ADTOOL_AMPI_writeDataVF *writeDataV_fp;
@@ -553,6 +559,7 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_allocateTempBufF *allocateTempBuf_fp;
   ADTOOL_AMPI_releaseAdjointTempBufF *releaseAdjointTempBuf_fp;
   ADTOOL_AMPI_allocateTempActiveBufF *allocateTempActiveBuf_fp;
+  ADTOOL_AMPI_releaseTempActiveBufF *releaseTempActiveBuf_fp;
   ADTOOL_AMPI_copyActiveBufF *copyActiveBuf_fp;
   ADTOOL_AMPI_adjointIncrementF *adjointIncrement_fp;
   ADTOOL_AMPI_adjointMultiplyF *adjointMultiply_fp;

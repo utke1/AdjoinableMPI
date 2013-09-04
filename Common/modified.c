@@ -58,7 +58,7 @@ int FW_AMPI_Recv(void* buf,
 		&myStatus); /* because status as passed in may be MPI_STATUS_IGNORE */
     if (rc==MPI_SUCCESS && ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(datatype)==AMPI_ACTIVE || is_derived)) {
       if (is_derived) {
-	(ourADTOOL_AMPI_FPCollection.unpackDType_fp)(mappedbuf,buf,&count,dt_idx);
+	(*ourADTOOL_AMPI_FPCollection.unpackDType_fp)(mappedbuf,buf,count,dt_idx);
 	(*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(mappedbuf);
       }
       (*ourADTOOL_AMPI_FPCollection.writeData_fp)(buf,&count);
@@ -282,7 +282,7 @@ int FW_AMPI_Send (void* buf,
     }
     else if(is_derived) {
       mappedbuf=(*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,datatype,comm);
-      (*ourADTOOL_AMPI_FPCollection.rawData_DType_fp)(buf,mappedbuf,&count,dt_idx);
+      (*ourADTOOL_AMPI_FPCollection.packDType_fp)(buf,mappedbuf,count,dt_idx);
     }
     else {
       mappedbuf=buf;
@@ -1233,7 +1233,7 @@ int FW_AMPI_Bcast (void* buf,
   }
   else if(is_derived) {
     mappedbuf=(*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,datatype,comm);
-    (*ourADTOOL_AMPI_FPCollection.rawData_DType_fp)(buf,mappedbuf,&count,dt_idx);
+    (*ourADTOOL_AMPI_FPCollection.packDType_fp)(buf,mappedbuf,count,dt_idx);
   }
   else {
     mappedbuf=buf;
@@ -1245,7 +1245,7 @@ int FW_AMPI_Bcast (void* buf,
                comm);
   if (rc==MPI_SUCCESS && ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(datatype)==AMPI_ACTIVE || is_derived )) {
     if (is_derived) {
-      (ourADTOOL_AMPI_FPCollection.unpackDType_fp)(mappedbuf,buf,&count,dt_idx);
+      (*ourADTOOL_AMPI_FPCollection.unpackDType_fp)(mappedbuf,buf,count,dt_idx);
       (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(mappedbuf);
     }
     (*ourADTOOL_AMPI_FPCollection.pushBcastInfo_fp)(buf,
@@ -1365,6 +1365,10 @@ int FW_AMPI_Reduce (void* sbuf,
 					  11, AMPI_SEND, comm, &status);
       assert(rc==MPI_SUCCESS);
     }
+    (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(tmp_buf,count,datatype);
+    if (rank != root) {
+      (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(rbuf,count,datatype);
+      }
     return 0;
   }
   else {
