@@ -1601,21 +1601,22 @@ derivedTypeData* getDTypeData() {
     derivedTypeData* newdat = malloc(sizeof(derivedTypeData));
     newdat->size = 4;
     newdat->pos = 0;
-    newdat->num_actives = (int*)malloc((newdat->size)*sizeof(int));
-    newdat->first_active_indices = (int*)malloc((newdat->size)*sizeof(int));
-    newdat->last_active_indices = (int*)malloc((newdat->size)*sizeof(int));
-    newdat->derived_types = (MPI_Datatype*)malloc((newdat->size)*sizeof(MPI_Datatype));
-    newdat->counts = (int*)malloc((newdat->size)*sizeof(int));
-    newdat->arrays_of_blocklengths = (int**)malloc((newdat->size)*sizeof(int*));
-    newdat->arrays_of_displacements = (MPI_Aint**)malloc((newdat->size)*sizeof(MPI_Aint*));
-    newdat->arrays_of_types = (MPI_Datatype**)malloc((newdat->size)*sizeof(MPI_Datatype*));
-    newdat->lbs = (MPI_Aint*)malloc((newdat->size)*sizeof(MPI_Aint));
-    newdat->extents = (MPI_Aint*)malloc((newdat->size)*sizeof(MPI_Aint));
-    newdat->packed_types = (MPI_Datatype*)malloc((newdat->size)*sizeof(MPI_Datatype));
-    newdat->arrays_of_p_blocklengths = (int**)malloc((newdat->size)*sizeof(int*));
-    newdat->arrays_of_p_displacements = (MPI_Aint**)malloc((newdat->size)*sizeof(MPI_Aint*));
-    newdat->arrays_of_p_types = (MPI_Datatype**)malloc((newdat->size)*sizeof(MPI_Datatype*));
-    newdat->p_extents = (MPI_Aint*)malloc((newdat->size)*sizeof(MPI_Aint));
+    newdat->num_actives = malloc((newdat->size)*sizeof(int));
+    newdat->first_active_blocks = malloc((newdat->size)*sizeof(MPI_Aint));
+    newdat->last_active_blocks = malloc((newdat->size)*sizeof(MPI_Aint));
+    newdat->last_active_block_lengths = malloc((newdat->size)*sizeof(int));
+    newdat->derived_types = malloc((newdat->size)*sizeof(MPI_Datatype));
+    newdat->counts = malloc((newdat->size)*sizeof(int));
+    newdat->arrays_of_blocklengths = malloc((newdat->size)*sizeof(int*));
+    newdat->arrays_of_displacements = malloc((newdat->size)*sizeof(MPI_Aint*));
+    newdat->arrays_of_types = malloc((newdat->size)*sizeof(MPI_Datatype*));
+    newdat->lbs = malloc((newdat->size)*sizeof(MPI_Aint));
+    newdat->extents = malloc((newdat->size)*sizeof(MPI_Aint));
+    newdat->packed_types = malloc((newdat->size)*sizeof(MPI_Datatype));
+    newdat->arrays_of_p_blocklengths = malloc((newdat->size)*sizeof(int*));
+    newdat->arrays_of_p_displacements = malloc((newdat->size)*sizeof(MPI_Aint*));
+    newdat->arrays_of_p_types = malloc((newdat->size)*sizeof(MPI_Datatype*));
+    newdat->p_extents = malloc((newdat->size)*sizeof(MPI_Aint));
     dat = newdat;
   }
   return dat;
@@ -1634,27 +1635,40 @@ int addDTypeData(derivedTypeData* dat,
 		 MPI_Aint p_extent,
 		 MPI_Datatype* newtype,
 		 MPI_Datatype* packed_type) {
-  if (dat==NULL) assert(0);
-  int i;
-  int num_actives=0;
-  int fst_active_idx=0, fst_aidx_set=0, lst_active_idx=0;
+  assert(dat);
+  int i, pos, dt_idx;
+  int num_actives=0, fst_ablk_set=0;
+  MPI_Aint fst_active_blk=0, lst_active_blk=0, lst_active_blk_len=0;
   for (i=0;i<count;i++) {
     if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(array_of_types[i])==AMPI_ACTIVE) {
       num_actives += array_of_blocklengths[i];
-      if (!fst_aidx_set) {
-	fst_active_idx = i;
-	fst_aidx_set = 1;
+      if (!fst_ablk_set) {
+	fst_active_blk = array_of_displacements[i];
+	fst_ablk_set = 1;
       }
-      lst_active_idx = i;
+      lst_active_blk = array_of_displacements[i];
+      lst_active_blk_len = array_of_blocklengths[i];
+      continue;
+    }
+    dt_idx = derivedTypeIdx(array_of_types[i]);
+    if (isDerivedType(dt_idx)) {
+      num_actives += dat->num_actives[dt_idx]*array_of_blocklengths[i];
+      if (!fst_ablk_set) {
+	fst_active_blk = array_of_displacements[i] + dat->first_active_blocks[dt_idx];
+	fst_ablk_set = 1;
+      }
+      lst_active_blk = array_of_displacements[i] + (array_of_blocklengths[i]-1)*dat->extents[dt_idx] + dat->last_active_blocks[dt_idx];
+      lst_active_blk_len = dat->last_active_block_lengths[dt_idx];
     }
   }
-  if (!num_actives) return -1;
-  int pos = dat->pos;
+  assert(num_actives>0);
+  pos = dat->pos;
   if (pos >= dat->size) {
     dat->size *= 2;
     dat->num_actives = realloc(dat->num_actives, (dat->size)*sizeof(int));
-    dat->first_active_indices = realloc(dat->first_active_indices, (dat->size)*sizeof(int));
-    dat->last_active_indices = realloc(dat->last_active_indices, (dat->size)*sizeof(int));
+    dat->first_active_blocks = realloc(dat->first_active_blocks, (dat->size)*sizeof(MPI_Aint));
+    dat->last_active_blocks = realloc(dat->last_active_blocks, (dat->size)*sizeof(MPI_Aint));
+    dat->last_active_block_lengths = realloc(dat->last_active_block_lengths, (dat->size)*sizeof(int));
     dat->derived_types = realloc(dat->derived_types,
 				 (dat->size)*sizeof(MPI_Datatype));
     dat->counts = realloc(dat->counts, (dat->size)*sizeof(int));
@@ -1677,8 +1691,9 @@ int addDTypeData(derivedTypeData* dat,
     dat->p_extents = realloc(dat->p_extents, (dat->size)*sizeof(MPI_Aint));
   }
   dat->num_actives[pos] = num_actives;
-  dat->first_active_indices[pos] = fst_active_idx;
-  dat->last_active_indices[pos] = lst_active_idx;
+  dat->first_active_blocks[pos] = fst_active_blk;
+  dat->last_active_blocks[pos] = lst_active_blk;
+  dat->last_active_block_lengths[pos] = lst_active_blk_len;
   dat->derived_types[pos] = *newtype;
   dat->counts[pos] = count;
   dat->arrays_of_blocklengths[pos] = malloc(count*sizeof(int));

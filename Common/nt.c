@@ -37,15 +37,19 @@ int AMPI_Type_create_struct_NT(int count,
   MPI_Datatype temp_packed_type, packed_type;
   int array_of_p_blocklengths[count];
   MPI_Aint array_of_p_displacements[count];
-  MPI_Datatype array_of_p_types[count];
-  int s=0, is_active;
+  MPI_Datatype array_of_p_types[count], datatype;
+  int s=0, is_active, is_derived, dt_idx;
   MPI_Aint p_mapsize=0, extent, lb;
   for (i=0;i<count;i++) {
-    is_active = ADTOOL_AMPI_isActiveType(array_of_types[i])==AMPI_ACTIVE;
+    datatype = array_of_types[i];
+    is_active = ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE;
+    dt_idx = derivedTypeIdx(datatype);
+    is_derived = isDerivedType(dt_idx);
     array_of_p_blocklengths[i] = array_of_blocklengths[i];
     array_of_p_displacements[i] = p_mapsize;
     array_of_p_types[i] = is_active ? MPI_DOUBLE : array_of_types[i];
     if (is_active) s = sizeof(double);
+    else if (is_derived) s = getDTypeData()->p_extents[dt_idx];
     else if (array_of_types[i]==MPI_DOUBLE) s = sizeof(double);
     else if (array_of_types[i]==MPI_INT) s = sizeof(int);
     else if (array_of_types[i]==MPI_FLOAT) s = sizeof(float);
