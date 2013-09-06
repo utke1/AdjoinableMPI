@@ -882,20 +882,19 @@ int FW_AMPI_Gatherv(void *sendbuf,
                     MPI_Datatype recvtype,
                     int root,
                     MPI_Comm comm) {
-  void *rawSendBuf=NULL, *rawRecvBuf=NULL;
+  void *rawSendBuf=sendbuf, *rawRecvBuf=recvbuf;
   int rc=MPI_SUCCESS;
+  int isInPlace=(sendbuf==MPI_IN_PLACE);
   int myRank, myCommSize;
   MPI_Comm_rank(comm, &myRank);
   MPI_Comm_size(comm, &myCommSize);
-  if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)!=(*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)) {
+  if (!isInPlace && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)!=(*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)) {
     rc=MPI_Abort(comm, MPI_ERR_ARG);
   }
   else {
-    if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)==AMPI_ACTIVE)  rawSendBuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(sendbuf,&sendcnt);
-    else rawSendBuf=sendbuf;
+    if (!isInPlace && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)==AMPI_ACTIVE)  rawSendBuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(sendbuf,&sendcnt);
     if (myRank==root) {
       if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE)  rawRecvBuf=(*ourADTOOL_AMPI_FPCollection.rawDataV_fp)(recvbuf,recvcnts, displs);
-      else rawRecvBuf=recvbuf;
     }
     rc=MPI_Gatherv(rawSendBuf,
                    sendcnt,
@@ -960,7 +959,9 @@ int BW_AMPI_Gatherv(void *sendbuf,
 					       &comm);
   MPI_Comm_rank(comm, &myRank);
   (*ourADTOOL_AMPI_FPCollection.getAdjointCount_fp)(&sendcnt,sendtype);
-  void *tempBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(sendcnt,sendtype,comm) ;
+  void *tempBuf = 0;
+  if (sendcnt>0) tempBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(sendcnt,sendtype,comm) ;
+  else tempBuf=MPI_IN_PLACE;
   rc=MPI_Scatterv(recvbuf,
                   tRecvCnts,
                   tDispls,
@@ -971,22 +972,24 @@ int BW_AMPI_Gatherv(void *sendbuf,
                   root,
                   comm);
   (*ourADTOOL_AMPI_FPCollection.adjointIncrement_fp)(sendcnt,
-                               sendtype,
-                               comm,
-                               sendbuf,
-                               sendbuf,
-                               sendbuf,
-                               tempBuf,
-                               idx);
-  if (myRank==root) {
+						     sendtype,
+						     comm,
+						     sendbuf,
+						     sendbuf,
+						     sendbuf,
+						     tempBuf,
+						     idx);
+  if (commSizeForRootOrNull) {
     MPI_Type_size(recvtype,&rTypeSize);
     for (i=0;i<commSizeForRootOrNull;++i) {
-      void* buf=recvbuf+(rTypeSize*tDispls[i]); /* <----------  very iffy! */
-      (*ourADTOOL_AMPI_FPCollection.adjointNullify_fp)(tRecvCnts[i],recvtype,comm,
-                                 buf , buf, buf);
+      if (! (i==root && sendcnt==0)) { /* don't nullify the segment if "in place" on root */
+	void* recvbufSegment=recvbuf+(rTypeSize*tDispls[i]); /* <----------  very iffy! */
+	(*ourADTOOL_AMPI_FPCollection.adjointNullify_fp)(tRecvCnts[i],recvtype,comm,
+							 recvbufSegment , recvbufSegment, recvbufSegment);
+      }
     }
   }
-  (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
+  if (tempBuf!=MPI_IN_PLACE) (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   if (tRecvCntsFlag) free((void*)(tRecvCnts));
   if (tDisplsFlag) free((void*)(tDispls));
   return rc;
@@ -1003,17 +1006,18 @@ int FW_AMPI_Scatterv(void *sendbuf,
                      MPI_Comm comm) {
   int rc=MPI_SUCCESS;
   int myRank, myCommSize;
+  int isInPlace=(recvbuf==MPI_IN_PLACE);
   void *rawSendBuf=sendbuf, *rawRecvBuf=recvbuf;
   MPI_Comm_rank(comm, &myRank);
   MPI_Comm_size(comm, &myCommSize);
-  if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)!=(*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)) {
+  if (!isInPlace && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)!=(*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)) {
     rc=MPI_Abort(comm, MPI_ERR_ARG);
   }
   else {
     if (myRank==root) {
       if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)==AMPI_ACTIVE)  rawSendBuf=(*ourADTOOL_AMPI_FPCollection.rawDataV_fp)(sendbuf,sendcnts,displs);
     }
-    if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE)  rawRecvBuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(recvbuf,&recvcnt);
+    if (!isInPlace && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE)  rawRecvBuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(recvbuf,&recvcnt);
     rc=MPI_Scatterv(rawSendBuf,
                     sendcnts,
                     displs,
@@ -1023,7 +1027,7 @@ int FW_AMPI_Scatterv(void *sendbuf,
                     recvtype,
                     root,
                     comm);
-    if (rc==MPI_SUCCESS && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE) {
+    if (rc==MPI_SUCCESS && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)==AMPI_ACTIVE) {
       (*ourADTOOL_AMPI_FPCollection.writeData_fp)(recvbuf,&recvcnt);
       (*ourADTOOL_AMPI_FPCollection.pushGSVinfo_fp)(((myRank==root)?myCommSize:0),
 						    sendbuf,
