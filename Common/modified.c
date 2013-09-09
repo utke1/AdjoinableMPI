@@ -655,7 +655,12 @@ int BW_AMPI_Gather(void *sendbuf,
   (*ourADTOOL_AMPI_FPCollection.getAdjointCount_fp)(&sendcnt,sendtype);
   void *tempBuf = 0;
   if (sendcnt>0) tempBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(sendcnt,sendtype,comm) ;
-  else tempBuf=MPI_IN_PLACE;
+  else {
+    if (commSizeForRootOrNull) 
+      tempBuf=MPI_IN_PLACE;
+    else 
+      tempBuf=0;
+  }
   rc=MPI_Scatter(recvbuf,
 		 recvcnt,
 		 recvtype,
@@ -682,7 +687,7 @@ int BW_AMPI_Gather(void *sendbuf,
       }
     }
   }
-  if (tempBuf!=MPI_IN_PLACE) (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
+  if (tempBuf!=MPI_IN_PLACE && tempBuf!=0) (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   return rc;
 }
 
@@ -961,7 +966,12 @@ int BW_AMPI_Gatherv(void *sendbuf,
   (*ourADTOOL_AMPI_FPCollection.getAdjointCount_fp)(&sendcnt,sendtype);
   void *tempBuf = 0;
   if (sendcnt>0) tempBuf = (*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(sendcnt,sendtype,comm) ;
-  else tempBuf=MPI_IN_PLACE;
+  else {
+    if (commSizeForRootOrNull) 
+      tempBuf=MPI_IN_PLACE;
+    else 
+      tempBuf=0;
+  }
   rc=MPI_Scatterv(recvbuf,
                   tRecvCnts,
                   tDispls,
@@ -989,7 +999,7 @@ int BW_AMPI_Gatherv(void *sendbuf,
       }
     }
   }
-  if (tempBuf!=MPI_IN_PLACE) (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
+  if (tempBuf!=MPI_IN_PLACE && tempBuf!=0) (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   if (tRecvCntsFlag) free((void*)(tRecvCnts));
   if (tDisplsFlag) free((void*)(tDispls));
   return rc;
