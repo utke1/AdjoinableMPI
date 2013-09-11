@@ -1615,42 +1615,42 @@ int BW_AMPI_Allreduce (void* sbuf,
 derivedTypeData* getDTypeData() {
   static derivedTypeData* dat = NULL;
   if (dat==NULL) {
-    derivedTypeData* newdat = malloc(sizeof(derivedTypeData));
-    newdat->size = 4;
-    newdat->pos = 0;
-    newdat->num_actives = (int*)malloc((newdat->size)*sizeof(int));
-    newdat->first_active_indices = (int*)malloc((newdat->size)*sizeof(int));
-    newdat->last_active_indices = (int*)malloc((newdat->size)*sizeof(int));
-    newdat->derived_types = (MPI_Datatype*)malloc((newdat->size)*sizeof(MPI_Datatype));
-    newdat->counts = (int*)malloc((newdat->size)*sizeof(int));
-    newdat->arrays_of_blocklengths = (int**)malloc((newdat->size)*sizeof(int*));
-    newdat->arrays_of_displacements = (MPI_Aint**)malloc((newdat->size)*sizeof(MPI_Aint*));
-    newdat->arrays_of_types = (MPI_Datatype**)malloc((newdat->size)*sizeof(MPI_Datatype*));
-    newdat->lbs = (MPI_Aint*)malloc((newdat->size)*sizeof(MPI_Aint));
-    newdat->extents = (MPI_Aint*)malloc((newdat->size)*sizeof(MPI_Aint));
-    newdat->packed_types = (MPI_Datatype*)malloc((newdat->size)*sizeof(MPI_Datatype));
-    newdat->arrays_of_p_blocklengths = (int**)malloc((newdat->size)*sizeof(int*));
-    newdat->arrays_of_p_displacements = (MPI_Aint**)malloc((newdat->size)*sizeof(MPI_Aint*));
-    newdat->arrays_of_p_types = (MPI_Datatype**)malloc((newdat->size)*sizeof(MPI_Datatype*));
-    newdat->p_extents = (MPI_Aint*)malloc((newdat->size)*sizeof(MPI_Aint));
+    derivedTypeData* newdat = (derivedTypeData*)malloc(sizeof(derivedTypeData));
+    newdat->size = 0;
+    newdat->preAlloc = 0;
+    newdat->num_actives = NULL;
+    newdat->first_active_indices = NULL;
+    newdat->last_active_indices = NULL;
+    newdat->derived_types = NULL;
+    newdat->counts = NULL;
+    newdat->arrays_of_blocklengths = NULL;
+    newdat->arrays_of_displacements = NULL;
+    newdat->arrays_of_types = NULL;
+    newdat->lbs = NULL;
+    newdat->extents = NULL;
+    newdat->packed_types = NULL;
+    newdat->arrays_of_p_blocklengths = NULL;
+    newdat->arrays_of_p_displacements = NULL;
+    newdat->arrays_of_p_types = NULL;
+    newdat->p_extents = NULL;
     dat = newdat;
   }
   return dat;
 }
 
-int addDTypeData(derivedTypeData* dat,
-		 int count,
-		 int array_of_blocklengths[],
-		 MPI_Aint array_of_displacements[],
-		 MPI_Datatype array_of_types[],
-		 MPI_Aint lb,
-		 MPI_Aint extent,
-		 int array_of_p_blocklengths[],
-		 MPI_Aint array_of_p_displacements[],
-		 MPI_Datatype array_of_p_types[],
-		 MPI_Aint p_extent,
-		 MPI_Datatype* newtype,
-		 MPI_Datatype* packed_type) {
+void addDTypeData(derivedTypeData* dat,
+		  int count,
+		  int array_of_blocklengths[],
+		  MPI_Aint array_of_displacements[],
+		  MPI_Datatype array_of_types[],
+		  MPI_Aint lb,
+		  MPI_Aint extent,
+		  int array_of_p_blocklengths[],
+		  MPI_Aint array_of_p_displacements[],
+		  MPI_Datatype array_of_p_types[],
+		  MPI_Aint p_extent,
+		  MPI_Datatype* newtype,
+		  MPI_Datatype* packed_type) {
   if (dat==NULL) assert(0);
   int i;
   int num_actives=0;
@@ -1666,56 +1666,54 @@ int addDTypeData(derivedTypeData* dat,
     }
   }
   if (!num_actives) return -1;
-  int pos = dat->pos;
-  if (pos >= dat->size) {
-    dat->size *= 2;
-    dat->num_actives = realloc(dat->num_actives, (dat->size)*sizeof(int));
-    dat->first_active_indices = realloc(dat->first_active_indices, (dat->size)*sizeof(int));
-    dat->last_active_indices = realloc(dat->last_active_indices, (dat->size)*sizeof(int));
+  if (dat->preAlloc == dat->size) {
+    dat->preAlloc += 16;
+    dat->num_actives = realloc(dat->num_actives, (dat->preAlloc)*sizeof(int));
+    dat->first_active_indices = realloc(dat->first_active_indices, (dat->preAlloc)*sizeof(int));
+    dat->last_active_indices = realloc(dat->last_active_indices, (dat->preAlloc)*sizeof(int));
     dat->derived_types = realloc(dat->derived_types,
-				 (dat->size)*sizeof(MPI_Datatype));
-    dat->counts = realloc(dat->counts, (dat->size)*sizeof(int));
+				 (dat->preAlloc)*sizeof(MPI_Datatype));
+    dat->counts = realloc(dat->counts, (dat->preAlloc)*sizeof(int));
     dat->arrays_of_blocklengths = realloc(dat->arrays_of_blocklengths,
-					  (dat->size)*sizeof(int*));
+					  (dat->preAlloc)*sizeof(int*));
     dat->arrays_of_displacements = realloc(dat->arrays_of_displacements,
-					   (dat->size)*sizeof(MPI_Aint*));
+					   (dat->preAlloc)*sizeof(MPI_Aint*));
     dat->arrays_of_types = realloc(dat->arrays_of_types,
-				   (dat->size)*sizeof(MPI_Datatype*));
-    dat->lbs = realloc(dat->lbs, (dat->size)*sizeof(MPI_Aint));
-    dat->extents = realloc(dat->extents, (dat->size)*sizeof(MPI_Aint));
+				   (dat->preAlloc)*sizeof(MPI_Datatype*));
+    dat->lbs = realloc(dat->lbs, (dat->preAlloc)*sizeof(MPI_Aint));
+    dat->extents = realloc(dat->extents, (dat->preAlloc)*sizeof(MPI_Aint));
     dat->packed_types = realloc(dat->packed_types,
-				(dat->size)*sizeof(MPI_Datatype));
+				(dat->preAlloc)*sizeof(MPI_Datatype));
     dat->arrays_of_p_blocklengths = realloc(dat->arrays_of_p_blocklengths,
-					    (dat->size)*sizeof(int*));
+					    (dat->preAlloc)*sizeof(int*));
     dat->arrays_of_p_displacements = realloc(dat->arrays_of_p_displacements,
-					     (dat->size)*sizeof(MPI_Aint*));
+					     (dat->preAlloc)*sizeof(MPI_Aint*));
     dat->arrays_of_p_types = realloc(dat->arrays_of_p_types,
-				     (dat->size)*sizeof(MPI_Datatype*));
-    dat->p_extents = realloc(dat->p_extents, (dat->size)*sizeof(MPI_Aint));
+				     (dat->preAlloc)*sizeof(MPI_Datatype*));
+    dat->p_extents = realloc(dat->p_extents, (dat->preAlloc)*sizeof(MPI_Aint));
   }
-  dat->num_actives[pos] = num_actives;
-  dat->first_active_indices[pos] = fst_active_idx;
-  dat->last_active_indices[pos] = lst_active_idx;
-  dat->derived_types[pos] = *newtype;
-  dat->counts[pos] = count;
-  dat->arrays_of_blocklengths[pos] = malloc(count*sizeof(int));
-  memcpy(dat->arrays_of_blocklengths[pos], array_of_blocklengths, count*sizeof(int));
-  dat->arrays_of_displacements[pos] = malloc(count*sizeof(MPI_Aint));
-  memcpy(dat->arrays_of_displacements[pos], array_of_displacements, count*sizeof(MPI_Aint));
-  dat->arrays_of_types[pos] = malloc(count*sizeof(MPI_Datatype));
-  memcpy(dat->arrays_of_types[pos], array_of_types, count*sizeof(MPI_Datatype));
-  dat->lbs[pos] = lb;
-  dat->extents[pos] = extent;
-  dat->packed_types[pos] = *packed_type;
-  dat->arrays_of_p_blocklengths[pos] = malloc(count*sizeof(int));
-  memcpy(dat->arrays_of_p_blocklengths[pos], array_of_p_blocklengths, count*sizeof(int));
-  dat->arrays_of_p_displacements[pos] = malloc(count*sizeof(MPI_Aint));
-  memcpy(dat->arrays_of_p_displacements[pos], array_of_p_displacements, count*sizeof(MPI_Aint));
-  dat->arrays_of_p_types[pos] = malloc(count*sizeof(MPI_Datatype));
-  memcpy(dat->arrays_of_p_types[pos], array_of_p_types, count*sizeof(MPI_Datatype));
-  dat->p_extents[pos] = p_extent;
-  dat->pos += 1;
-  return pos;
+  dat->num_actives[dat->size] = num_actives;
+  dat->first_active_indices[dat->size] = fst_active_idx;
+  dat->last_active_indices[dat->size] = lst_active_idx;
+  dat->derived_types[dat->size] = *newtype;
+  dat->counts[dat->size] = count;
+  dat->arrays_of_blocklengths[dat->size] = malloc(count*sizeof(int));
+  memcpy(dat->arrays_of_blocklengths[dat->size], array_of_blocklengths, count*sizeof(int));
+  dat->arrays_of_displacements[dat->size] = malloc(count*sizeof(MPI_Aint));
+  memcpy(dat->arrays_of_displacements[dat->size], array_of_displacements, count*sizeof(MPI_Aint));
+  dat->arrays_of_types[dat->size] = malloc(count*sizeof(MPI_Datatype));
+  memcpy(dat->arrays_of_types[dat->size], array_of_types, count*sizeof(MPI_Datatype));
+  dat->lbs[dat->size] = lb;
+  dat->extents[dat->size] = extent;
+  dat->packed_types[dat->size] = *packed_type;
+  dat->arrays_of_p_blocklengths[dat->size] = malloc(count*sizeof(int));
+  memcpy(dat->arrays_of_p_blocklengths[dat->size], array_of_p_blocklengths, count*sizeof(int));
+  dat->arrays_of_p_displacements[dat->size] = malloc(count*sizeof(MPI_Aint));
+  memcpy(dat->arrays_of_p_displacements[dat->size], array_of_p_displacements, count*sizeof(MPI_Aint));
+  dat->arrays_of_p_types[dat->size] = malloc(count*sizeof(MPI_Datatype));
+  memcpy(dat->arrays_of_p_types[dat->size], array_of_p_types, count*sizeof(MPI_Datatype));
+  dat->p_extents[dat->size] = p_extent;
+  dat->size += 1;
 }
 
 int derivedTypeIdx(MPI_Datatype datatype) {
@@ -1732,34 +1730,32 @@ int isDerivedType(int dt_idx) { return dt_idx!=-1; }
 userDefinedOpData* getUOpData() {
   static userDefinedOpData* dat = NULL;
   if (dat==NULL) {
-    userDefinedOpData* newdat = malloc(sizeof(userDefinedOpData));
-    newdat->size = 4;
-    newdat->pos = 0;
-    newdat->ops = malloc((newdat->size)*sizeof(MPI_Op));
-    newdat->functions = malloc((newdat->size)*sizeof(MPI_User_function*));
-    newdat->commutes = malloc((newdat->size)*sizeof(int));
+    userDefinedOpData* newdat = (userDefinedOpData*)malloc(sizeof(userDefinedOpData));
+    newdat->size = 0;
+    newdat->preAlloc = 0;
+    newdat->ops = NULL;
+    newdat->functions = NULL;
+    newdat->commutes = NULL;
     dat = newdat;
   }
   return dat;
 }
 
-int addUOpData(userDefinedOpData* dat,
-	       MPI_Op* op,
-	       MPI_User_function* function,
-	       int commute) {
+void addUOpData(userDefinedOpData* dat,
+		MPI_Op* op,
+		MPI_User_function* function,
+		int commute) {
   if (dat==NULL) assert(0);
-  int pos = dat->pos;
-  if (pos >= dat->size) {
-    dat->size *= 2;
-    dat->ops = realloc(dat->ops,(dat->size)*sizeof(MPI_Op));
-    dat->functions = realloc(dat->functions,(dat->size)*sizeof(MPI_User_function*));
-    dat->commutes = realloc(dat->commutes,(dat->size)*sizeof(int));
+  if (dat->preAlloc == dat->size) {
+    dat->preAlloc += 16;
+    dat->ops = realloc(dat->ops,(dat->preAlloc)*sizeof(MPI_Op));
+    dat->functions = realloc(dat->functions,(dat->preAlloc)*sizeof(MPI_User_function*));
+    dat->commutes = realloc(dat->commutes,(dat->preAlloc)*sizeof(int));
   }
-  dat->ops[pos] = *op;
-  dat->functions[pos] = function;
-  dat->commutes[pos] = commute;
-  dat->pos += 1;
-  return pos;
+  dat->ops[dat->size] = *op;
+  dat->functions[dat->size] = function;
+  dat->commutes[dat->size] = commute;
+  dat->size += 1;
 }
 
 int userDefinedOpIdx(MPI_Op op) {

@@ -26,7 +26,7 @@ extern MPI_Datatype AMPI_AFLOAT;
  */
 typedef struct {
   int size;
-  int pos;
+  int preAlloc;
   int* num_actives;
   int* first_active_indices;
   int* last_active_indices;
@@ -49,19 +49,19 @@ derivedTypeData* getDTypeData();
   /* addDTypeData takes derived type data and adds a new entry; returns
      position of new type in data struct; returns -1 if struct contains
      no active types; doubles data struct size every time there's overflow */
-int addDTypeData(derivedTypeData* dat,
-		 int count,
-		 int array_of_blocklengths[],
-		 MPI_Aint array_of_displacements[],
-		 MPI_Datatype array_of_types[],
-		 MPI_Aint lower_bound,
-		 MPI_Aint extent,
-		 int array_of_p_blocklengths[],
-		 MPI_Aint array_of_p_displacements[],
-		 MPI_Datatype array_of_p_types[],
-		 MPI_Aint p_extent,
-		 MPI_Datatype* newtype,
-		 MPI_Datatype* packed_type);
+void addDTypeData(derivedTypeData* dat,
+		  int count,
+		  int array_of_blocklengths[],
+		  MPI_Aint array_of_displacements[],
+		  MPI_Datatype array_of_types[],
+		  MPI_Aint lower_bound,
+		  MPI_Aint extent,
+		  int array_of_p_blocklengths[],
+		  MPI_Aint array_of_p_displacements[],
+		  MPI_Datatype array_of_p_types[],
+		  MPI_Aint p_extent,
+		  MPI_Datatype* newtype,
+		  MPI_Datatype* packed_type);
 int derivedTypeIdx(MPI_Datatype datatype);
 int isDerivedType(int dt_idx);
 
@@ -72,7 +72,7 @@ int isDerivedType(int dt_idx);
  */
 typedef struct {
   int size;
-  int pos;
+  int preAlloc;
   MPI_Op* ops;
   MPI_User_function** functions;
   int* commutes;
@@ -82,7 +82,7 @@ userDefinedOpData* getUOpData();
 /* addUOpData takes user-defined op data and adds a new entry; returns
    position of new type in data struct; doubles data struct size every
    time there's overflow */
-int addUOpData(userDefinedOpData* dat,
+void addUOpData(userDefinedOpData* dat,
 		MPI_Op* op,
 		MPI_User_function* function,
 		int commute);
