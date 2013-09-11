@@ -256,7 +256,7 @@ void* ADTOOL_AMPI_rawData(void* activeData, int *size) {
 /**
  * see \ref ADTOOL_AMPI_rawData
  */
-void* ADTOOL_AMPI_rawDataV(void* activeData, int *counts, int* displs) {
+void* ADTOOL_AMPI_rawDataV(void* activeData, int commSize,  int *counts, int* displs) {
   return activeData;
 }
 

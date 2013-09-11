@@ -899,7 +899,7 @@ int FW_AMPI_Gatherv(void *sendbuf,
   else {
     if (!isInPlace && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)==AMPI_ACTIVE)  rawSendBuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(sendbuf,&sendcnt);
     if (myRank==root) {
-      if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE)  rawRecvBuf=(*ourADTOOL_AMPI_FPCollection.rawDataV_fp)(recvbuf,recvcnts, displs);
+      if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE)  rawRecvBuf=(*ourADTOOL_AMPI_FPCollection.rawDataV_fp)(recvbuf, myCommSize, recvcnts, displs);
     }
     rc=MPI_Gatherv(rawSendBuf,
                    sendcnt,
@@ -1025,7 +1025,7 @@ int FW_AMPI_Scatterv(void *sendbuf,
   }
   else {
     if (myRank==root) {
-      if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)==AMPI_ACTIVE)  rawSendBuf=(*ourADTOOL_AMPI_FPCollection.rawDataV_fp)(sendbuf,sendcnts,displs);
+      if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)==AMPI_ACTIVE) rawSendBuf=(*ourADTOOL_AMPI_FPCollection.rawDataV_fp)(sendbuf,myCommSize,sendcnts,displs);
     }
     if (!isInPlace && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE)  rawRecvBuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(recvbuf,&recvcnt);
     rc=MPI_Scatterv(rawSendBuf,
@@ -1148,7 +1148,7 @@ int FW_AMPI_Allgatherv(void *sendbuf,
   else {
     if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)==AMPI_ACTIVE)  rawSendBuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(sendbuf,&sendcnt);
     else rawSendBuf=sendbuf;
-    if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE)  rawRecvBuf=(*ourADTOOL_AMPI_FPCollection.rawDataV_fp)(recvbuf,recvcnts, displs);
+    if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE)  rawRecvBuf=(*ourADTOOL_AMPI_FPCollection.rawDataV_fp)(recvbuf, myCommSize, recvcnts, displs);
     else rawRecvBuf=recvbuf;
     rc=MPI_Allgatherv(rawSendBuf,
                       sendcnt,
@@ -1665,7 +1665,7 @@ void addDTypeData(derivedTypeData* dat,
       lst_active_idx = i;
     }
   }
-  if (!num_actives) return -1;
+  if (!num_actives) return;
   if (dat->preAlloc == dat->size) {
     dat->preAlloc += 16;
     dat->num_actives = realloc(dat->num_actives, (dat->preAlloc)*sizeof(int));

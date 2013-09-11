@@ -317,8 +317,8 @@ typedef void* (ADTOOL_AMPI_rawDataF) (void*, int*);
  * except it is handling vector buffers with arrays of counts and displacements as
  * used in \ref MPI_Gatherv or \ref MPI_Scatterv
  */
-void * ADTOOL_AMPI_rawDataV(void* activeData, int *counts, int* displs);
-typedef void * (ADTOOL_AMPI_rawDataVF) (void*, int*, int*);
+void * ADTOOL_AMPI_rawDataV(void* activeData, int commSize, int *counts, int* displs);
+typedef void * (ADTOOL_AMPI_rawDataVF) (void*, int, int*, int*);
 
 /**
  * serialize user-defined struct for sending in forward execution in
