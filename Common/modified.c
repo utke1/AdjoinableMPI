@@ -58,7 +58,7 @@ int FW_AMPI_Recv(void* buf,
 		&myStatus); /* because status as passed in may be MPI_STATUS_IGNORE */
     if (rc==MPI_SUCCESS && ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(datatype)==AMPI_ACTIVE || is_derived)) {
       if (is_derived) {
-	(ourADTOOL_AMPI_FPCollection.unpackDType_fp)(mappedbuf,buf,&count,dt_idx);
+	(*ourADTOOL_AMPI_FPCollection.unpackDType_fp)(mappedbuf,buf,count,dt_idx);
 	(*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(mappedbuf);
       }
       (*ourADTOOL_AMPI_FPCollection.writeData_fp)(buf,&count);
@@ -282,7 +282,7 @@ int FW_AMPI_Send (void* buf,
     }
     else if(is_derived) {
       mappedbuf=(*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,datatype,comm);
-      (*ourADTOOL_AMPI_FPCollection.rawData_DType_fp)(buf,mappedbuf,&count,dt_idx);
+      (*ourADTOOL_AMPI_FPCollection.packDType_fp)(buf,mappedbuf,count,dt_idx);
     }
     else {
       mappedbuf=buf;
@@ -1254,7 +1254,7 @@ int FW_AMPI_Bcast (void* buf,
   }
   else if(is_derived) {
     mappedbuf=(*ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp)(count,datatype,comm);
-    (*ourADTOOL_AMPI_FPCollection.rawData_DType_fp)(buf,mappedbuf,&count,dt_idx);
+    (*ourADTOOL_AMPI_FPCollection.packDType_fp)(buf,mappedbuf,count,dt_idx);
   }
   else {
     mappedbuf=buf;
@@ -1266,7 +1266,7 @@ int FW_AMPI_Bcast (void* buf,
                comm);
   if (rc==MPI_SUCCESS && ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(datatype)==AMPI_ACTIVE || is_derived )) {
     if (is_derived) {
-      (ourADTOOL_AMPI_FPCollection.unpackDType_fp)(mappedbuf,buf,&count,dt_idx);
+      (*ourADTOOL_AMPI_FPCollection.unpackDType_fp)(mappedbuf,buf,count,dt_idx);
       (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(mappedbuf);
     }
     (*ourADTOOL_AMPI_FPCollection.pushBcastInfo_fp)(buf,
@@ -1386,6 +1386,10 @@ int FW_AMPI_Reduce (void* sbuf,
 					  11, AMPI_SEND, comm, &status);
       assert(rc==MPI_SUCCESS);
     }
+    (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(tmp_buf,count,datatype);
+    if (rank != root) {
+      (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(rbuf,count,datatype);
+      }
     return 0;
   }
   else {
@@ -1619,8 +1623,9 @@ derivedTypeData* getDTypeData() {
     newdat->size = 0;
     newdat->preAlloc = 0;
     newdat->num_actives = NULL;
-    newdat->first_active_indices = NULL;
-    newdat->last_active_indices = NULL;
+    newdat->first_active_blocks = NULL;
+    newdat->last_active_blocks = NULL;
+    newdat->last_active_block_lengths = NULL;
     newdat->derived_types = NULL;
     newdat->counts = NULL;
     newdat->arrays_of_blocklengths = NULL;
@@ -1651,26 +1656,39 @@ void addDTypeData(derivedTypeData* dat,
 		  MPI_Aint p_extent,
 		  MPI_Datatype* newtype,
 		  MPI_Datatype* packed_type) {
-  if (dat==NULL) assert(0);
-  int i;
-  int num_actives=0;
-  int fst_active_idx=0, fst_aidx_set=0, lst_active_idx=0;
+  assert(dat);
+  int i, dt_idx;
+  int num_actives=0, fst_ablk_set=0;
+  MPI_Aint fst_active_blk=0, lst_active_blk=0, lst_active_blk_len=0;
   for (i=0;i<count;i++) {
     if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(array_of_types[i])==AMPI_ACTIVE) {
       num_actives += array_of_blocklengths[i];
-      if (!fst_aidx_set) {
-	fst_active_idx = i;
-	fst_aidx_set = 1;
+      if (!fst_ablk_set) {
+	fst_active_blk = array_of_displacements[i];
+	fst_ablk_set = 1;
       }
-      lst_active_idx = i;
+      lst_active_blk = array_of_displacements[i];
+      lst_active_blk_len = array_of_blocklengths[i];
+      continue;
+    }
+    dt_idx = derivedTypeIdx(array_of_types[i]);
+    if (isDerivedType(dt_idx)) {
+      num_actives += dat->num_actives[dt_idx]*array_of_blocklengths[i];
+      if (!fst_ablk_set) {
+	fst_active_blk = array_of_displacements[i] + dat->first_active_blocks[dt_idx];
+	fst_ablk_set = 1;
+      }
+      lst_active_blk = array_of_displacements[i] + (array_of_blocklengths[i]-1)*dat->extents[dt_idx] + dat->last_active_blocks[dt_idx];
+      lst_active_blk_len = dat->last_active_block_lengths[dt_idx];
     }
   }
-  if (!num_actives) return;
+  assert(num_actives>0);
   if (dat->preAlloc == dat->size) {
     dat->preAlloc += 16;
     dat->num_actives = realloc(dat->num_actives, (dat->preAlloc)*sizeof(int));
-    dat->first_active_indices = realloc(dat->first_active_indices, (dat->preAlloc)*sizeof(int));
-    dat->last_active_indices = realloc(dat->last_active_indices, (dat->preAlloc)*sizeof(int));
+    dat->first_active_blocks = realloc(dat->first_active_blocks, (dat->preAlloc)*sizeof(MPI_Aint));
+    dat->last_active_blocks = realloc(dat->last_active_blocks, (dat->preAlloc)*sizeof(MPI_Aint));
+    dat->last_active_block_lengths = realloc(dat->last_active_block_lengths, (dat->preAlloc)*sizeof(int));
     dat->derived_types = realloc(dat->derived_types,
 				 (dat->preAlloc)*sizeof(MPI_Datatype));
     dat->counts = realloc(dat->counts, (dat->preAlloc)*sizeof(int));
@@ -1693,8 +1711,9 @@ void addDTypeData(derivedTypeData* dat,
     dat->p_extents = realloc(dat->p_extents, (dat->preAlloc)*sizeof(MPI_Aint));
   }
   dat->num_actives[dat->size] = num_actives;
-  dat->first_active_indices[dat->size] = fst_active_idx;
-  dat->last_active_indices[dat->size] = lst_active_idx;
+  dat->first_active_blocks[dat->size] = fst_active_blk;
+  dat->last_active_blocks[dat->size] = lst_active_blk;
+  dat->last_active_block_lengths[dat->size] = lst_active_blk_len;
   dat->derived_types[dat->size] = *newtype;
   dat->counts[dat->size] = count;
   dat->arrays_of_blocklengths[dat->size] = malloc(count*sizeof(int));

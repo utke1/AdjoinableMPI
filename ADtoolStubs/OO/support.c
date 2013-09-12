@@ -32,7 +32,7 @@ int AMPI_Init_NT(int* argc,
   ourADTOOL_AMPI_FPCollection.pop_comm_fp=&ADTOOL_AMPI_pop_comm;
   ourADTOOL_AMPI_FPCollection.rawData_fp=&ADTOOL_AMPI_rawData;
   ourADTOOL_AMPI_FPCollection.rawDataV_fp=&ADTOOL_AMPI_rawDataV;
-  ourADTOOL_AMPI_FPCollection.rawData_DType_fp=&ADTOOL_AMPI_rawData_DType;
+  ourADTOOL_AMPI_FPCollection.packDType_fp=&ADTOOL_AMPI_packDType;
   ourADTOOL_AMPI_FPCollection.unpackDType_fp=&ADTOOL_AMPI_unpackDType;
   ourADTOOL_AMPI_FPCollection.writeData_fp=&ADTOOL_AMPI_writeData;
   ourADTOOL_AMPI_FPCollection.writeDataV_fp=&ADTOOL_AMPI_writeDataV;
@@ -46,6 +46,7 @@ int AMPI_Init_NT(int* argc,
   ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp=&ADTOOL_AMPI_allocateTempBuf;
   ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp=&ADTOOL_AMPI_releaseAdjointTempBuf;
   ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp=&ADTOOL_AMPI_allocateTempActiveBuf;
+  ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp=&ADTOOL_AMPI_releaseTempActiveBuf;
   ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp=&ADTOOL_AMPI_copyActiveBuf;
   ourADTOOL_AMPI_FPCollection.adjointIncrement_fp=&ADTOOL_AMPI_adjointIncrement;
   ourADTOOL_AMPI_FPCollection.adjointMultiply_fp=&ADTOOL_AMPI_adjointMultiply;
@@ -211,10 +212,10 @@ void* ADTOOL_AMPI_rawData(void* activeData, int *size) {
 void* ADTOOL_AMPI_rawDataV(void* activeData, int commSize, int *counts, int* displs) {
   return activeData;
 }
-void * ADTOOL_AMPI_rawData_DType(void* indata, void* outdata, int* count, int idx) {
+void * ADTOOL_AMPI_packDType(void* indata, void* outdata, int count, int idx) {
   return indata;
 }
-void * ADTOOL_AMPI_unpackDType(void* indata, void* outdata, int* count, int idx) {
+void * ADTOOL_AMPI_unpackDType(void* indata, void* outdata, int count, int idx) {
   return indata;
 }
 
@@ -277,6 +278,12 @@ void* ADTOOL_AMPI_allocateTempActiveBuf(int count,
     ptr = malloc(count*sizeof(MPI_FLOAT));
   assert(ptr);
   return ptr;
+}
+
+void ADTOOL_AMPI_releaseTempActiveBuf(void *buf,
+				      int count,
+				      MPI_Datatype datatype) {
+  free(buf);
 }
 
 void * ADTOOL_AMPI_copyActiveBuf(void* source,

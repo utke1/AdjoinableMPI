@@ -33,19 +33,23 @@ int AMPI_Type_create_struct_NT(int count,
 			       array_of_displacements,
 			       array_of_types,
 			       newtype);
-  if (!(rc==MPI_SUCCESS)) assert(0);
-  MPI_Datatype packed_type;
+  assert(rc==MPI_SUCCESS);
+  MPI_Datatype temp_packed_type, packed_type;
   int array_of_p_blocklengths[count];
   MPI_Aint array_of_p_displacements[count];
-  MPI_Datatype array_of_p_types[count];
-  int s=0, is_active;
-  MPI_Aint mapsize=0, p_mapsize=0;
+  MPI_Datatype array_of_p_types[count], datatype;
+  int s=0, is_active, is_derived, dt_idx;
+  MPI_Aint p_mapsize=0, extent, lb;
   for (i=0;i<count;i++) {
-    is_active = ADTOOL_AMPI_isActiveType(array_of_types[i])==AMPI_ACTIVE;
+    datatype = array_of_types[i];
+    is_active = ADTOOL_AMPI_isActiveType(datatype)==AMPI_ACTIVE;
+    dt_idx = derivedTypeIdx(datatype);
+    is_derived = isDerivedType(dt_idx);
     array_of_p_blocklengths[i] = array_of_blocklengths[i];
     array_of_p_displacements[i] = p_mapsize;
     array_of_p_types[i] = is_active ? MPI_DOUBLE : array_of_types[i];
     if (is_active) s = sizeof(double);
+    else if (is_derived) s = getDTypeData()->p_extents[dt_idx];
     else if (array_of_types[i]==MPI_DOUBLE) s = sizeof(double);
     else if (array_of_types[i]==MPI_INT) s = sizeof(int);
     else if (array_of_types[i]==MPI_FLOAT) s = sizeof(float);
@@ -53,16 +57,17 @@ int AMPI_Type_create_struct_NT(int count,
     else assert(0);
     p_mapsize += array_of_blocklengths[i]*s;
   }
-  /* we'll take a guess at the struct size, but it's best to specify with MPI_Type_create_resized */
-  MPI_Aint lb, extent;
   MPI_Type_get_extent(*newtype,&lb,&extent);
-  mapsize = extent - lb;
   rc = MPI_Type_create_struct (count,
 			       array_of_p_blocklengths,
 			       array_of_p_displacements,
 			       array_of_p_types,
-			       &packed_type);
-  if (!(rc==MPI_SUCCESS)) assert(0);
+			       &temp_packed_type);
+  assert(rc==MPI_SUCCESS);
+  rc = MPI_Type_create_resized (temp_packed_type,
+				0,
+				(MPI_Aint)p_mapsize,
+				&packed_type);
   derivedTypeData* dat = getDTypeData();  
   addDTypeData(dat,
 	       count,
@@ -70,7 +75,7 @@ int AMPI_Type_create_struct_NT(int count,
 	       array_of_displacements,
 	       array_of_types,
 	       lb,
-	       mapsize,
+	       extent,
 	       array_of_p_blocklengths,
 	       array_of_p_displacements,
 	       array_of_p_types,
@@ -99,7 +104,7 @@ int AMPI_Type_create_resized_NT(MPI_Datatype oldtype,
   if (isDerivedType(dt_idx)) {
     derivedTypeData* dtd = getDTypeData();
     dtd->lbs[dt_idx] = lb;
-    dtd->extents[dt_idx] = extent-lb;
+    dtd->extents[dt_idx] = extent;
     dtd->derived_types[dt_idx] = *newtype;
   }
   return rc;

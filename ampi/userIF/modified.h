@@ -28,8 +28,11 @@ typedef struct {
   int size;
   int preAlloc;
   int* num_actives;
-  int* first_active_indices;
-  int* last_active_indices;
+  /* displacements of first/last active blocks */
+  MPI_Aint* first_active_blocks;
+  MPI_Aint* last_active_blocks;
+  /* need to know last active block length to find last active element */
+  int* last_active_block_lengths;
   MPI_Datatype* derived_types;
   int* counts;
   int** arrays_of_blocklengths;
