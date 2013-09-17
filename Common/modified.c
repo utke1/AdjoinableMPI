@@ -1111,16 +1111,18 @@ int BW_AMPI_Scatterv(void *sendbuf,
   if (commSizeForRootOrNull>0) {
     MPI_Type_size(sendtype,&typeSize);
     for (i=0;i<commSizeForRootOrNull;++i) {
-      void* buf=sendbuf+(typeSize*tDispls[i]); /* <----------  very iffy! */
-      void* sourceBuf=tempBuf+(typeSize*tempDispls[i]);
-      (*ourADTOOL_AMPI_FPCollection.adjointIncrement_fp)(tSendCnts[i],
-                                   sendtype,
-                                   comm,
-                                   buf,
-                                   buf,
-                                   buf,
-                                   sourceBuf,
-                                   idx);
+      if (! (i==root && recvcnt==0)) { /* don't increment the segment if "in place" on root */
+        void* buf=sendbuf+(typeSize*tDispls[i]); /* <----------  very iffy! */
+        void* sourceBuf=tempBuf+(typeSize*tempDispls[i]);
+        (*ourADTOOL_AMPI_FPCollection.adjointIncrement_fp)(tSendCnts[i],
+                                                           sendtype,
+                                                           comm,
+                                                           buf,
+                                                           buf,
+                                                           buf,
+                                                           sourceBuf,
+                                                           idx);
+      }
     }
     (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   }
