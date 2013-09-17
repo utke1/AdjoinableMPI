@@ -681,7 +681,7 @@ int BW_AMPI_Gather(void *sendbuf,
     MPI_Type_size(recvtype,&rTypeSize);
     for (i=0;i<commSizeForRootOrNull;++i) { 
       if (! (i==root && sendcnt==0)) { /* don't nullify the segment if "in place" on root */
-	void *recvbufSegment=recvbuf+(i*recvcnt*rTypeSize);
+	void *recvbufSegment=(char*)recvbuf+(i*recvcnt*rTypeSize);
 	(*ourADTOOL_AMPI_FPCollection.adjointNullify_fp)(recvcnt,recvtype,comm,
 							 recvbufSegment , recvbufSegment, recvbufSegment);
       }
@@ -993,7 +993,7 @@ int BW_AMPI_Gatherv(void *sendbuf,
     MPI_Type_size(recvtype,&rTypeSize);
     for (i=0;i<commSizeForRootOrNull;++i) {
       if (! (i==root && sendcnt==0)) { /* don't nullify the segment if "in place" on root */
-	void* recvbufSegment=recvbuf+(rTypeSize*tDispls[i]); /* <----------  very iffy! */
+	void* recvbufSegment=(char*)recvbuf+(rTypeSize*tDispls[i]); /* <----------  very iffy! */
 	(*ourADTOOL_AMPI_FPCollection.adjointNullify_fp)(tRecvCnts[i],recvtype,comm,
 							 recvbufSegment , recvbufSegment, recvbufSegment);
       }
@@ -1112,8 +1112,8 @@ int BW_AMPI_Scatterv(void *sendbuf,
     MPI_Type_size(sendtype,&typeSize);
     for (i=0;i<commSizeForRootOrNull;++i) {
       if (! (i==root && recvcnt==0)) { /* don't increment the segment if "in place" on root */
-        void* buf=sendbuf+(typeSize*tDispls[i]); /* <----------  very iffy! */
-        void* sourceBuf=tempBuf+(typeSize*tempDispls[i]);
+        void* buf=(char*)sendbuf+(typeSize*tDispls[i]); /* <----------  very iffy! */
+        void* sourceBuf=(char*)tempBuf+(typeSize*tempDispls[i]);
         (*ourADTOOL_AMPI_FPCollection.adjointIncrement_fp)(tSendCnts[i],
                                                            sendtype,
                                                            comm,
@@ -1232,7 +1232,7 @@ int BW_AMPI_Allgatherv(void *sendbuf,
                                idx);
   MPI_Type_size(recvtype,&rTypeSize);
   for (i=0;i<commSizeForRootOrNull;++i) {
-    void* buf=recvbuf+(rTypeSize*tDispls[i]); /* <----------  very iffy! */
+    void* buf=(char*)recvbuf+(rTypeSize*tDispls[i]); /* <----------  very iffy! */
     (*ourADTOOL_AMPI_FPCollection.adjointNullify_fp)(tRecvCnts[i],recvtype,comm,
                                buf , buf, buf);
   }
