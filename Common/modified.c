@@ -748,7 +748,7 @@ int BW_AMPI_Scatter(void *sendbuf,
                      MPI_Comm comm) {
   int rc=MPI_SUCCESS;
   void *idx=NULL;
-  int commSizeForRootOrNull;
+  int commSizeForRootOrNull,i,rTypeSize;
   (*ourADTOOL_AMPI_FPCollection.popGScommSizeForRootOrNull_fp)(&commSizeForRootOrNull);
   (*ourADTOOL_AMPI_FPCollection.popGSinfo_fp)(commSizeForRootOrNull,
 					      &sendbuf,
@@ -771,17 +771,22 @@ int BW_AMPI_Scatter(void *sendbuf,
 		comm);
   (*ourADTOOL_AMPI_FPCollection.adjointNullify_fp)(recvcnt,recvtype,comm,
                              recvbuf, recvbuf, recvbuf);
-  if (commSizeForRootOrNull>0) {
-    (*ourADTOOL_AMPI_FPCollection.adjointIncrement_fp)(sendcnt*commSizeForRootOrNull,
-				 sendtype,
-				 comm,
-				 sendbuf,
-				 sendbuf,
-				 sendbuf,
-				 tempBuf,
-				 idx);
-    (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
+  if (commSizeForRootOrNull>0) MPI_Type_size(recvtype,&rTypeSize);
+  for (i=0;i<commSizeForRootOrNull;++i) {
+    if (! (i==root && recvcnt==0)) { /* don't increment the segment if "in place" on root */
+      void *tempBufSeqment=(char*)tempBuf+i*sendcnt*rTypeSize;
+      void *sendBufSegment=(char*)sendbuf+i*sendcnt*rTypeSize;
+      (*ourADTOOL_AMPI_FPCollection.adjointIncrement_fp)(sendcnt,
+                                                         sendtype,
+                                                         comm,
+                                                         sendBufSegment,
+                                                         sendBufSegment,
+                                                         sendBufSegment,
+                                                         tempBufSeqment,
+                                                         idx);
+    }
   }
+  if (commSizeForRootOrNull>0 && tempBuf)(*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   return rc;
 }
 
