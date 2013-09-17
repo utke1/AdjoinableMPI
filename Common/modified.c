@@ -1682,7 +1682,7 @@ void addDTypeData(derivedTypeData* dat,
       lst_active_blk_len = dat->last_active_block_lengths[dt_idx];
     }
   }
-  assert(num_actives>0);
+  if (num_actives>0) return -1;
   if (dat->preAlloc == dat->size) {
     dat->preAlloc += 16;
     dat->num_actives = realloc(dat->num_actives, (dat->preAlloc)*sizeof(int));
@@ -1764,7 +1764,7 @@ void addUOpData(userDefinedOpData* dat,
 		MPI_Op* op,
 		MPI_User_function* function,
 		int commute) {
-  if (dat==NULL) assert(0);
+  assert(dat);
   if (dat->preAlloc == dat->size) {
     dat->preAlloc += 16;
     dat->ops = realloc(dat->ops,(dat->preAlloc)*sizeof(MPI_Op));
@@ -1786,6 +1786,6 @@ int userDefinedOpIdx(MPI_Op op) {
   return -1;
 }
 
-int isUserDefinedOp(int uop_idx) { return uop_idx!=-1; }
-
-
+int isUserDefinedOp(int uop_idx) {
+  return uop_idx!=-1;
+}
