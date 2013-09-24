@@ -29,6 +29,10 @@ int AMPI_Buffer_attach_NT(void *buffer,
 int AMPI_Buffer_detach_NT(void *buffer, 
 			  int *size);
 
+int AMPI_Type_contiguous_NT(int count,
+			    MPI_Datatype oldtype,
+			    MPI_Datatype* newtype);
+
 int AMPI_Type_create_struct_NT(int count,
 			       int array_of_blocklengths[],
 			       MPI_Aint array_of_displacements[],

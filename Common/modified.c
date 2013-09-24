@@ -1650,6 +1650,36 @@ derivedTypeData* getDTypeData() {
   return dat;
 }
 
+void releaseDTypeData() {
+  derivedTypeData* dat = getDTypeData();
+  int i;
+  for (i=0;i<dat->size;i++) {
+    free(dat->arrays_of_blocklengths[i]);
+    free(dat->arrays_of_displacements[i]);
+    free(dat->arrays_of_types[i]);
+    free(dat->arrays_of_p_blocklengths[i]);
+    free(dat->arrays_of_p_displacements[i]);
+    free(dat->arrays_of_p_types[i]);
+  }
+  free(dat->num_actives);
+  free(dat->first_active_blocks);
+  free(dat->last_active_blocks);
+  free(dat->last_active_block_lengths);
+  free(dat->derived_types);
+  free(dat->counts);
+  free(dat->arrays_of_blocklengths);
+  free(dat->arrays_of_displacements);
+  free(dat->arrays_of_types);
+  free(dat->lbs);
+  free(dat->extents);
+  free(dat->packed_types);
+  free(dat->arrays_of_p_blocklengths);
+  free(dat->arrays_of_p_displacements);
+  free(dat->arrays_of_p_types);
+  free(dat->p_extents);
+  free(dat);
+}
+
 void addDTypeData(derivedTypeData* dat,
 		  int count,
 		  int array_of_blocklengths[],
@@ -1689,7 +1719,6 @@ void addDTypeData(derivedTypeData* dat,
       lst_active_blk_len = dat->last_active_block_lengths[dt_idx];
     }
   }
-  if (num_actives>0) return -1;
   if (dat->preAlloc == dat->size) {
     dat->preAlloc += 16;
     dat->num_actives = realloc(dat->num_actives, (dat->preAlloc)*sizeof(int));
@@ -1751,7 +1780,9 @@ int derivedTypeIdx(MPI_Datatype datatype) {
   return -1;
 }
 
-int isDerivedType(int dt_idx) { return dt_idx!=-1; }
+int isDerivedType(int dt_idx) {
+  return dt_idx!=-1;
+}
 
 userDefinedOpData* getUOpData() {
   static userDefinedOpData* dat = NULL;

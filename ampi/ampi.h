@@ -297,6 +297,22 @@
  * \image html dtype_illustration.png
  * \image latex dtype_illustration.png
  * 
+ * AMPI currently supports sending structs with active elements and structs with embedded structs. Packing is called recursively.
+ * 
+ * \subsubsection reduction Reduction operations
+ * 
+ * Since operator overloading can't enter MPI routines, other AMPI functions extract the double values from active variables,
+ * transfer those, and have explicit adjoint code that replaces the automated transformation. This is possible because we know the
+ * partial derivative of the result. For reductions, we can also do this with built-in reduction ops (e.g., sum, product). But
+ * we can't do this for user-defined ops because we don't know the partial derivative of the result.
+ * 
+ * (Again explained in the context of ADOL-C.) So we have to make the tracing machinery enter the Reduce and perform taping every
+ * time the reduction op is applied. As it turns out, MPICH implements Reduce for derived types as a binary tree of Send/Recv pairs,
+ * so we can make our own Reduce by replicating the code with AMPI_Send/Recv functions. (Note that derived types are necessarily
+ * reduced with user-defined ops because MPI doesn't know how to accumulate them with its built-in ops.) So AMPI_Reduce is implemented
+ * for derived types as the aforementioned binary tree with active temporaries used between steps for applying the reduction op.
+ * See \ref AMPI_Op_create_NT.
+ * 
  * 
  */
 

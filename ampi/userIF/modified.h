@@ -49,6 +49,7 @@ typedef struct {
 } derivedTypeData;
 
 derivedTypeData* getDTypeData();
+void releaseDTypeData();
   /* addDTypeData takes derived type data and adds a new entry; returns
      position of new type in data struct; returns -1 if struct contains
      no active types; doubles data struct size every time there's overflow */
