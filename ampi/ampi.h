@@ -288,7 +288,7 @@
  * 
  * When received, the struct is unpacked again.
  * 
- * When the user calls the \ref AMPI_Type_create_struct wrapper with a datamap, the map is stored in a structure of type
+ * When the user calls the \ref AMPI_Type_create_struct_NT wrapper with a datamap, the map is stored in a structure of type
  * \ref derivedTypeData; the wrapper also generates an internal typemap that describes the packed data. The packed typemap is used
  * whenver a derived type is sent and received; it's also used in conjunction with the user-provided map to pack and unpack data.
  * This typemap is invisible to the user, so the creation of derived datatypes is accomplished entirely with calls to the
@@ -298,6 +298,12 @@
  * \image latex dtype_illustration.png
  * 
  * AMPI currently supports sending structs with active elements and structs with embedded structs. Packing is called recursively.
+ * Functions implemented are \ref AMPI_Type_create_struct_NT and \ref AMPI_Type_contiguous_NT. A wrapper for _Type_vector can't be
+ * implemented now because the point of that function is to send noncontiguous data and, for simplicity and efficiency, we're assuming
+ * that the active variables we're sending are contiguous.
+ * 
+ * Worth noting: if we have multiple active variables in a struct and we want to send an array of these structs, we have to send every
+ * active element to ensure that our contiguity checks don't assert false.
  * 
  * \subsubsection reduction Reduction operations
  * 
