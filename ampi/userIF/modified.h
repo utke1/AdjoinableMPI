@@ -92,6 +92,7 @@ void addUOpData(userDefinedOpData* dat,
 		int commute);
 int userDefinedOpIdx(MPI_Op op);
 int isUserDefinedOp(int uop_idx);
+void releaseUOpData();
 
 #ifdef AMPI_FORTRANCOMPATIBLE
 

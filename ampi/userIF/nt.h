@@ -50,5 +50,8 @@ int AMPI_Op_create_NT(MPI_User_function *function,
 		      int commute,
 		      MPI_Op *op);
 
+int AMPI_Type_free_NT(MPI_Datatype *datatype);
+
+int AMPI_Op_free_NT(MPI_Op *op);
 
 #endif

@@ -7,6 +7,7 @@ struct ADTOOL_AMPI_FPCollection ourADTOOL_AMPI_FPCollection;
 
 int AMPI_Finalize_NT(void) {
   releaseDTypeData();
+  releaseUOpData();
   return MPI_Finalize();
 }
 
@@ -190,4 +191,14 @@ int AMPI_Op_create_NT(MPI_User_function *function,
 	     function,
 	     commute);
   return rc;
+}
+
+int AMPI_Type_free_NT(MPI_Datatype *datatype) {
+  int dt_idx = derivedTypeIdx(*datatype);
+  if (isDerivedType(dt_idx)) MPI_Type_free(&(getDTypeData()->packed_types[dt_idx]));
+  return MPI_Type_free(datatype);
+}
+
+int AMPI_Op_free_NT(MPI_Op *op) {
+  return MPI_Op_free(op);
 }

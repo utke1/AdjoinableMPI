@@ -1651,8 +1651,8 @@ derivedTypeData* getDTypeData() {
 }
 
 void releaseDTypeData() {
-  derivedTypeData* dat = getDTypeData();
   int i;
+  derivedTypeData* dat = getDTypeData();
   for (i=0;i<dat->size;i++) {
     free(dat->arrays_of_blocklengths[i]);
     free(dat->arrays_of_displacements[i]);
@@ -1677,6 +1677,14 @@ void releaseDTypeData() {
   free(dat->arrays_of_p_displacements);
   free(dat->arrays_of_p_types);
   free(dat->p_extents);
+  free(dat);
+}
+
+void releaseUOpData() {
+  userDefinedOpData* dat = getUOpData();
+  free(dat->ops);
+  free(dat->functions);
+  free(dat->commutes);
   free(dat);
 }
 
