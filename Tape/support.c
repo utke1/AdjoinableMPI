@@ -54,7 +54,7 @@ void readBlob(void* aBlob,size_t aSize) {
 }
 
 void popBlob(void* aBlob,size_t aSize) {
-  assert(aSize<=myStack_p-myTapeStorage);
+  assert(aSize<=(char*)myStack_p-(char*)myTapeStorage);
   myStack_p=(char*)myStack_p-aSize;
   memcpy(aBlob,myStack_p,aSize);
 }
