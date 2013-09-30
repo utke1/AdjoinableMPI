@@ -1,6 +1,6 @@
 lib_LTLIBRARIES = libampiPlainC.la
 
-libampiPlainC_la_CPPFLAGS = -I@abs_top_srcdir@
+libampiPlainC_la_CPPFLAGS = -I@top_builddir@ -I@abs_top_srcdir@
 
 libampiPlainC_la_SOURCES = \
 modified.c \

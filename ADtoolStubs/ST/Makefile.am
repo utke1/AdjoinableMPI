@@ -1,6 +1,6 @@
 lib_LTLIBRARIES = libampiADtoolStubsST.la
 
-libampiADtoolStubsST_la_CPPFLAGS = -I@abs_top_srcdir@
+libampiADtoolStubsST_la_CPPFLAGS = -I@top_builddir@ -I@abs_top_srcdir@
 
 libampiADtoolStubsST_la_SOURCES = \
 support.c 
