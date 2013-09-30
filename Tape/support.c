@@ -28,7 +28,7 @@ static void readBlob(void*,size_t);
 void writeBlob(void * aBlob,size_t aSize) {
   assert(aBlob);
   /* make some space*/
-  if (aSize>myTapeStorage+myTapeStorageSize-myStack_p) {
+  if (aSize>(char*)myTapeStorage+myTapeStorageSize-(char*)myStack_p) {
     size_t increment=myTapeStorageSize;
     void *newTapeStorage=0;
     if (increment<aSize) increment=aSize;
@@ -37,25 +37,25 @@ void writeBlob(void * aBlob,size_t aSize) {
     newTapeStorage=realloc(myTapeStorage,myTapeStorageSize);
     assert(newTapeStorage);
     if (newTapeStorage!=myTapeStorage) {
-      myStack_p=newTapeStorage+(myStack_p-myTapeStorage);
-      myRead_p=newTapeStorage+(myRead_p-myTapeStorage);
+      myStack_p=(char*)newTapeStorage+((char*)myStack_p-(char*)myTapeStorage);
+      myRead_p=(char*)newTapeStorage+((char*)myRead_p-(char*)myTapeStorage);
       myTapeStorage=newTapeStorage;
     }
   }
   memcpy(myStack_p,aBlob,aSize);
-  myStack_p+=aSize;
+  myStack_p=(char*)myStack_p+aSize;
   myStackTop_p=myStack_p;
 }
 
 void readBlob(void* aBlob,size_t aSize) {
-  assert(aSize<=myTapeStorage+myTapeStorageSize-myRead_p);
+  assert(aSize<=(char*)myTapeStorage+myTapeStorageSize-(char*)myRead_p);
   memcpy(aBlob,myRead_p,aSize);
-  myRead_p+=aSize;
+  myRead_p=(char*)myRead_p+aSize;
 }
 
 void popBlob(void* aBlob,size_t aSize) {
   assert(aSize<=myStack_p-myTapeStorage);
-  myStack_p-=aSize;
+  myStack_p=(char*)myStack_p-aSize;
   memcpy(aBlob,myStack_p,aSize);
 }
 
