@@ -29,7 +29,7 @@ void writeBlob(void * aBlob,size_t aSize) {
   assert(aBlob);
   /* make some space*/
   if (aSize>(char*)myTapeStorage+myTapeStorageSize-(char*)myStack_p) {
-    size_t increment=myTapeStorageSize;
+    size_t increment=0;
     void *newTapeStorage=0;
     if (increment<aSize) increment=aSize;
     if (increment<1024) increment=1024;
