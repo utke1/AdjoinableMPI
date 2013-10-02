@@ -23,7 +23,7 @@ int FW_AMPI_Recv(void* buf,
 		 AMPI_PairedWith pairedWith,
 		 MPI_Comm comm,
 		 MPI_Status* status) { 
-  int rc;
+  int rc=0;
   if (!(
 	pairedWith==AMPI_SEND 
 	|| 
@@ -86,7 +86,7 @@ int BW_AMPI_Recv(void* buf,
 		 AMPI_PairedWith pairedWith,
 		 MPI_Comm comm,
 		 MPI_Status* status) {
-  int rc;
+  int rc=0;
   void *idx=NULL;
   (*ourADTOOL_AMPI_FPCollection.popSRinfo_fp)(&buf,
 					      &count,
@@ -131,6 +131,19 @@ int BW_AMPI_Recv(void* buf,
   return rc;
 }  
 
+int TLM_AMPI_Recv(void* buf,
+                  int count,
+                  MPI_Datatype datatype,
+                  int src,
+                  int tag,
+                  AMPI_PairedWith pairedWith,
+                  MPI_Comm comm,
+                  MPI_Status* status) {
+  int rc=0;
+  assert(0);
+  return rc;
+}
+
 int FW_AMPI_Irecv (void* buf,
 		   int count,
 		   MPI_Datatype datatype,
@@ -139,7 +152,7 @@ int FW_AMPI_Irecv (void* buf,
 		   AMPI_PairedWith pairedWith,
 		   MPI_Comm comm,
 		   AMPI_Request* request) {
-  int rc;
+  int rc=0;
   if (!(
 	pairedWith==AMPI_SEND
         ||
@@ -206,7 +219,7 @@ int BW_AMPI_Irecv (void* buf,
 		   AMPI_PairedWith pairedWith,
 		   MPI_Comm comm, 
 		   AMPI_Request* request) {
-  int rc;
+  int rc=0;
   MPI_Request *plainRequest;
   struct AMPI_Request_S *ampiRequest;
 #ifdef AMPI_REQUESTONTRACE
@@ -258,6 +271,19 @@ int BW_AMPI_Irecv (void* buf,
   return rc;
 }
 
+int TLM_AMPI_Irecv (void* buf,
+                    int count,
+                    MPI_Datatype datatype,
+                    int source,
+                    int tag,
+                    AMPI_PairedWith pairedWith,
+                    MPI_Comm comm,
+                    AMPI_Request* request) {
+  int rc=0;
+  assert(0);
+  return rc;
+}
+
 int FW_AMPI_Send (void* buf, 
                   int count, 
                   MPI_Datatype datatype, 
@@ -265,7 +291,7 @@ int FW_AMPI_Send (void* buf,
                   int tag,
                   AMPI_PairedWith pairedWith,
                   MPI_Comm comm) {
-  int rc;
+  int rc=0;
   if (!(
 	pairedWith==AMPI_RECV 
 	|| 
@@ -316,7 +342,7 @@ int BW_AMPI_Send (void* buf,
                   int tag,
                   AMPI_PairedWith pairedWith,
                   MPI_Comm comm) {
-  int rc;
+  int rc=0;
   void *idx=NULL;
   (*ourADTOOL_AMPI_FPCollection.popSRinfo_fp)(&buf,
 					      &count,
@@ -366,6 +392,19 @@ int BW_AMPI_Send (void* buf,
   return rc;
 }
 
+int TLM_AMPI_Send (void* buf,
+                   int count,
+                   MPI_Datatype datatype,
+                   int dest,
+                   int tag,
+                   AMPI_PairedWith pairedWith,
+                   MPI_Comm comm) {
+  int rc=0;
+  assert(0);
+  return rc;
+}
+
+
 int FW_AMPI_Isend (void* buf,
 		   int count, 
 		   MPI_Datatype datatype, 
@@ -374,7 +413,7 @@ int FW_AMPI_Isend (void* buf,
 		   AMPI_PairedWith pairedWith,
 		   MPI_Comm comm, 
 		   AMPI_Request* request) { 
-  int rc;
+  int rc=0;
   if (!(
 	pairedWith==AMPI_RECV 
 	|| 
@@ -441,7 +480,7 @@ int BW_AMPI_Isend (void* buf,
 		   AMPI_PairedWith pairedWith,
 		   MPI_Comm comm, 
 		   AMPI_Request* request) { 
-  int rc;
+  int rc=0;
   MPI_Request *plainRequest;
   struct AMPI_Request_S *ampiRequest;
 #ifdef AMPI_REQUESTONTRACE
@@ -496,9 +535,22 @@ int BW_AMPI_Isend (void* buf,
   return rc;
 }
 
+int TLM_AMPI_Isend (void* buf,
+                    int count,
+                    MPI_Datatype datatype,
+                    int dest,
+                    int tag,
+                    AMPI_PairedWith pairedWith,
+                    MPI_Comm comm,
+                    AMPI_Request* request) {
+  int rc=0;
+  assert(0);
+  return rc;
+}
+
 int FW_AMPI_Wait(AMPI_Request *request,
 		 MPI_Status *status) { 
-  int rc;
+  int rc=0;
   MPI_Request *plainRequest;
   struct AMPI_Request_S *ampiRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
@@ -523,7 +575,7 @@ int FW_AMPI_Wait(AMPI_Request *request,
 
 int BW_AMPI_Wait(AMPI_Request *request,
 		 MPI_Status *status) {
-  int rc; 
+  int rc=0;
   struct AMPI_Request_S *ampiRequest;
 #ifdef AMPI_FORTRANCOMPATIBLE
   struct AMPI_Request_S ampiRequestInst;
@@ -569,8 +621,16 @@ int BW_AMPI_Wait(AMPI_Request *request,
   return rc;
 }
 
+int TLM_AMPI_Wait(AMPI_Request *request,
+                  MPI_Status *status) {
+  int rc=0;
+  assert(0);
+  return rc;
+}
+
+
 int FW_AMPI_Barrier(MPI_Comm comm){
-  int rc;
+  int rc=0;
   rc=MPI_Barrier(comm);
   (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_BARRIER);
   (*ourADTOOL_AMPI_FPCollection.push_comm_fp)(comm);
@@ -578,11 +638,18 @@ int FW_AMPI_Barrier(MPI_Comm comm){
 }
 
 int BW_AMPI_Barrier(MPI_Comm comm){
-  int rc;
+  int rc=0;
   comm=(*ourADTOOL_AMPI_FPCollection.pop_comm_fp)();
   rc=MPI_Barrier(comm);
   return rc;
 }
+
+int TLM_AMPI_Barrier(MPI_Comm comm){
+  int rc=0;
+  assert(0);
+  return rc;
+}
+
 
 int FW_AMPI_Gather(void *sendbuf,
 		   int sendcnt,
@@ -691,6 +758,19 @@ int BW_AMPI_Gather(void *sendbuf,
   return rc;
 }
 
+int TLM_AMPI_Gather(void *sendbuf,
+                    int sendcnt,
+                    MPI_Datatype sendtype,
+                    void *recvbuf,
+                    int recvcnt,
+                    MPI_Datatype recvtype,
+                    int root,
+                    MPI_Comm comm) {
+  int rc=0;
+  assert(0);
+  return rc;
+}
+
 int FW_AMPI_Scatter(void *sendbuf,
                      int sendcnt,
                      MPI_Datatype sendtype,
@@ -790,6 +870,19 @@ int BW_AMPI_Scatter(void *sendbuf,
   return rc;
 }
 
+int TLM_AMPI_Scatter(void *sendbuf,
+                     int sendcnt,
+                     MPI_Datatype sendtype,
+                     void *recvbuf,
+                     int recvcnt,
+                     MPI_Datatype recvtype,
+                     int root,
+                     MPI_Comm comm){
+  int rc=0;
+  assert(0);
+  return rc;
+}
+
 int FW_AMPI_Allgather(void *sendbuf,
                       int sendcount,
                       MPI_Datatype sendtype,
@@ -880,6 +973,18 @@ int BW_AMPI_Allgather(void *sendbuf,
                                recvbuf , recvbuf, recvbuf);
   }
   (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
+  return rc;
+}
+
+int TLM_AMPI_Allgather(void *sendbuf,
+                       int sendcount,
+                       MPI_Datatype sendtype,
+                       void *recvbuf,
+                       int recvcount,
+                       MPI_Datatype recvtype,
+                       MPI_Comm comm) {
+  int rc=0;
+  assert(0);
   return rc;
 }
 
@@ -1010,6 +1115,20 @@ int BW_AMPI_Gatherv(void *sendbuf,
   return rc;
 }
 
+int TLM_AMPI_Gatherv(void *sendbuf,
+                     int sendcnt,
+                     MPI_Datatype sendtype,
+                     void *recvbuf,
+                     int *recvcnts,
+                     int *displs,
+                     MPI_Datatype recvtype,
+                     int root,
+                     MPI_Comm comm) {
+  int rc=0;
+  assert(0);
+  return rc;
+}
+
 int FW_AMPI_Scatterv(void *sendbuf,
                      int *sendcnts,
                      int *displs,
@@ -1136,6 +1255,19 @@ int BW_AMPI_Scatterv(void *sendbuf,
   return rc;
 }
 
+int TLM_AMPI_Scatterv(void *sendbuf,
+                      int *sendcnts,
+                      int *displs,
+                      MPI_Datatype sendtype,
+                      void *recvbuf,
+                      int recvcnt,
+                      MPI_Datatype recvtype,
+                      int root, MPI_Comm comm){
+  int rc=0;
+  assert(0);
+  return rc;
+}
+
 int FW_AMPI_Allgatherv(void *sendbuf,
                        int sendcnt,
                        MPI_Datatype sendtype,
@@ -1247,12 +1379,25 @@ int BW_AMPI_Allgatherv(void *sendbuf,
   return rc;
 }
 
+int TLM_AMPI_Allgatherv(void *sendbuf,
+                        int sendcnt,
+                        MPI_Datatype sendtype,
+                        void *recvbuf,
+                        int *recvcnts,
+                        int *displs,
+                        MPI_Datatype recvtype,
+                        MPI_Comm comm) {
+  int rc=0;
+  assert(0);
+  return rc;
+}
+
 int FW_AMPI_Bcast (void* buf,
                    int count,
                    MPI_Datatype datatype,
                    int root,
                    MPI_Comm comm) {
-  int rc;
+  int rc=0;
   double* mappedbuf=NULL;
   int dt_idx = derivedTypeIdx(datatype);
   int is_derived = isDerivedType(dt_idx);
@@ -1317,6 +1462,16 @@ int BW_AMPI_Bcast (void* buf,
                                  buf, buf, buf, tempBuf, idx);
   }
   (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
+  return rc;
+}
+
+int TLM_AMPI_Bcast(void* buf,
+                   int count,
+                   MPI_Datatype datatype,
+                   int root,
+                   MPI_Comm comm){
+  int rc=0;
+  assert(0);
   return rc;
 }
 
@@ -1512,6 +1667,18 @@ int BW_AMPI_Reduce (void* sbuf,
   return rc;
 }
 
+int TLM_AMPI_Reduce(void* sbuf,
+                    void* rbuf,
+                    int count,
+                    MPI_Datatype datatype,
+                    MPI_Op op,
+                    int root,
+                    MPI_Comm comm){
+  int rc=0;
+  assert(0);
+  return rc;
+}
+
 int FW_AMPI_Allreduce (void* sbuf,
                        void* rbuf,
                        int count,
@@ -1620,6 +1787,17 @@ int BW_AMPI_Allreduce (void* sbuf,
   (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(reduceResultBuf);
   (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(prevValBuf);
+  return rc;
+}
+
+int TLM_AMPI_Allreduce(void* sbuf,
+                       void* rbuf,
+                       int count,
+                       MPI_Datatype datatype,
+                       MPI_Op op,
+                       MPI_Comm comm) {
+  int rc=0;
+  assert(0);
   return rc;
 }
 
