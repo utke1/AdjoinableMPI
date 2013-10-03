@@ -1470,8 +1470,11 @@ int TLM_AMPI_Bcast(void* buf,
                    MPI_Datatype datatype,
                    int root,
                    MPI_Comm comm){
-  int rc=0;
-  assert(0);
+  int rc=MPI_Bcast(buf,
+                   count,
+                   datatype,
+                   root,
+                   comm);
   return rc;
 }
 
@@ -1674,8 +1677,13 @@ int TLM_AMPI_Reduce(void* sbuf,
                     MPI_Op op,
                     int root,
                     MPI_Comm comm){
-  int rc=0;
-  assert(0);
+  int rc=MPI_Reduce(sbuf,
+                    rbuf,
+                    count,
+                    datatype,
+                    op,
+                    root,
+                    comm);
   return rc;
 }
 
