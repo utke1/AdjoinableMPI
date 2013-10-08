@@ -14,6 +14,7 @@ extern "C" {
 
 #include "ampi/userIF/pairedWith.h"
 #include "ampi/userIF/request.h"
+#include "ampi/userIF/window.h"
 
 /** 
  * forward sweep variant of \ref AMPI_Recv 
@@ -520,6 +521,31 @@ int AMPI_Type_create_resized (MPI_Datatype oldtype,
 int AMPI_Op_create(MPI_User_function *function,
 		   int commute,
 		   MPI_Op *op);
+
+/**
+ * One-sided MPI
+ */
+
+
+int FW_AMPI_Win_create( void *base,
+    MPI_Aint size,
+    int disp_unit,
+    MPI_Info info,
+    MPI_Comm comm,
+    AMPI_Win *win
+    );
+
+int FW_AMPI_Win_free( AMPI_Win *win );
+
+int FW_AMPI_Get( void *origin_addr,
+    int origin_count,
+    MPI_Datatype origin_datatype,
+    int target_rank,
+    MPI_Aint target_disp,
+    int target_count,
+    MPI_Datatype target_datatype,
+    AMPI_Win *win
+    ); 
 
 
 

@@ -289,6 +289,14 @@ typedef void (ADTOOL_AMPI_pop_AMPI_RequestF) (struct AMPI_Request_S*);
 void ADTOOL_AMPI_push_request(MPI_Request request);
 typedef void (ADTOOL_AMPI_push_requestF) (MPI_Request);
 
+/*
+ * Push a window request for one-sided communication using a specific window
+ */
+
+void ADTOOL_AMPI_push_winRequest(AMPI_WinRequest *winRequest, AMPI_Win *win);
+typedef void (ADTOOL_AMPI_push_winRequestF) (AMPI_WinRequest*, AMPI_Win *win);
+
+
 /**
  * the companion to \ref ADTOOL_AMPI_push_request
  */
@@ -372,6 +380,14 @@ typedef void (ADTOOL_AMPI_TurnF) (void*, void*) ;
 void ADTOOL_AMPI_mapBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
 				  void* buf);
 typedef void (ADTOOL_AMPI_mapBufForAdjointF) (struct AMPI_Request_S*, void*);
+
+/**
+ * Map buffer in a one-sided communication
+ */
+
+void ADTOOL_AMPI_mapWinBufForAdjoint(AMPI_WinRequest *winRequest,
+				  void* buf);
+typedef void (ADTOOL_AMPI_mapWinBufForAdjointF) (AMPI_WinRequest*, void*);
 
 /**
  * an operator overloading tool should not do anything in the implementation but see \ref ADTOOL_AMPI_mapBufForAdjoint;
@@ -538,6 +554,7 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_push_CallCodeF *push_CallCode_fp;
   ADTOOL_AMPI_pop_CallCodeF *pop_CallCode_fp;
   ADTOOL_AMPI_push_AMPI_RequestF *push_AMPI_Request_fp;
+  ADTOOL_AMPI_push_winRequestF *push_winRequest_fp;
   ADTOOL_AMPI_pop_AMPI_RequestF *pop_AMPI_Request_fp;
   ADTOOL_AMPI_push_requestF *push_request_fp;
   ADTOOL_AMPI_pop_requestF *pop_request_fp;
@@ -552,6 +569,7 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_rawAdjointDataF *rawAdjointData_fp;
   ADTOOL_AMPI_TurnF *Turn_fp;
   ADTOOL_AMPI_mapBufForAdjointF *mapBufForAdjoint_fp;
+  ADTOOL_AMPI_mapWinBufForAdjointF *mapWinBufForAdjoint_fp;
   ADTOOL_AMPI_setBufForAdjointF *setBufForAdjoint_fp;
   ADTOOL_AMPI_getAdjointCountF *getAdjointCount_fp;
   ADTOOL_AMPI_setAdjointCountF *setAdjointCount_fp;

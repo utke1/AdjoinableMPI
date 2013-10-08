@@ -15,6 +15,7 @@ userIF/nt.h \
 userIF/pairedWith.h \
 userIF/passThrough.h \
 userIF/request.h \
+userIF/window.h \
 userIF/st.h
 
 adToolincludedir = @includedir@/ampi/adTool
