@@ -2031,13 +2031,13 @@ int FW_AMPI_Win_create( void *base,
     AMPI_Win *win
     )
 {
-  win=(AMPI_Win *) malloc(sizeof(AMPI_Win));
+  win->req_stack=(AMPI_Win_stack *) malloc(sizeof(AMPI_Win_stack));
+  AMPI_WIN_STACK_stack_init(win->req_stack);
   return MPI_Win_create(base, size, disp_unit, info, comm, &win->plainWindow);
-  /*MPI_Win_create(base, size, disp_unit, info, comm, &win->plainWindow);*/
-  /*return MPI_Win_free(&win->plainWindow); */
 }
 
 int FW_AMPI_Win_free( AMPI_Win *win ) {
+  free(win->req_stack);
   return MPI_Win_free(&win->plainWindow); 
 }
 
@@ -2048,7 +2048,7 @@ int FW_AMPI_Get( void *origin_addr,
     MPI_Aint target_disp,
     int target_count,
     MPI_Datatype target_datatype,
-    AMPI_Win *win
+    AMPI_Win win
     ) 
 {  
   int rc=0;
@@ -2066,21 +2066,27 @@ int FW_AMPI_Get( void *origin_addr,
       target_disp,
       target_count,
       target_datatype,
-      win->plainWindow
+      win.plainWindow
       );
-  AMPI_WinRequest *winRequest=(AMPI_WinRequest *) malloc(sizeof(AMPI_WinRequest));
+  AMPI_WinRequest winRequest;
   /* fill in the other info */
-  winRequest->origin_count=origin_count;
-  winRequest->origin_datatype=origin_datatype;
-  winRequest->target_rank=target_rank;
-  winRequest->target_disp=target_disp;
-  winRequest->target_count=target_count;
-  winRequest->target_datatype=target_datatype;
-  (*ourADTOOL_AMPI_FPCollection.mapWinBufForAdjoint_fp)(winRequest,origin_addr);
+  winRequest.origin_count=origin_count;
+  winRequest.origin_datatype=origin_datatype;
+  winRequest.target_rank=target_rank;
+  winRequest.target_disp=target_disp;
+  winRequest.target_count=target_count;
+  winRequest.target_datatype=target_datatype;
+  (*ourADTOOL_AMPI_FPCollection.mapWinBufForAdjoint_fp)(&winRequest,origin_addr);
   if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(origin_datatype)==AMPI_ACTIVE) {
     (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_GET);
-    (*ourADTOOL_AMPI_FPCollection.push_winRequest_fp)(winRequest, win);
+    AMPI_WIN_STACK_push(win.req_stack,winRequest);
+      /*(*ourADTOOL_AMPI_FPCollection.push_winRequest_fp)(winRequest, &win);*/
   }
   return rc;
 }
-
+ int FW_AMPI_Win_fence( int assert,
+     AMPI_Win win
+     )
+ {
+   return MPI_Win_fence( assert, win.plainWindow );
+ }

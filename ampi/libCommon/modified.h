@@ -544,8 +544,11 @@ int FW_AMPI_Get( void *origin_addr,
     MPI_Aint target_disp,
     int target_count,
     MPI_Datatype target_datatype,
-    AMPI_Win *win
+    AMPI_Win win
     ); 
+
+int FW_AMPI_Win_fence( int assert,
+    AMPI_Win win ); 
 
 
 

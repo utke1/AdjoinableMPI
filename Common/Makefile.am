@@ -6,6 +6,7 @@ libampiCommon_la_SOURCES = \
 modified.c \
 nt.c \
 passThrough.c \
+window.c \
 st.c
 
 if ISFORTRANCOMPATIBLE

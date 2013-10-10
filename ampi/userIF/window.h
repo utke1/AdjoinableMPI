@@ -11,24 +11,11 @@
 
 #include "ampi/userIF/libConfig.h"
 
-/**
- * does the request originate with a  send or a receive 
- */
-/*enum AMPI_Request_origin_E { */
-/*AMPI_SEND_ORIGIN,*/
-/*AMPI_RECV_ORIGIN*/
-/*};*/
+#define AMPI_WINDOW_STACK_CHUNK_SIZE 1000
 
-/*#ifdef AMPI_FORTRANCOMPATIBLE*/
-/*typedef int AMPI_Request_origin;*/
-/*#else */
-/*typedef enum AMPI_Request_origin_E AMPI_Request_origin;*/
-/*#endif */
 
-/**//***/
-/** MPI_Request augmented with extra information */
-/* */ 
-typedef struct AMPI_WinRequest {
+
+typedef struct {
   void *origin_addr;
   int origin_count;
   MPI_Datatype origin_datatype;
@@ -39,8 +26,23 @@ typedef struct AMPI_WinRequest {
   void *idx;
 } AMPI_WinRequest;
 
-typedef struct AMPI_Win {
+typedef struct {
+    AMPI_WinRequest *v;
+    int top;
+    size_t size;
+} AMPI_Win_stack;
 
+void AMPI_WIN_STACK_push(AMPI_Win_stack *s, AMPI_WinRequest req);
+AMPI_WinRequest AMPI_WIN_STACK_pop(AMPI_Win_stack *s);
+void AMPI_WIN_STACK_stack_init(AMPI_Win_stack *s);
+void AMPI_WIN_STACK_destroy(AMPI_Win_stack *s);
+int AMPI_WIN_STACK_full(AMPI_Win_stack *s);
+void AMPI_WIN_STACK_expand(AMPI_Win_stack *s);
+void AMPI_WIN_STACK_shrink(AMPI_Win_stack *s);
+int AMPI_WIN_STACK_empty(AMPI_Win_stack *s);
+
+typedef struct {
+  AMPI_Win_stack *req_stack;
   MPI_Win plainWindow;
 } AMPI_Win;
 
