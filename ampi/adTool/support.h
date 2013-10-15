@@ -535,6 +535,27 @@ typedef void (adtool_ampi_fortransetuptypes_F) (MPI_Fint*, MPI_Fint*);
 AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype);
 typedef AMPI_Activity (ADTOOL_AMPI_isActiveTypeF) (MPI_Datatype);
 
+/**
+ * Maps the active buffer on a mapped buffer for a MPI_Win
+ */
+
+void *ADTOOL_AMPI_createWinMap(void *active_buf, MPI_Aint size);
+typedef void *(ADTOOL_AMPI_createWinMapF) (void *active_buf, MPI_Aint size);
+
+/**
+ * Maps the active buffer on a mapped buffer for a MPI_Win
+ */
+
+void ADTOOL_AMPI_writeWinData(void *map, void *buf, MPI_Aint size);
+typedef void (ADTOOL_AMPI_writeWinDataF) (void *map, void *buf, MPI_Aint size);
+
+/**
+ * Gets the size of the mapped buffer for a window
+ */
+
+MPI_Aint ADTOOL_AMPI_getWinSize(MPI_Aint size);
+typedef MPI_Aint (ADTOOL_AMPI_getWinSizeF) (MPI_Aint size);
+
 
 struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_pushBcastInfoF *pushBcastInfo_fp;
@@ -587,6 +608,9 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_setupTypesF *setupTypes_fp;
   ADTOOL_AMPI_FW_rawTypeF *FW_rawType_fp;
   ADTOOL_AMPI_BW_rawTypeF *BW_rawType_fp;
+  ADTOOL_AMPI_createWinMapF *createWinMap_fp;
+  ADTOOL_AMPI_writeWinDataF *writeWinData_fp;
+  ADTOOL_AMPI_getWinSizeF *getWinSize_fp;
 #ifdef AMPI_FORTRANCOMPATIBLE
   adtool_ampi_fortransetuptypes_F *fortransetuptypes__fp;
 #endif

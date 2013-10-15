@@ -56,6 +56,9 @@ int AMPI_Init_NT(int* argc,
   ourADTOOL_AMPI_FPCollection.setupTypes_fp=&ADTOOL_AMPI_setupTypes;
   ourADTOOL_AMPI_FPCollection.FW_rawType_fp=&ADTOOL_AMPI_FW_rawType;
   ourADTOOL_AMPI_FPCollection.BW_rawType_fp=&ADTOOL_AMPI_BW_rawType;
+  ourADTOOL_AMPI_FPCollection.createWinMap_fp=&ADTOOL_AMPI_createWinMap;
+  ourADTOOL_AMPI_FPCollection.writeWinData_fp=&ADTOOL_AMPI_writeWinData;
+  ourADTOOL_AMPI_FPCollection.getWinSize_fp=&ADTOOL_AMPI_getWinSize;
 #ifdef AMPI_FORTRANCOMPATIBLE
   ourADTOOL_AMPI_FPCollection.fortransetuptypes__fp=&adtool_ampi_fortransetuptypes_;
 #endif
