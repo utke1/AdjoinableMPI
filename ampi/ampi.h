@@ -12,6 +12,7 @@
  *  - <a href="https://trac.mcs.anl.gov/projects/AdjoinableMPI/wiki">TRAC  page</a> for bugs and feature tracking
  *  - <a href="http://mercurial.mcs.anl.gov/ad/AdjoinableMPI/">mercurial repository</a> for source code and change history
  *  
+ * \tableofcontents
  * \section Introduction
  * 
  * The Adjoinable MPI (AMPI) library provides a modified set if MPI subroutines 
@@ -23,7 +24,7 @@
  * challenges.
  *  - the target language may prevent some implementation options
  *   - exposing an MPI_Request augmented with extra information as a structured type (not supported by Fortran 77)
- *   - passing an array of buffers (of different length), e.g. to \ref AMPI_Waitall, as a additional argument to  (not supported in any Fortran version)
+ *   - passing an array of buffers (of different length), e.g. to \ref AMPI_Waitall, as an additional argument to  (not supported in any Fortran version)
  *  - the AD tool implementation could be based on 
  *   - operator overloading 
  *   - source transformation
@@ -69,7 +70,7 @@
  * -L /opt/AMPI_inst/lib -lampiPlainC
  * \endcode
  * 
- * \section design Libary Design
+ * \section design Library Design
  * In this section we discuss the directory structure of the implementation, 
  * the distinction between different subroutine variants in the context of 
  * the source code to be adjoined, and general assumptions on the communication patterns. 
@@ -93,13 +94,13 @@
  * Additional header files contain enumerations used as arguments to AMPI routines.
  * 
  * A library that simply passes through all AMPI calls to their MPI counterparts for a test compilation and execution without any involvement of 
- * and AD tool is implemented in the source files under <tt>plainC</tt>. 
+ * and AD tool is implemented in the source files in the <tt>PlainC</tt> directory.
  * 
  * \subsection adjoinableSection Subroutine variants relative to the adjoinable section
  * 
  * The typical assumption of a program to be differentiated is that there is some top level routine <tt>head</tt> which does the numerical computation 
  * and communication which is called from some main <tt>driver</tt> routine. The <tt>driver</tt> routine would have to be manually adjusted to initiate 
- * the derivative computation, retrieve, and use the derviative values. 
+ * the derivative computation, retrieve, and use the derivative values.
  * Therefore only <tt>head</tt> and everything it references would be <em>adjointed</em> while <tt>driver</tt> would not. Typically, the <tt>driver</tt>
  * routine also includes the basic setup and teardown with MPI_Init and MPI_Finalize and consequently these calls (for consistency) should be replaced 
  * with their AMPI "no trace/transformation"  (NT) counterparts \ref AMPI_Init_NT and \ref AMPI_Finalize_NT. 
@@ -132,9 +133,9 @@
  * Tracing such information in a global data structure is not scalable and piggybacking the send type onto the message 
  * so it can be traced on the receiving side is conceivable but not trivial and currently not implemented. 
  * 
- * <b>    Restriction : pairing of send and receive types must be static. </b>
+ * \restriction Pairing of send and receive modes must be static.
  *
- * Note that this does not prevent the use of wild cards for source, destination, or tag.  
+ * Note that this does not prevent the use of wild cards for source, or tag.
  * 
  * \subsubsection nonblocking Nonblocking Communication and Fortran Compatibility
  * 
@@ -191,36 +192,55 @@
  * Keeping the internal identifier in the AD stack is not sufficient because there is no guarantee that
  * the mechanism in the backward sweep will use the same values for the internal handle.
  * The bookkeeping we use to solve this problem goes as follows:
- * -- standard TBR mechanism makes sure that variables that are needed in the BW sweep and are overwritten
+ * - standard TBR mechanism makes sure that variables that are needed in the BW sweep and are overwritten
  *    are pushed onto the AD stack before they are overwritten
- * -- At the end of its life in the forward sweep, the FW handle is pushed in the AD stack
- * -- At the beginning of its backward life, we obtain a BW handle, we pop the FW handle,
+ * - At the end of its life in the forward sweep, the FW handle is pushed in the AD stack
+ * - At the beginning of its backward life, we obtain a BW handle, we pop the FW handle,
  *    and we keep the pair of those in a table (if an adjoint handle is created too, we keep the triplet).
- * -- When a variable is popped from the AD stack, and it is an internal handle,
+ * - When a variable is popped from the AD stack, and it is an internal handle,
  *    the popped handle is re-based using the said table.
  *
  * Simple workaround for the "request" case:
  * This method doesn't rely on TBR.
- * -- Push the FW request upon acquisition (e.g. just after the Isend)
- * -- Push the FW request upon release (e.g. just before the Wait)
- * -- Pop the FW request upon adjoint of resease, and get the BW request from the adjoint of release
- * -- Add the BW request into the bookkeeping, with the FW request as a key.
- * -- Upon ajoint of acquisition, pop the FW request, lookup in the bookkeeping to get the BW request.
+ * - Push the FW request upon acquisition (e.g. just after the Isend)
+ * - Push the FW request upon release (e.g. just before the Wait)
+ * - Pop the FW request upon adjoint of release, and get the BW request from the adjoint of release
+ * - Add the BW request into the bookkeeping, with the FW request as a key.
+ * - Upon adjoint of acquisition, pop the FW request, lookup in the bookkeeping to get the BW request.
  *
- * \subsection Things that don't work
+ * \subsection bundling  Tangent-linear mode bundling the derivatives or shadowing the communication
+ * A central question for the implementation of tangent-linear mode becomes
+ * whether to bundle the original buffer <tt>b</tt> with the  derivative <tt>b_d</tt> as  pair and communicate the pair
+ * or to send separate messages for the derivatives.
+ * - shadowing messages avoid the bundling/unbundling if <tt>b</tt> and <tt>b_d</tt>
+ * are already given as separate entities as is the case in association by name, see \ref Introduction.
+ * - for one-sided passive communications there is no hook to do the bundling/unbundling on the target side; therefore
+ * it would be inherently impossible to achieve semantically correct behavior with any bundling/unbundling scheme.
+ * The example here is a case where a put on the origin side and subsequent computations on the target side are synchronized
+ * via a barrier which by itself does not have any obvious link to the target window by which one could trigger an unbundling.
+ * - the bundling operation itself may incur nontrivial overhead for large buffers
  *
- * The question is whether to piggyback the derivative information on the original or to
- * sending shadow messages for the derivatives.
- * One argument for shadow messages is to avoid type-change from bundles to separate values and
- * separate derivatives.
- * One argument against that is the use of wildcards, which makes it difficult to
- * correctly associate parts of the message.
- * Choice on Tuesday 12th: An association by name tool is required to bundle value with tangent
- * before communication call, and conversely unbundle after communication.
- * The bundling and unbundling routines are left for the user to implement,
- * but eventually should also be generated by the AD tool if types are serializable.
- * The bundling and unbundling are the association-by-name equivalent of the
- * \ref rawData routines for the association-by-address.
+ * An earlier argument against message shadowing was the difficulty of correctly associating message pairs while using wildcards.
+ * This association can, however, be ensured when a the shadowing message for the <tt>b_d</tt> is received on a communicator
+ * <tt>comm_d</tt> that duplicates the original communicator <tt>comm</tt> and uses the
+ * actual src and tag values obtained from the receive of the shadowed message as in the following example:
+ *
+ * \code{.cpp}
+ * if ( myRank==1) {
+ *   send(x,0,tag1,comm); // send of the original data
+ *   send(x_d,0,tag1,comm_d); // shadowing send of the derivatives
+ * else if ( myRank==2) {
+ *   send(y,0,tag2,comm);
+ *   send(y_d,0,tag2,comm_d);
+ * else if ( myRank==0) {
+ *   do {
+ *      recv(t,ANY_SOURCE, ANY_TAG,comm,&status); // recv of the original data
+ *      recv(t_d,status.SOURCE,status.TAG,comm_d,STATUS_IGNORE); // shadowing recv with wildcards disambiguated
+ *      z+=t; // original operation
+ *      z_d+=t_d; // corresponding derivative operation
+ *   }
+ * }
+ * \endcode
  *
  * Specifically for tangent mode, if we don't want to modify the count value of
  * the original communication call, we need to replace the MPI datatype
@@ -228,6 +248,7 @@
  * For association-by-name tools, this implies that the bundling routine
  * really abides with this structure.
  *
+ * \subsection badOptions Rejected design options
  * About MPI_Types and the "active" boolean:
  * One cannot get away with just an "active" boolean to indicate the structure of
  * the MPI_Type of the bundle. Since the MPI_Type definition of the bundle type
