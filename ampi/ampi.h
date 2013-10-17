@@ -26,10 +26,12 @@
  *   - exposing an MPI_Request augmented with extra information as a structured type (not supported by Fortran 77)
  *   - passing an array of buffers (of different length), e.g. to \ref AMPI_Waitall, as an additional argument to  (not supported in any Fortran version)
  *  - the AD tool implementation could be based on 
- *   - operator overloading 
+ *   - operator overloading
+ *    - original data and (forward) derivatives co-located (e.g. Rapsodia,dco)
+ *    - original data and (forward) derivatives referenced (e.g. Adol-C)
  *   - source transformation
- *    - association by address
- *    - association by name
+ *    - association by address (e.g. OpenAD)
+ *    - association by name (e.g. Tapenade)
  * 
  * The above choices imply certain consequences on the complexity for implementing  
  * the adjoint action and this would imply differences in the ANPI design while 
@@ -227,26 +229,30 @@
  *
  * \code{.cpp}
  * if ( myRank==1) {
- *   send(x,0,tag1,comm); // send of the original data
- *   send(x_d,0,tag1,comm_d); // shadowing send of the derivatives
+ *   send(x,...,0,tag1,comm); // send of the original data
+ *   send(x_d,...,0,tag1,comm_d); // shadowing send of the derivatives
  * else if ( myRank==2) {
- *   send(y,0,tag2,comm);
- *   send(y_d,0,tag2,comm_d);
+ *   send(y,...,0,tag2,comm);
+ *   send(y_d,...,0,tag2,comm_d);
  * else if ( myRank==0) {
  *   do {
- *      recv(t,ANY_SOURCE, ANY_TAG,comm,&status); // recv of the original data
- *      recv(t_d,status.SOURCE,status.TAG,comm_d,STATUS_IGNORE); // shadowing recv with wildcards disambiguated
+ *      recv(t,...,ANY_SOURCE, ANY_TAG,comm,&status); // recv of the original data
+ *      recv(t_d,...,status.SOURCE,status.TAG,comm_d,STATUS_IGNORE); // shadowing recv with wildcards disambiguated
  *      z+=t; // original operation
  *      z_d+=t_d; // corresponding derivative operation
  *   }
  * }
  * \endcode
  *
- * Specifically for tangent mode, if we don't want to modify the count value of
- * the original communication call, we need to replace the MPI datatype
- * with a new one where REAL*8 become MPI_ACTIVE (a bundle of one REAL*8 plus any sort of derivative info.)
- * For association-by-name tools, this implies that the bundling routine
- * really abides with this structure.
+ * This same approach can be applied to (user-defined) reduction operations, see \ref reduction, in that the binomial
+ * tree traversal for the reduction is shadowed in the same way and a user defined operation with derivatives can be invoked
+ * by passing the derivatives as separate arguments.
+ *
+ * The above approach is to be taken by any tool in which <tt>b</tt> and <tt>b_d</tt> are not already paired in consecutive
+ * memory such as association by name as in Tapenade or by implementation choice such as forward interpreters in Adol-C where
+ * the 0-th order Taylor coefficients live in a separate array from the first-  and higher-order Taylor coefficients.
+ * Tools with association by address (OpenAD, Rapsodia) would have the data already given in paired form and therefore not
+ * need messsage shadowing but communicate the paired data.
  *
  * \subsection badOptions Rejected design options
  * About MPI_Types and the "active" boolean:
