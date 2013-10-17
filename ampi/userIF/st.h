@@ -3,11 +3,15 @@
 
 /**
  * \file 
+ * \ingroup UserInterfaceHeaders
  * ST = "source tansformation" specific versions of routines that exist because generic memory mapping is not yet implemented in any source transformation tool   
  */ 
 
 #include "ampi/userIF/request.h"
 
+/** \ingroup UserInterfaceDeclarations
+ * @{
+ */
 
 /**
  * variant of \ref AMPI_Wait with an extra parameter 
@@ -19,5 +23,7 @@
 int AMPI_Wait_ST(AMPI_Request *request, 
 		 void *buf,
 		 MPI_Status *status);
+
+/** @} */
 
 #endif

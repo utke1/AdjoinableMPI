@@ -3,23 +3,16 @@
 
 /**
  * \file 
+ * \ingroup UserInterfaceHeaders
  * AMPI routines that have adjoint functionality and do no merely pass through to the MPI originals; the routines may signatures with additional parameters compared to their original MPI counterparts
  */ 
 
 #include "ampi/userIF/pairedWith.h"
 #include "ampi/userIF/request.h"
 
-/**
- * active variant of the predefined  MPI_DOUBLE
- */
-extern MPI_Datatype AMPI_ADOUBLE;
 
 /**
- * active variant of the predefined  MPI_FLOAT
- */
-extern MPI_Datatype AMPI_AFLOAT;
-
-/**
+ * \todo move out of userIF
  * user-defined type data
  * only one instance of derivedTypeData exists at once
  * get pointer from getDTypeData, add new stuff with addDTypeData
@@ -48,11 +41,37 @@ typedef struct {
   MPI_Aint* p_extents;
 } derivedTypeData;
 
+/**
+ * \todo move out of userIF
+ *
+ */
 derivedTypeData* getDTypeData();
+
+/**
+ * \todo move out of userIF
+ *
+ */
 void releaseDTypeData();
-  /* addDTypeData takes derived type data and adds a new entry; returns
-     position of new type in data struct; returns -1 if struct contains
-     no active types; doubles data struct size every time there's overflow */
+/**
+ * \todo move out of userIF
+ *
+ * @param dat
+ * @param count
+ * @param array_of_blocklengths
+ * @param array_of_displacements
+ * @param array_of_types
+ * @param lower_bound
+ * @param extent
+ * @param array_of_p_blocklengths
+ * @param array_of_p_displacements
+ * @param array_of_p_types
+ * @param p_extent
+ * @param newtype
+ * @param packed_type
+ * addDTypeData takes derived type data and adds a new entry; returns
+ * position of new type in data struct; returns -1 if struct contains no active types;
+ * doubles data struct size every time there's overflow
+ */
 void addDTypeData(derivedTypeData* dat,
 		  int count,
 		  int array_of_blocklengths[],
@@ -67,9 +86,15 @@ void addDTypeData(derivedTypeData* dat,
 		  MPI_Datatype* newtype,
 		  MPI_Datatype* packed_type);
 int derivedTypeIdx(MPI_Datatype datatype);
+/**
+ * \todo move out of userIF
+ * @param dt_idx
+ * @return
+ */
 int isDerivedType(int dt_idx);
 
 /**
+ * \todo move out of userIF
  * user-defined reduction op data
  * only one instance of userDefinedOpData exists at once
  * get pointer from getUOpData, add new stuff with addUOpData
@@ -82,17 +107,56 @@ typedef struct {
   int* commutes;
 } userDefinedOpData;
 
+/**
+ * \todo move out of userIF
+ * @return
+ */
 userDefinedOpData* getUOpData();
-/* addUOpData takes user-defined op data and adds a new entry; returns
-   position of new type in data struct; doubles data struct size every
-   time there's overflow */
+
+/**
+ * \todo move out of userIF
+ * @param dat
+ * @param op a user-defined operation
+ * @param function
+ * @param commute
+ * takes user-defined op  and adds a new entry;
+ * doubles data struct size every
+ * time there's overflow
+ */
 void addUOpData(userDefinedOpData* dat,
 		MPI_Op* op,
 		MPI_User_function* function,
 		int commute);
+/**
+ * \todo move out of userIF
+ * @param op
+ * @return
+ */
 int userDefinedOpIdx(MPI_Op op);
+/**
+ * \todo move out of userIF
+ * @param uop_idx
+ * @return
+ */
 int isUserDefinedOp(int uop_idx);
+/**
+ * \todo move out of userIF
+ */
 void releaseUOpData();
+
+/** \ingroup UserInterfaceDeclarations
+ * @{
+ */
+
+/**
+ * active variant of the predefined  MPI_DOUBLE
+ */
+extern MPI_Datatype AMPI_ADOUBLE;
+
+/**
+ * active variant of the predefined  MPI_FLOAT
+ */
+extern MPI_Datatype AMPI_AFLOAT;
 
 #ifdef AMPI_FORTRANCOMPATIBLE
 
@@ -274,5 +338,7 @@ int AMPI_Allgatherv(void *sendbuf,
                     int *displs,
                     MPI_Datatype recvtype,
                     MPI_Comm comm);
+
+/** @} */
 
 #endif

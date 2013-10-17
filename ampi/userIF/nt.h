@@ -3,28 +3,34 @@
 
 /**
  * \file 
+ * \ingroup UserInterfaceHeaders
  * NT= "no tansformation" or "no trace" prototypes for wrapper routines that could have an adjoint action but in particular contexts do not because they are called outside of the transformed or traced section of the source code;  the signatures are identical to their MPI originals and they pass the parameters through to the MPI routines
  */ 
 
+/** \ingroup UserInterfaceDeclarations
+ * @{
+ */
+
+
 /**
- * this wrapper variant has no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
+ * this wrapper variant of \ref AMPI_Init has no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
  */
 int AMPI_Init_NT(int* argc, 
 		 char*** argv);
 
 /**
- * this wrapper variant has no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
+ * this wrapper variant of \ref AMPI_Finalize has no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
  */
 int AMPI_Finalize_NT(void);
 
 /**
- * this wrapper variant has no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
+ * this wrapper variant of \ref AMPI_Buffer_attach has no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
  */
 int AMPI_Buffer_attach_NT(void *buffer, 
 			  int size); 
 
 /**
- * this wrapper variant has no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
+ * this wrapper variant of \ref AMPI_Buffer_detach has no adjoint transformation / trace functionality; to be used outside of the transformed/traced code section
  */
 int AMPI_Buffer_detach_NT(void *buffer, 
 			  int *size);
@@ -53,5 +59,7 @@ int AMPI_Op_create_NT(MPI_User_function *function,
 int AMPI_Type_free_NT(MPI_Datatype *datatype);
 
 int AMPI_Op_free_NT(MPI_Op *op);
+
+/** @} */
 
 #endif

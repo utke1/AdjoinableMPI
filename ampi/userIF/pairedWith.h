@@ -3,11 +3,15 @@
 
 /**
  * \file 
+ * \ingroup UserInterfaceHeaders
  * enumeration to distinguish between active and passive variants of MPI_Datatype parameters passed to AMPI routines 
  */ 
 
 #include "ampi/userIF/libConfig.h"
 
+/** \ingroup UserInterfaceDeclarations
+ * @{
+ */
 enum AMPI_PairedWith_E { 
   AMPI_RECV,
   AMPI_SEND,
@@ -37,5 +41,6 @@ typedef int AMPI_PairedWith;
 #else 
 typedef enum AMPI_PairedWith_E AMPI_PairedWith;
 #endif 
+/** @} */
 
 #endif
