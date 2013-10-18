@@ -367,7 +367,25 @@ MPI_Aint ADTOOL_AMPI_getWinSize(MPI_Aint size) {
    return 0;
 }
 
-void ADTOOL_AMPI_setupTypes() {};
+#ifdef AMPI_FORTRANCOMPATIBLE
+  void adtool_ampi_fortransetuptypes_(MPI_Fint,MPI_Fint) {
+  }
+#endif
+
+void ADTOOL_AMPI_setupTypes() {
+#ifdef AMPI_FORTRANCOMPATIBLE
+  MPI_Fint adouble;
+  MPI_Fint areal;
+#endif
+  /* Change AMPI_ADOUBLE to something else? Need AMPI_ADOUBLE!=MPI_DOUBLE for derived types. */
+  AMPI_ADOUBLE=MPI_DOUBLE;
+  AMPI_AFLOAT=MPI_FLOAT;
+#ifdef AMPI_FORTRANCOMPATIBLE
+  adtool_ampi_fortransetuptypes_(&adouble, &areal);
+  AMPI_ADOUBLE_PRECISION=MPI_Type_f2c(adouble);
+  AMPI_AREAL=MPI_Type_f2c(areal);
+#endif
+};
 
 MPI_Datatype ADTOOL_AMPI_FW_rawType(MPI_Datatype datatype) {
   return datatype;
