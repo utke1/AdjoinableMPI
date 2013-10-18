@@ -137,7 +137,7 @@
  * respectively.
  *
  * Because in many cases certain MPI calls (e.g. for initialization and finalization) take place outside the scope of
- * the original computatation and its AD-derivatives and therefore do not themselves become part of the AD process,
+ * the original computation and its AD-derivatives and therefore do not themselves become part of the AD process,
  * see the explanations in \ref differentiableSection.
  * Each routine in this documentation lists to the changes to the parameters
  * relative to the MPI standard. These changes impact parameters specifying
