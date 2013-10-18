@@ -546,6 +546,7 @@ AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype) {
 }
 
 void *ADTOOL_AMPI_createWinMap(void *active_buf, MPI_Aint size){
+  return NULL;
 }
 
 void ADTOOL_AMPI_writeWinData(void *map, void *buf, MPI_Aint size){
