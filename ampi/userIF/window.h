@@ -9,6 +9,7 @@
  * tools to use TBR analysis on the tracked information.
  */ 
 
+#include <stddef.h>
 #include "ampi/userIF/libConfig.h"
 
 #define AMPI_WINDOW_STACK_CHUNK_SIZE 1000
