@@ -3,6 +3,7 @@
 
 /**
  * \file 
+ * \ingroup UserInterfaceHeaders
  * the request in the AMPI context need to be used to track extra information;
  * the extra information cannot be exposed in Fortran77 but there can be a 
  * Fortran90 equivalent and it can be exposed in C to allow source transformation 
@@ -43,6 +44,10 @@ void AMPI_WIN_STACK_expand(AMPI_Win_stack *s);
 void AMPI_WIN_STACK_shrink(AMPI_Win_stack *s);
 int AMPI_WIN_STACK_empty(AMPI_Win_stack *s);
 
+/** \ingroup UserInterfaceDeclarations
+ * @{
+ */
+
 typedef struct {
   void *map;
   void *base;
@@ -50,6 +55,8 @@ typedef struct {
   AMPI_Win_stack *req_stack;
   MPI_Win plainWindow;
 } AMPI_Win;
+
+/** @} */
 
 void AMPI_WIN_sync(AMPI_Win win);
 
