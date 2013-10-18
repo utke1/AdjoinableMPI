@@ -253,16 +253,13 @@ MPI_Comm ADTOOL_AMPI_pop_comm() {
   return 0;
 }
 
-/** Returns the non-diff part of a communication buffer
+/* Returns the non-diff part of a communication buffer
  * passed to AMPI send or recv. For Tapenade, this is
  * the communication buffer itself (association by name) */
 void* ADTOOL_AMPI_rawData(void* activeData, int *size) { 
   return activeData ;
 }
 
-/**
- * see \ref ADTOOL_AMPI_rawData
- */
 void* ADTOOL_AMPI_rawDataV(void* activeData, int commSize,  int *counts, int* displs) {
   return activeData;
 }

@@ -194,7 +194,7 @@ typedef void (ADTOOL_AMPI_popGScommSizeForRootOrNullF) (int*);
  * see comments of \ref ADTOOL_AMPI_pushGSinfo;
  * following the note there we will not be setting the values for root specific
  * arguments on non-root ranks
- * \param commSizeForRootOrNull retrieved via \ref ADTOOL_AMPI_popGSVcommSizeForRootOrNull
+ * \param commSizeForRootOrNull retrieved via \ref ADTOOL_AMPI_popGScommSizeForRootOrNull
  * \param rbuf the buffer on rank rook, set if commSizeForRootOrNull>0
  * \param rcnt the size  for rank root, set if commSizeForRootOrNull>0
  * \param rtype the data type for rank root, set if commSizeForRootOrNull>0
@@ -251,7 +251,7 @@ typedef void (ADTOOL_AMPI_pushGSVinfoF) (int, void*, int*, int*, MPI_Datatype, v
  * see comments of \ref ADTOOL_AMPI_pushGSVinfo;
  * following the note there we will not be setting the values for root specific
  * arguments on non-root ranks
- * \param commSizeForRootOrNull retrieved via \ref ADTOOL_AMPI_popGSVcommSizeForRootOrNull
+ * \param commSizeForRootOrNull retrieved via \ref ADTOOL_AMPI_popGScommSizeForRootOrNull
  * \param rbuf the buffer on rank rook, set if commSizeForRootOrNull>0
  * \param rcnts the array of size commSizeForRootOrNull for rank root, set if commSizeForRootOrNull>0
  * \param displs the array of size commSizeForRootOrNull  for rank root, set if commSizeForRootOrNull>0
@@ -374,7 +374,7 @@ typedef void* (ADTOOL_AMPI_rawDataF) (void*, int*);
 /**
  * map active data to raw data; functionality similar to \ref ADTOOL_AMPI_rawData
  * except it is handling vector buffers with arrays of counts and displacements as
- * used in \ref MPI_Gatherv or \ref MPI_Scatterv
+ * used in MPI_Gatherv or MPI_Scatterv
  */
 void * ADTOOL_AMPI_rawDataV(void* activeData, int commSize, int *counts, int* displs);
 typedef void * (ADTOOL_AMPI_rawDataVF) (void*, int, int*, int*);

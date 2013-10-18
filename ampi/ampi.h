@@ -8,13 +8,13 @@
  */
 
 /**
- * \defgroup UserInterfaceHeaders
+ * \defgroup UserInterfaceHeaders User-Interface header files
  * This set contains all the header files with declarations relevant to the user; header files not listed in this group
  * are internal to AdjoinableMPI or relate to support to be provided by a given AD tool.
  */
 
 /**
- * \defgroup UserInterfaceDeclarations
+ * \defgroup UserInterfaceDeclarations User-Interface declarations
  * This set contains all declarations relevant to the user; anything in the source files not listed in this group
  * is internal to AdjoinableMPI or relates to support to be provided by a given AD tool.
  */
@@ -81,10 +81,10 @@
  * 
  * The sources can be accessed through the <a href="http://mercurial.mcs.anl.gov/ad/AdjoinableMPI/">AdjoinableMPI mercurial repository</a>. Bug tracking, feature requests
  * etc. are done via <a href="http://trac.mcs.anl.gov/projects/AdjoinableMPI">trac</a>.
- * In the following we assume the sources are cloned (cf <a href="http://mercurial.selenic.com/">mercurial web site</a> to find out how to do it)
- * into a directory
+ * In the following we assume the sources are cloned (cf <a href="http://mercurial.selenic.com/">mercurial web site</a> for details about mercurial)
+ * into a directory `AdjoinableMPI` by invoking
  * \code
- * AdjoinableMPI
+ * hg clone http://mercurial.mcs.anl.gov/ad/AdjoinableMPI
  * \endcode
  * 
  * \section configure Library - Configure,  Build, and Install
@@ -97,14 +97,20 @@
  * \code
  * ./autogen.sh
  * \endcode
- * In the typical autoconf fashion invoke
+ * In the typical `autoconf` fashion invoke
  * \code
  *  configure --prefix=<installation directory> ...
  * \endcode
- * in or outisde the source tree.
- * The AD tool supporting AMPI should provide information which detailled AMPI
- * configure settings are required of any.
- * Follow with
+ * in or outside the source tree.
+ * The AD tool supporting AMPI should provide information which detailed AMPI
+ * configure settings are required if any.
+ * Build the libaries with
+ * \code
+ * make
+ * \endcode
+ * Optionally, before installing, one can do a sanity check by running:  `make check` .
+ *
+ * To install the header files and compiled libraries follow with
  * \code
  *  make install
  * \endcode
@@ -256,6 +262,15 @@
  * \restriction Pairing of send and receive modes must be static.
  *
  * Note that this does not prevent the use of wild cards for source, or tag.
+ *
+ * \section examples Examples
+ * A set of examples organized to illustrate the uses of AMPI together with setups for AD tools that also serve as
+ * regression tests are collected in  `AdjoinableMPIexamples` that can be obtained similarly to the AMPI sources themselves
+ * by cloning
+ *\code
+ * hg clone http://mercurial.mcs.anl.gov/ad/AdjoinableMPIexamples
+ * \endcode
+ *
  */
 
 /**
@@ -441,7 +456,7 @@
  * \ref derivedTypeData; the wrapper also generates an internal typemap that describes the packed data. The packed typemap is used
  * whenver a derived type is sent and received; it's also used in conjunction with the user-provided map to pack and unpack data.
  * This typemap is invisible to the user, so the creation of derived datatypes is accomplished entirely with calls to the
- * \ref AMPI_Type_create_struct and \ref AMPI_Type_commit wrappers.
+ * \ref AMPI_Type_create_struct and \ref AMPI_Type_commit_NT wrappers.
  * 
  * \image html dtype_illustration.png
  * \image latex dtype_illustration.png
