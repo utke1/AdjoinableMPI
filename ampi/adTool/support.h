@@ -119,6 +119,40 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 typedef void (ADTOOL_AMPI_popSRinfoF) (void**, int*, MPI_Datatype*, int*, int*, AMPI_PairedWith*, MPI_Comm*, void**);
 
 /**
+ * the implementation of pushing the required elements for one-sided
+ * communication
+ * to the AD-tool-internal stack;
+ * For source transformation this may remain unimplemented provided all the parameters
+ * are recovered by TBR and <tt>buf</tt> is mapped explicitly.
+ * the operator overloading implementation maps <tt>buf</tt> to the adjoint address space.
+ * The source transformation implementation ignores <tt>buf</tt> 
+ */
+void ADTOOL_AMPI_pushOSinfo(void* buf, 
+			    int count,
+			    MPI_Datatype datatype, 
+			    int src, 
+			    int tag,
+			    AMPI_PairedWith pairedWith,
+			    MPI_Comm comm);
+typedef void (ADTOOL_AMPI_pushOSinfoF) (void*, int, MPI_Datatype, int, int, AMPI_PairedWith, MPI_Comm);
+
+/**
+ * the implementation of popping the required elements for one-sided
+ * communication
+ * from the AD-tool-internal stack;
+ * See comments of \ref ADTOOL_AMPI_pushOSinfo.
+ */
+void ADTOOL_AMPI_popOSinfo(void** buf,
+			   int* count,
+			   MPI_Datatype* datatype, 
+			   int* src, 
+			   int* tag,
+			   AMPI_PairedWith* pairedWith,
+			   MPI_Comm* comm,
+			   void **idx);
+typedef void (ADTOOL_AMPI_popOSinfoF) (void**, int*, MPI_Datatype*, int*, int*, AMPI_PairedWith*, MPI_Comm*, void**);
+
+/**
  * the implementation of pushing the required elements for gather/scatter
  * to the AD-tool-internal stack;
  * the implementation rationale follows \ref  ADTOOL_AMPI_pushSRinfo
@@ -289,6 +323,35 @@ typedef void (ADTOOL_AMPI_pop_AMPI_RequestF) (struct AMPI_Request_S*);
 void ADTOOL_AMPI_push_request(MPI_Request request);
 typedef void (ADTOOL_AMPI_push_requestF) (MPI_Request);
 
+
+/*
+ * Push a window request for one-sided communication using a specific window
+ */
+
+void ADTOOL_AMPI_push_AMPI_WinRequest(AMPI_WinRequest *winRequest);
+typedef void (ADTOOL_AMPI_push_WinRequestF) (AMPI_WinRequest*);
+
+/*
+ * Pop a window request for one-sided communication using a specific window
+ */
+
+void ADTOOL_AMPI_pop_AMPI_WinRequest(AMPI_WinRequest *winRequest);
+typedef void (ADTOOL_AMPI_pop_WinRequestF) (AMPI_WinRequest*);
+
+/*
+ * Push a window for one-sided communication using a specific window
+ */
+
+void ADTOOL_AMPI_push_AMPI_Win(AMPI_Win *win);
+typedef void (ADTOOL_AMPI_push_AMPI_WinF) (AMPI_Win*);
+
+/*
+ * Pop a window for one-sided communication using a specific window
+ */
+
+void ADTOOL_AMPI_pop_AMPI_Win(AMPI_Win *win);
+typedef void (ADTOOL_AMPI_pop_AMPI_WinF) (AMPI_Win*);
+
 /**
  * the companion to \ref ADTOOL_AMPI_push_request
  */
@@ -372,6 +435,14 @@ typedef void (ADTOOL_AMPI_TurnF) (void*, void*) ;
 void ADTOOL_AMPI_mapBufForAdjoint(struct AMPI_Request_S  *ampiRequest,
 				  void* buf);
 typedef void (ADTOOL_AMPI_mapBufForAdjointF) (struct AMPI_Request_S*, void*);
+
+/**
+ * Map buffer in a one-sided communication
+ */
+
+void ADTOOL_AMPI_mapWinBufForAdjoint(AMPI_WinRequest *winRequest,
+				  void* buf);
+typedef void (ADTOOL_AMPI_mapWinBufForAdjointF) (AMPI_WinRequest*, void*);
 
 /**
  * an operator overloading tool should not do anything in the implementation but see \ref ADTOOL_AMPI_mapBufForAdjoint;
@@ -519,6 +590,27 @@ typedef void (adtool_ampi_fortransetuptypes_F) (MPI_Fint*, MPI_Fint*);
 AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype);
 typedef AMPI_Activity (ADTOOL_AMPI_isActiveTypeF) (MPI_Datatype);
 
+/**
+ * Maps the active buffer on a mapped buffer for a MPI_Win
+ */
+
+void *ADTOOL_AMPI_createWinMap(void *active_buf, MPI_Aint size);
+typedef void *(ADTOOL_AMPI_createWinMapF) (void *active_buf, MPI_Aint size);
+
+/**
+ * Maps the active buffer on a mapped buffer for a MPI_Win
+ */
+
+void ADTOOL_AMPI_writeWinData(void *map, void *buf, MPI_Aint size);
+typedef void (ADTOOL_AMPI_writeWinDataF) (void *map, void *buf, MPI_Aint size);
+
+/**
+ * Gets the size of the mapped buffer for a window
+ */
+
+MPI_Aint ADTOOL_AMPI_getWinSize(MPI_Aint size);
+typedef MPI_Aint (ADTOOL_AMPI_getWinSizeF) (MPI_Aint size);
+
 
 struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_pushBcastInfoF *pushBcastInfo_fp;
@@ -530,6 +622,8 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_popReduceInfoF *popReduceInfo_fp;
   ADTOOL_AMPI_pushSRinfoF *pushSRinfo_fp;
   ADTOOL_AMPI_popSRinfoF *popSRinfo_fp;
+  ADTOOL_AMPI_pushOSinfoF *pushOSinfo_fp;
+  ADTOOL_AMPI_popOSinfoF *popOSinfo_fp;
   ADTOOL_AMPI_pushGSinfoF *pushGSinfo_fp;
   ADTOOL_AMPI_popGScommSizeForRootOrNullF *popGScommSizeForRootOrNull_fp;
   ADTOOL_AMPI_popGSinfoF *popGSinfo_fp;
@@ -539,6 +633,10 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_pop_CallCodeF *pop_CallCode_fp;
   ADTOOL_AMPI_push_AMPI_RequestF *push_AMPI_Request_fp;
   ADTOOL_AMPI_pop_AMPI_RequestF *pop_AMPI_Request_fp;
+  ADTOOL_AMPI_push_AMPI_WinF *push_AMPI_Win_fp;
+  ADTOOL_AMPI_pop_AMPI_WinF *pop_AMPI_Win_fp;
+  ADTOOL_AMPI_push_WinRequestF *push_AMPI_WinRequest_fp;
+  ADTOOL_AMPI_pop_WinRequestF *pop_AMPI_WinRequest_fp;
   ADTOOL_AMPI_push_requestF *push_request_fp;
   ADTOOL_AMPI_pop_requestF *pop_request_fp;
   ADTOOL_AMPI_push_commF *push_comm_fp;
@@ -552,6 +650,7 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_rawAdjointDataF *rawAdjointData_fp;
   ADTOOL_AMPI_TurnF *Turn_fp;
   ADTOOL_AMPI_mapBufForAdjointF *mapBufForAdjoint_fp;
+  ADTOOL_AMPI_mapWinBufForAdjointF *mapWinBufForAdjoint_fp;
   ADTOOL_AMPI_setBufForAdjointF *setBufForAdjoint_fp;
   ADTOOL_AMPI_getAdjointCountF *getAdjointCount_fp;
   ADTOOL_AMPI_setAdjointCountF *setAdjointCount_fp;
@@ -569,6 +668,9 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_setupTypesF *setupTypes_fp;
   ADTOOL_AMPI_FW_rawTypeF *FW_rawType_fp;
   ADTOOL_AMPI_BW_rawTypeF *BW_rawType_fp;
+  ADTOOL_AMPI_createWinMapF *createWinMap_fp;
+  ADTOOL_AMPI_writeWinDataF *writeWinData_fp;
+  ADTOOL_AMPI_getWinSizeF *getWinSize_fp;
 #ifdef AMPI_FORTRANCOMPATIBLE
   adtool_ampi_fortransetuptypes_F *fortransetuptypes__fp;
 #endif

@@ -9,7 +9,12 @@
 
 #include "ampi/userIF/pairedWith.h"
 #include "ampi/userIF/request.h"
+#include "ampi/userIF/window.h"
 
+/**
+ * active variant of the predefined  MPI_DOUBLE
+ */
+extern MPI_Datatype AMPI_ADOUBLE;
 
 /**
  * \todo move out of userIF
@@ -529,6 +534,29 @@ int AMPI_Allgatherv(void *sendbuf,
                     MPI_Datatype recvtype,
                     MPI_Comm comm);
 
-/** @} */
+/**
+ * One-sided MPI 
+ */
+
+int AMPI_Win_create( void *base,
+		     MPI_Aint size,
+		     int disp_unit,
+		     MPI_Info info,
+		     MPI_Comm comm,
+		     AMPI_Win *win );
+
+int AMPI_Win_fence( int assert,
+                    AMPI_Win win );
+
+int AMPI_Win_free( AMPI_Win *win );
+
+int AMPI_Get( void *origin_addr,
+	      int origin_count,
+	      MPI_Datatype origin_datatype, 
+	      int target_rank,
+	      MPI_Aint target_disp,
+	      int target_count,
+	      MPI_Datatype target_datatype,
+	      AMPI_Win win );
 
 #endif

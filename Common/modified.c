@@ -2021,3 +2021,166 @@ int userDefinedOpIdx(MPI_Op op) {
 int isUserDefinedOp(int uop_idx) {
   return uop_idx!=-1;
 }
+
+/* One-sided AMPI */
+int FW_AMPI_Win_create( void *base,
+    MPI_Aint size,
+    int disp_unit,
+    MPI_Info info,
+    MPI_Comm comm,
+    AMPI_Win *win
+    )
+{
+  win->req_stack=(AMPI_Win_stack *) malloc(sizeof(AMPI_Win_stack));
+  AMPI_WIN_STACK_stack_init(win->req_stack);
+  win->map=(ourADTOOL_AMPI_FPCollection.createWinMap_fp)(base,size);
+  win->base=base;
+  win->size=(ourADTOOL_AMPI_FPCollection.getWinSize_fp)(size);
+  (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_CREATE);
+  return MPI_Win_create(win->map, win->size, disp_unit, info, comm, &win->plainWindow);
+  /*return MPI_Win_create(base, size, disp_unit, info, comm,
+   * &win->plainWindow);*/
+}
+
+int BW_AMPI_Win_create( void *base,
+    MPI_Aint size,
+    int disp_unit,
+    MPI_Info info,
+    MPI_Comm comm,
+    AMPI_Win *win
+    )
+{
+}
+
+int FW_AMPI_Win_free( AMPI_Win *win ) {
+  /*free(win->req_stack);*/
+  /*(*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_FREE);*/
+  /*return MPI_Win_free(&win->plainWindow); */
+  return 0;
+}
+
+int BW_AMPI_Win_free( AMPI_Win *win ) {
+}
+
+int FW_AMPI_Get( void *origin_addr,
+    int origin_count,
+    MPI_Datatype origin_datatype,
+    int target_rank,
+    MPI_Aint target_disp,
+    int target_count,
+    MPI_Datatype target_datatype,
+    AMPI_Win win
+    ) 
+{  
+  int rc=0;
+  double* mappedbuf=NULL;
+  if((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(origin_datatype)==AMPI_ACTIVE) {
+    mappedbuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(origin_addr,&origin_count);
+  }
+  else {
+    mappedbuf=origin_addr;
+  }
+  rc=MPI_Get( mappedbuf,
+      /*rc=MPI_Get( origin_addr,*/
+      origin_count,
+      origin_datatype,
+      target_rank,
+      target_disp,
+      target_count,
+      target_datatype,
+      win.plainWindow
+      );
+  AMPI_WinRequest winRequest;
+  /* fill in the other info */
+  winRequest.origin_addr=origin_addr;
+  winRequest.origin_count=origin_count;
+  winRequest.origin_datatype=origin_datatype;
+  winRequest.target_rank=target_rank;
+  winRequest.target_disp=target_disp;
+  winRequest.target_count=target_count;
+  winRequest.target_datatype=target_datatype;
+  (*ourADTOOL_AMPI_FPCollection.mapWinBufForAdjoint_fp)(&winRequest,origin_addr);
+  if ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(origin_datatype)==AMPI_ACTIVE) {
+    (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_GET);
+    AMPI_WIN_STACK_push(win.req_stack,winRequest);
+  }
+  return rc;
+}
+
+int BW_AMPI_Get( void *origin_addr,
+    int origin_count,
+    MPI_Datatype origin_datatype,
+    int target_rank,
+    MPI_Aint target_disp,
+    int target_count,
+    MPI_Datatype target_datatype,
+    AMPI_Win win
+    ) 
+{
+}
+
+int FW_AMPI_Put( void *origin_addr,
+    int origin_count,
+    MPI_Datatype origin_datatype,
+    int target_rank,
+    MPI_Aint target_disp,
+    int target_count,
+    MPI_Datatype target_datatype,
+    AMPI_Win win
+    ) 
+{
+}
+
+int BW_AMPI_Put( void *origin_addr,
+    int origin_count,
+    MPI_Datatype origin_datatype,
+    int target_rank,
+    MPI_Aint target_disp,
+    int target_count,
+    MPI_Datatype target_datatype,
+    AMPI_Win win
+    ) 
+{
+}
+
+int FW_AMPI_Win_fence( int assert,
+    AMPI_Win win
+    )
+{
+  AMPI_WinRequest winRequest;
+  int rc=0;
+  int i=0;
+  int num_reqs=0;
+  rc=MPI_Win_fence( assert, win.plainWindow );
+  (ourADTOOL_AMPI_FPCollection.writeWinData_fp)(win.map,win.base,win.size);
+
+  num_reqs=win.req_stack->num_reqs;
+  for(i=win.req_stack->num_reqs; i>0 ; i=i-1) {
+    winRequest=AMPI_WIN_STACK_pop(win.req_stack);
+    (*ourADTOOL_AMPI_FPCollection.writeData_fp)(winRequest.origin_addr,&winRequest.origin_count);
+    (*ourADTOOL_AMPI_FPCollection.push_AMPI_WinRequest_fp)(&winRequest);
+  }
+  TAPE_AMPI_push_int(num_reqs); 
+  win.req_stack->num_reqs=0;
+  (*ourADTOOL_AMPI_FPCollection.push_AMPI_Win_fp)(&win);
+  (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_FENCE);
+  return rc;
+}
+
+int BW_AMPI_Win_fence( int assert,
+    AMPI_Win win
+    )
+{
+  AMPI_WinRequest winRequest;
+  int rc=0;
+  int i=0;
+  int num_reqs=0;
+  (*ourADTOOL_AMPI_FPCollection.pop_AMPI_Win_fp)(&win);
+  TAPE_AMPI_pop_int(&num_reqs); 
+  rc=MPI_Win_fence( assert, win.plainWindow );
+  for(i=num_reqs; i>0 ; i=i-1) {
+    (*ourADTOOL_AMPI_FPCollection.pop_AMPI_WinRequest_fp)(&winRequest);
+    double *tmp=(double *) winRequest.origin_addr;
+    printf("origin_addr: %f\n", tmp[0]);
+  }
+}
