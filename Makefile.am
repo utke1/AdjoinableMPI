@@ -7,4 +7,5 @@ Common \
 Bookkeeping \
 Tape \
 ADtoolStubs/ST \
-ADtoolStubs/OO
+ADtoolStubs/OO \
+Check

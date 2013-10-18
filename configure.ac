@@ -76,7 +76,8 @@ AC_CONFIG_FILES([Makefile
 		 Tape/Makefile
 		 Common/Makefile
 		 ADtoolStubs/ST/Makefile
-		 ADtoolStubs/OO/Makefile])
+		 ADtoolStubs/OO/Makefile
+		 Check/Makefile])
 
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
