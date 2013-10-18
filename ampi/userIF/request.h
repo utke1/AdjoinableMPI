@@ -3,6 +3,7 @@
 
 /**
  * \file 
+ * \ingroup UserInterfaceHeaders
  * the request in the AMPI context need to be used to track extra information;
  * the extra information cannot be exposed in Fortran77 but there can be a 
  * Fortran90 equivalent and it can be exposed in C to allow source transformation 
@@ -12,6 +13,9 @@
 #include "ampi/userIF/libConfig.h"
 #include "ampi/userIF/pairedWith.h"
 
+/** \ingroup UserInterfaceDeclarations
+ * @{
+ */
 /**
  * does the request originate with a  send or a receive 
  */
@@ -105,5 +109,7 @@ typedef MPI_Request AMPI_Request;
 #else 
 typedef struct AMPI_Request_S AMPI_Request;
 #endif 
+
+/** @} */
 
 #endif

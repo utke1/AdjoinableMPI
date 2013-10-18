@@ -1,85 +1,183 @@
 #ifndef _AMPI_AMPI_H_
 #define _AMPI_AMPI_H_
 
+/**
+ * \file
+ * \ingroup UserInterfaceHeaders
+ * One-stop header file for all AD-tool-independent AMPI routines; this is the file to replace mpi.h in the user code.
+ */
+
+/**
+ * \defgroup UserInterfaceHeaders
+ * This set contains all the header files with declarations relevant to the user; header files not listed in this group
+ * are internal to AdjoinableMPI or relate to support to be provided by a given AD tool.
+ */
+
+/**
+ * \defgroup UserInterfaceDeclarations
+ * This set contains all declarations relevant to the user; anything in the source files not listed in this group
+ * is internal to AdjoinableMPI or relates to support to be provided by a given AD tool.
+ */
+
 /** \mainpage 
+ * The Adjoinable MPI (AMPI) library provides a modified set if MPI subroutines
+ * that are constructed such that an adjoint in the context of algorithmic
+ * differentiation (AD) can be computed. The library is designed to be supported
+ * by a variety of AD tools and to enable also the computation of  (higher-order)
+ * forward derivatives.
  * \authors Laurent Hascoet
  * \authors Uwe Naumann
  * \authors Michel Schanen
  * \authors Jean Utke 
  *
+ * <b>Please refer to the \ref UserGuide for information regarding the use of the library in a given application.</b>
+ *
+ * Information regarding the library design, library internal functionality and the interfaces of methods to
+ * be supported by a given AD tool are given in \ref LibraryDevelopmentGuide
+ *
  * \section links Links to Ressources
  * 
  *  - <a href="https://trac.mcs.anl.gov/projects/AdjoinableMPI/wiki">TRAC  page</a> for bugs and feature tracking
  *  - <a href="http://mercurial.mcs.anl.gov/ad/AdjoinableMPI/">mercurial repository</a> for source code and change history
- *  
+ *
+ */
+
+/**
+ * \page UserGuide User Guide
+ * \tableofcontents
  * \section Introduction
  * 
- * The Adjoinable MPI (AMPI) library provides a modified set if MPI subroutines 
- * that are constructed such that and adjoint in the context of algorithmic 
- * differentiation (AD) can be computed. 
+ * The Adjoinable MPI (AMPI) library provides a modified set of MPI subroutines
+ * that are constructed such that:
+ *  - an adjoint in the context of algorithmic differentiation (AD) can be computed,
+ *  - it can be supported by a variety of AD tools,
+ *  - it enable also the computation of  (higher-order) forward derivatives,
+ *  - it provides an implementation for a straight pass-through to MPI such that the switch to AMPI can be made permanent
+ * without forcing compile dependencies on any AD tool.
+ *
  * There are principal recipes for the construction of the adjoint of 
  * a given communication, see \cite Utke2009TAM . 
  * The practical implementation of these recipes, however, faces the following 
  * challenges.
  *  - the target language may prevent some implementation options
  *   - exposing an MPI_Request augmented with extra information as a structured type (not supported by Fortran 77)
- *   - passing an array of buffers (of different length), e.g. to \ref AMPI_Waitall, as a additional argument to  (not supported in any Fortran version)
+ *   - passing an array of buffers (of different length), e.g. to \ref AMPI_Waitall, as an additional argument to  (not supported in any Fortran version)
  *  - the AD tool implementation could be based on 
- *   - operator overloading 
+ *   - operator overloading
+ *    - original data and (forward) derivatives co-located (e.g. Rapsodia,dco)
+ *    - original data and (forward) derivatives referenced (e.g. Adol-C)
  *   - source transformation
- *    - association by address
- *    - association by name
+ *    - association by address (e.g. OpenAD)
+ *    - association by name (e.g. Tapenade)
  * 
  * The above choices imply certain consequences on the complexity for implementing  
- * the adjoint action and this would imply differences in the ANPI design while 
- * on the other hand there is a clear advantage to present a single, AD tool implementation independent
- * variant of the AMPI library to permit switching AD tools and a common understanding of the 
- * adjoining of MPI calls. 
- * Some overarching design decisions are discussed in \ref design. Concerns applicable to specific 
- * routines are covered in their respective sections.
- * We assume the reader is familiar with MPI and AD. 
+ * the adjoint (and forward derivative) action and this could imply differences in the AMPI design.
+ * However, from a user's perspective it is a clear advantage to present a <b>single, AD tool implementation independent
+ * AMPI library</b> such that switching AD tools is not hindered by AMPI while also promoting a common understanding of the
+ * differentiation through MPI calls.
+ * We assume the reader is familiar with MPI and AD concepts.
  *
- * \section sources Getting the source files
+ * \section sources Getting the library sources
  * 
- * The sources can be accessed throug the <a href="http://mercurial.mcs.anl.gov/ad/AdjoinableMPI/">AdjoinableMPI mercurial repository</a>. Bug tracking, feature requests 
+ * The sources can be accessed through the <a href="http://mercurial.mcs.anl.gov/ad/AdjoinableMPI/">AdjoinableMPI mercurial repository</a>. Bug tracking, feature requests
  * etc. are done via <a href="http://trac.mcs.anl.gov/projects/AdjoinableMPI">trac</a>.
- * In the following we assume the sources are installed in a directory 
+ * In the following we assume the sources are cloned (cf <a href="http://mercurial.selenic.com/">mercurial web site</a> to find out how to do it)
+ * into a directory
  * \code
  * AdjoinableMPI
  * \endcode
  * 
- * \section configure Configure,  Build, and Install 
+ * \section configure Library - Configure,  Build, and Install
  * 
- * Configuration, build, and install follows the typical GNU autotools chain. 
- * Assuming the installation is done into a directory called
+ * Configuration, build, and install follows the typical GNU autotools chain. Go to the source directory
+ * \code
+ * cd AdjoinableMPI
+ * \endcode
+ * If the sources were obtained from the mercurial repository, then one first needs to run the autotools via invoking
+ * \code
+ * ./autogen.sh
+ * \endcode
+ * In the typical autoconf fashion invoke
+ * \code
+ *  configure --prefix=<installation directory> ...
+ * \endcode
+ * in or outisde the source tree.
+ * The AD tool supporting AMPI should provide information which detailled AMPI
+ * configure settings are required of any.
+ * Follow with
+ * \code
+ *  make install
+ * \endcode
+ * after which in the installation directory one should find under <tt>\<installation directory\></tt> the following.
+ *  - header files: see also  \ref dirStruct
+ *  - libraries:
+ *    - libampiPlainC - for pass through to MPI, no AD functionality
+ *    - libampiCommon - implementation of AD functionality shared between all AD tools supporting AMPI
+ *    - libampiBookkeeping - implementation of AD functionality needed by some AD tools (see the AD tool documentation)
+ *    - libampiTape - implementation of AD functionality needed by some AD tools (see the AD tool documentation)
+ *
+ * Note, the following libraries are AMPI internal:
+ *  - libampiADtoolStubsOO - stubs for operator overloading AD tools not needed by the user
+ *  - libampiADtoolStubsST - stubs for source transformation AD tools not needed by the user
+ *
+ * \section mpiToAmpi Switching from MPI to Adjoinable MPI
+ *
+ * For a given MPI-parallelized source code the user will replace all calls to MPI_... routines with the respective  AMPI_...
+ * equivalent provided in \ref UserInterfaceDeclarations.
+ * To include the declarations replace
+ *  - in C/C++: includes of <tt>mpi.h</tt> with
+ *  \code
+ *  #include <ampi/ampi.h>
+ *  \endcode
+ *  - in Fortran: includes of <tt>mpif.h</tt> with
+ *  \code
+ *  #include <ampi/ampif.h>
+ *  \endcode
+ *
+ * respectively.
+ *
+ * Because in many cases certain MPI calls (e.g. for initialization and finalization) take place outside the scope of
+ * the original computatation and its AD-derivatives and therefore do not themselves become part of the AD process,
+ * see the explanations in \ref differentiableSection.
+ * Each routine in this documentation lists to the changes to the parameters
+ * relative to the MPI standard. These changes impact parameters specifying
+ *  - MPI_Datatype parameters, see \ref datatypes
+ *  - MPI_Request parameters, see \ref requests
+ *
+ * Some routines require new parameters specifying the pairing two-sided communications, see \ref pairings.
+ * Similarly to the various approaches (preprocessing, templating, using <tt>typedef</tt>)
+ * employed to effect a change to an active type for overloading-based AD tools, this switch
+ * from MPI to AMPI routines should be done as a one-time effort.
+ * Because  AMPI provides an implementation for a straight pass-through to MPI it is possible to make this switch
+ * permanent and retain builds that are completely independent of any AD tool and use AMPI as a thin wrapper library to AMPI.
+ *
+ * \section appCompile Application - compile and link
+ *
+ * After the switch described in \ref mpiToAmpi is done, the application should be recompiled with the include path addition
+ * \code
+ * -I<installation directory>/include
+ * \endcode
+ * and linked with the link path extension
  * \code 
- * /opt/AMPI_inst
+ * -L<installation directory>/lib[64]
  * \endcode 
- * then the user should add that directory to the preprocessor include path as
+ * Note, the name of the subdirectory (lib or lib64 ) depends on the system;
+ * the appropriate set of libraries, see \ref configure; the optional ones in square brackets depend on the AD tool:
  * \code
- * -I/opt/AMPI_inst/include
+ * -libampicommon [ -libampiBookkeeping -lampiTape ]
  * \endcode 
- * and include the top level header file 
- * as  
- * \code{.cpp}
- * #include "ampi/ampi.h"
- * \endcode
- * There is a simple pass-through-to-MPI library build without any AD tool involvement which, following the example above, weould be linked as 
+ * <b>OR</b> if instead of differentiation by AD a straight pass-through to MPI is desired, then
  * \code
- * -L /opt/AMPI_inst/lib -lampiPlainC
+ * -libampiPlainC
  * \endcode
+ * instead.
  * 
- * \section design Libary Design
- * In this section we discuss the directory structure of the implementation, 
- * the distinction between different subroutine variants in the context of 
- * the source code to be adjoined, and general assumptions on the communication patterns. 
- * 
- * \subsection dirStruct Directory and File Structure
+ * \section dirStruct Directory and File Structure
  * All locations discussed below are relative to the top level source directory. 
  * The top level header file to be included in place of the usual  "mpi.h" is located in  
  * ampi/ampi.h
  *
- * It references the header files in <tt>ampi/userIF</tt> which are organized to contain
+ * It references the header files in <tt>ampi/userIF</tt> , see also \ref UserInterfaceHeaders which are organized to contain
  *  - unmodified pass through to MPI in <tt>ampi/userIF/passThrough.h</tt> which exists to give the extent of the original MPI we cover  
  *  - variants of routines that in principle need adjoint logic but happen to be called outside of the code section that is adjoined and therefore 
  *    are not transformed / not traced (NT) in  <tt>ampi/userIF/nt.h</tt>
@@ -90,17 +188,18 @@
  *    currently supported by the tools; we anticipate that the ST specific versions may become obsolete as the source transformation tools evolve to 
  *    support all transformations via the routines in <tt>ampi/userIF/modified.h</tt> 
  *
- * Additional header files contain enumerations used as arguments to AMPI routines.
+ * Additional header files contain enumerations used as arguments to AMPI routines. All declarations that are part of the user
+ * interface are grouped in \ref UserInterfaceDeclarations. All other declarations in header files in the library are not to be used directly in the user code.
  * 
  * A library that simply passes through all AMPI calls to their MPI counterparts for a test compilation and execution without any involvement of 
- * and AD tool is implemented in the source files under <tt>plainC</tt>. 
+ * and AD tool is implemented in the source files in the <tt>PlainC</tt> directory.
  * 
- * \subsection adjoinableSection Subroutine variants relative to the adjoinable section
+ * \section differentiableSection Using subroutine variants NT vs non-NT relative to the differentiable section
  * 
  * The typical assumption of a program to be differentiated is that there is some top level routine <tt>head</tt> which does the numerical computation 
  * and communication which is called from some main <tt>driver</tt> routine. The <tt>driver</tt> routine would have to be manually adjusted to initiate 
- * the derivative computation, retrieve, and use the derviative values. 
- * Therefore only <tt>head</tt> and everything it references would be <em>adjointed</em> while <tt>driver</tt> would not. Typically, the <tt>driver</tt>
+ * the derivative computation, retrieve, and use the derivative values.
+ * Therefore only <tt>head</tt> and everything it references would be <em>adjoined</em> while <tt>driver</tt> would not. Typically, the <tt>driver</tt>
  * routine also includes the basic setup and teardown with MPI_Init and MPI_Finalize and consequently these calls (for consistency) should be replaced 
  * with their AMPI "no trace/transformation"  (NT) counterparts \ref AMPI_Init_NT and \ref AMPI_Finalize_NT. 
  * The same approach should be taken for all resource allocations/deallocations (e.g. \ref AMPI_Buffer_attach_NT and \ref AMPI_Buffer_detach_NT) 
@@ -109,9 +208,31 @@
  * For cases where these routines have to be called within the adjointed code section the variants without the <tt>_NT</tt> suffix will ensure the
  * correct adjoint behavior.
  * 
- * \subsection commPat General Assumptions and Notions on Communication Patterns
+ * \section general General Assumptions on types and Communication Patterns
+ *
+ * \subsection datatypes Datatype consistency
  * 
- * \subsubsection pairings Pairings
+ * Because the MPI standard passes buffers as <tt>void*</tt>  (aka choice) the information about the type of
+ * the buffer and in particular the distinction between active  and passive data (in the AD sense) must be
+ * conveyed via the <tt>datatype</tt> parameters and be consistent with the type of the buffer. To indicate buffers of
+ * active type the library predefines the following
+ * - for C/C++
+ *   - \ref AMPI_ADOUBLE  as the active variant of the passive MPI_DOUBLE
+ *   - \ref AMPI_AFLOAT as the active variant of the passive MPI_FLOAT
+ * - for Fortran
+ *   - \ref AMPI_ADOUBLE_PRECISION as the active variant of the passive MPI_DOUBLE_PRECISION
+ *   - \ref AMPI_AREAL as the active variant of the passive MPI_REAL
+ *
+ * Passive buffers can be used as parameters to the AMPI interfaces with respective passive data type values.
+ *
+ * \subsection requests Request Type
+ *
+ * Because additional information has to be attached to the MPI_Request instances  used in nonblocking communications, there
+ * is an expanded data structure to hold this information. Even though in some contexts (F77) this structure cannot be exposed
+ * to the user code the general approach is to declare variables that are to hold requests as \ref AMPI_Request (instead of
+ * MPI_Request).
+ *
+ * \subsection pairings Pairings
  *
  * Following the explanations in \cite Utke2009TAM it is clear that context information about the 
  * communication pattern, that is the pairing of MPI calls, is needed to achieve 
@@ -132,11 +253,15 @@
  * Tracing such information in a global data structure is not scalable and piggybacking the send type onto the message 
  * so it can be traced on the receiving side is conceivable but not trivial and currently not implemented. 
  * 
- * <b>    Restriction : pairing of send and receive types must be static. </b>
+ * \restriction Pairing of send and receive modes must be static.
  *
- * Note that this does not prevent the use of wild cards for source, destination, or tag.  
- * 
- * \subsubsection nonblocking Nonblocking Communication and Fortran Compatibility
+ * Note that this does not prevent the use of wild cards for source, or tag.
+ */
+
+/**
+ * \page LibraryDevelopmentGuide Library Development Guide
+ * \tableofcontents
+ * \section nonblocking Nonblocking Communication and Fortran Compatibility
  * 
  * A central concern is the handling of non-blocking sends and receives in combination with their respective completion,
  * e.g. wait,  waitall, test. 
@@ -177,7 +302,7 @@
  * This necessitates the introduction of the \ref AMPI_Request, which in Fotran77 still maps to just an integer address. 
  * The switching between these variants is done via  configure flags, see \ref configure.
  * 
- * \subsection bookkeeping Bookkeeping of Requests
+ * \section bookkeeping Bookkeeping of Requests
  * 
  * As mentioned in \ref nonblocking the target language may prevent the augmented request from being used directly.  
  * In such cases the augmented information has to be kept internal to the library, that is we do some bookkeeping to convey the necessary information between the nonblocking sends or receives and
@@ -191,43 +316,67 @@
  * Keeping the internal identifier in the AD stack is not sufficient because there is no guarantee that
  * the mechanism in the backward sweep will use the same values for the internal handle.
  * The bookkeeping we use to solve this problem goes as follows:
- * -- standard TBR mechanism makes sure that variables that are needed in the BW sweep and are overwritten
+ * - standard TBR mechanism makes sure that variables that are needed in the BW sweep and are overwritten
  *    are pushed onto the AD stack before they are overwritten
- * -- At the end of its life in the forward sweep, the FW handle is pushed in the AD stack
- * -- At the beginning of its backward life, we obtain a BW handle, we pop the FW handle,
+ * - At the end of its life in the forward sweep, the FW handle is pushed in the AD stack
+ * - At the beginning of its backward life, we obtain a BW handle, we pop the FW handle,
  *    and we keep the pair of those in a table (if an adjoint handle is created too, we keep the triplet).
- * -- When a variable is popped from the AD stack, and it is an internal handle,
+ * - When a variable is popped from the AD stack, and it is an internal handle,
  *    the popped handle is re-based using the said table.
  *
  * Simple workaround for the "request" case:
  * This method doesn't rely on TBR.
- * -- Push the FW request upon acquisition (e.g. just after the Isend)
- * -- Push the FW request upon release (e.g. just before the Wait)
- * -- Pop the FW request upon adjoint of resease, and get the BW request from the adjoint of release
- * -- Add the BW request into the bookkeeping, with the FW request as a key.
- * -- Upon ajoint of acquisition, pop the FW request, lookup in the bookkeeping to get the BW request.
+ * - Push the FW request upon acquisition (e.g. just after the Isend)
+ * - Push the FW request upon release (e.g. just before the Wait)
+ * - Pop the FW request upon adjoint of release, and get the BW request from the adjoint of release
+ * - Add the BW request into the bookkeeping, with the FW request as a key.
+ * - Upon adjoint of acquisition, pop the FW request, lookup in the bookkeeping to get the BW request.
  *
- * \subsection Things that don't work
+ * \section bundling  Tangent-linear mode bundling the derivatives or shadowing the communication
+ * A central question for the implementation of tangent-linear mode becomes
+ * whether to bundle the original buffer <tt>b</tt> with the  derivative <tt>b_d</tt> as  pair and communicate the pair
+ * or to send separate messages for the derivatives.
+ * - shadowing messages avoid the bundling/unbundling if <tt>b</tt> and <tt>b_d</tt>
+ * are already given as separate entities as is the case in association by name, see \ref Introduction.
+ * - for one-sided passive communications there is no hook to do the bundling/unbundling on the target side; therefore
+ * it would be inherently impossible to achieve semantically correct behavior with any bundling/unbundling scheme.
+ * The example here is a case where a put on the origin side and subsequent computations on the target side are synchronized
+ * via a barrier which by itself does not have any obvious link to the target window by which one could trigger an unbundling.
+ * - the bundling operation itself may incur nontrivial overhead for large buffers
  *
- * The question is whether to piggyback the derivative information on the original or to
- * sending shadow messages for the derivatives.
- * One argument for shadow messages is to avoid type-change from bundles to separate values and
- * separate derivatives.
- * One argument against that is the use of wildcards, which makes it difficult to
- * correctly associate parts of the message.
- * Choice on Tuesday 12th: An association by name tool is required to bundle value with tangent
- * before communication call, and conversely unbundle after communication.
- * The bundling and unbundling routines are left for the user to implement,
- * but eventually should also be generated by the AD tool if types are serializable.
- * The bundling and unbundling are the association-by-name equivalent of the
- * \ref rawData routines for the association-by-address.
+ * An earlier argument against message shadowing was the difficulty of correctly associating message pairs while using wildcards.
+ * This association can, however, be ensured when a the shadowing message for the <tt>b_d</tt> is received on a communicator
+ * <tt>comm_d</tt> that duplicates the original communicator <tt>comm</tt> and uses the
+ * actual src and tag values obtained from the receive of the shadowed message as in the following example:
  *
- * Specifically for tangent mode, if we don't want to modify the count value of
- * the original communication call, we need to replace the MPI datatype
- * with a new one where REAL*8 become MPI_ACTIVE (a bundle of one REAL*8 plus any sort of derivative info.)
- * For association-by-name tools, this implies that the bundling routine
- * really abides with this structure.
+ * \code{.cpp}
+ * if ( myRank==1) {
+ *   send(x,...,0,tag1,comm); // send of the original data
+ *   send(x_d,...,0,tag1,comm_d); // shadowing send of the derivatives
+ * else if ( myRank==2) {
+ *   send(y,...,0,tag2,comm);
+ *   send(y_d,...,0,tag2,comm_d);
+ * else if ( myRank==0) {
+ *   do {
+ *      recv(t,...,ANY_SOURCE, ANY_TAG,comm,&status); // recv of the original data
+ *      recv(t_d,...,status.SOURCE,status.TAG,comm_d,STATUS_IGNORE); // shadowing recv with wildcards disambiguated
+ *      z+=t; // original operation
+ *      z_d+=t_d; // corresponding derivative operation
+ *   }
+ * }
+ * \endcode
  *
+ * This same approach can be applied to (user-defined) reduction operations, see \ref reduction, in that the binomial
+ * tree traversal for the reduction is shadowed in the same way and a user defined operation with derivatives can be invoked
+ * by passing the derivatives as separate arguments.
+ *
+ * The above approach is to be taken by any tool in which <tt>b</tt> and <tt>b_d</tt> are not already paired in consecutive
+ * memory such as association by name as in Tapenade or by implementation choice such as forward interpreters in Adol-C where
+ * the 0-th order Taylor coefficients live in a separate array from the first-  and higher-order Taylor coefficients.
+ * Tools with association by address (OpenAD, Rapsodia) would have the data already given in paired form and therefore not
+ * need messsage shadowing but communicate the paired data.
+ *
+ * \section badOptions Rejected design options
  * About MPI_Types and the "active" boolean:
  * One cannot get away with just an "active" boolean to indicate the structure of
  * the MPI_Type of the bundle. Since the MPI_Type definition of the bundle type
@@ -239,7 +388,7 @@
  * for the built-in MPI_datatypes and using the active types, one can achieve
  * type conformance between the buffer and the type parameter passed.
  *
- * \subsection onesided One-Sided Active Targets
+ * \section onesided One-Sided Active Targets
  * Idea - use an <tt>AMPI_Win</tt> instance (similar to the \ref AMPI_Request ) to attach more 
  * information about the things that are applied to the window and completed on the fence; 
  * we execute/trace/collect-for-later-execution operations on the window in the following fashion
@@ -278,7 +427,7 @@
  * 4.3 op isa PUT/accum=; then acc(0.0,'=') to adjoint target
  * 4.4 op isa accum*: then accumulate( r*t23/t,'=', to the target) AND do z_bar+=r*t23/z  (this is the old local z ); 
  * 
- * \subsubsection derived Handling of Derived Types
+ * \section derived Handling of Derived Types
  * (Written mostly in the context of ADOL-C.) MPI allows the user to create typemaps for arbitrary structures in terms of a block
  * count and arrays of block lengths, block types, and displacements. For sending an array of active variables, we could get by with
  * a pointer to their value array; in the case of a struct, we may want to send an arbitrary collection of data as well as some active
@@ -305,7 +454,7 @@
  * Worth noting: if we have multiple active variables in a struct and we want to send an array of these structs, we have to send every
  * active element to ensure that our contiguity checks don't assert false.
  * 
- * \subsubsection reduction Reduction operations
+ * \section reduction Reduction operations
  * 
  * Since operator overloading can't enter MPI routines, other AMPI functions extract the double values from active variables,
  * transfer those, and have explicit adjoint code that replaces the automated transformation. This is possible because we know the
@@ -323,10 +472,7 @@
  */
 
 
-/**
- * \file 
- * One-stop header file for all AD-tool-independent AMPI routines; this is the file to replace mpi.h in the user code.
- */ 
+
 
 #include <mpi.h>
 #if defined(__cplusplus)

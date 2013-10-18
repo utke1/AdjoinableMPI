@@ -3,6 +3,7 @@
 
 /**
  * \file 
+ * \ingroup UserInterfaceHeaders
  * AMPI routines that have adjoint functionality and do no merely pass through to the MPI originals; the routines may signatures with additional parameters compared to their original MPI counterparts
  */ 
 
@@ -16,11 +17,7 @@
 extern MPI_Datatype AMPI_ADOUBLE;
 
 /**
- * active variant of the predefined  MPI_FLOAT
- */
-extern MPI_Datatype AMPI_AFLOAT;
-
-/**
+ * \todo move out of userIF
  * user-defined type data
  * only one instance of derivedTypeData exists at once
  * get pointer from getDTypeData, add new stuff with addDTypeData
@@ -49,11 +46,37 @@ typedef struct {
   MPI_Aint* p_extents;
 } derivedTypeData;
 
+/**
+ * \todo move out of userIF
+ *
+ */
 derivedTypeData* getDTypeData();
+
+/**
+ * \todo move out of userIF
+ *
+ */
 void releaseDTypeData();
-  /* addDTypeData takes derived type data and adds a new entry; returns
-     position of new type in data struct; returns -1 if struct contains
-     no active types; doubles data struct size every time there's overflow */
+/**
+ * \todo move out of userIF
+ *
+ * @param dat
+ * @param count
+ * @param array_of_blocklengths
+ * @param array_of_displacements
+ * @param array_of_types
+ * @param lower_bound
+ * @param extent
+ * @param array_of_p_blocklengths
+ * @param array_of_p_displacements
+ * @param array_of_p_types
+ * @param p_extent
+ * @param newtype
+ * @param packed_type
+ * addDTypeData takes derived type data and adds a new entry; returns
+ * position of new type in data struct; returns -1 if struct contains no active types;
+ * doubles data struct size every time there's overflow
+ */
 void addDTypeData(derivedTypeData* dat,
 		  int count,
 		  int array_of_blocklengths[],
@@ -68,9 +91,15 @@ void addDTypeData(derivedTypeData* dat,
 		  MPI_Datatype* newtype,
 		  MPI_Datatype* packed_type);
 int derivedTypeIdx(MPI_Datatype datatype);
+/**
+ * \todo move out of userIF
+ * @param dt_idx
+ * @return
+ */
 int isDerivedType(int dt_idx);
 
 /**
+ * \todo move out of userIF
  * user-defined reduction op data
  * only one instance of userDefinedOpData exists at once
  * get pointer from getUOpData, add new stuff with addUOpData
@@ -83,17 +112,56 @@ typedef struct {
   int* commutes;
 } userDefinedOpData;
 
+/**
+ * \todo move out of userIF
+ * @return
+ */
 userDefinedOpData* getUOpData();
-/* addUOpData takes user-defined op data and adds a new entry; returns
-   position of new type in data struct; doubles data struct size every
-   time there's overflow */
+
+/**
+ * \todo move out of userIF
+ * @param dat
+ * @param op a user-defined operation
+ * @param function
+ * @param commute
+ * takes user-defined op  and adds a new entry;
+ * doubles data struct size every
+ * time there's overflow
+ */
 void addUOpData(userDefinedOpData* dat,
 		MPI_Op* op,
 		MPI_User_function* function,
 		int commute);
+/**
+ * \todo move out of userIF
+ * @param op
+ * @return
+ */
 int userDefinedOpIdx(MPI_Op op);
+/**
+ * \todo move out of userIF
+ * @param uop_idx
+ * @return
+ */
 int isUserDefinedOp(int uop_idx);
+/**
+ * \todo move out of userIF
+ */
 void releaseUOpData();
+
+/** \ingroup UserInterfaceDeclarations
+ * @{
+ */
+
+/**
+ * active variant of the predefined  MPI_DOUBLE
+ */
+extern MPI_Datatype AMPI_ADOUBLE;
+
+/**
+ * active variant of the predefined  MPI_FLOAT
+ */
+extern MPI_Datatype AMPI_AFLOAT;
 
 #ifdef AMPI_FORTRANCOMPATIBLE
 
@@ -133,6 +201,17 @@ int AMPI_Buffer_attach(void *buffer,
 int AMPI_Buffer_detach(void *buffer, 
 		       int *size);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param buf
+ * @param count
+ * @param datatype see \ref datatypes
+ * @param dest
+ * @param tag
+ * @param pairedWith see \ref pairings
+ * @param comm
+ * @return
+ */
 int AMPI_Send(void* buf, 
 	      int count, 
 	      MPI_Datatype datatype, 
@@ -141,6 +220,18 @@ int AMPI_Send(void* buf,
 	      AMPI_PairedWith pairedWith,
 	      MPI_Comm comm);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param buf
+ * @param count
+ * @param datatype see \ref datatypes
+ * @param src
+ * @param tag
+ * @param pairedWith see \ref pairings
+ * @param comm
+ * @param status
+ * @return
+ */
 int AMPI_Recv(void* buf, 
 	      int count,
 	      MPI_Datatype datatype, 
@@ -150,6 +241,18 @@ int AMPI_Recv(void* buf,
 	      MPI_Comm comm,
 	      MPI_Status* status);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param buf
+ * @param count
+ * @param datatype see \ref datatypes
+ * @param dest
+ * @param tag
+ * @param pairedWith see \ref pairings
+ * @param comm
+ * @param request see \ref requests
+ * @return
+ */
 int AMPI_Isend (void* buf, 
 		int count, 
 		MPI_Datatype datatype, 
@@ -159,6 +262,18 @@ int AMPI_Isend (void* buf,
 		MPI_Comm comm, 
 		AMPI_Request* request);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param buf
+ * @param count
+ * @param datatype see \ref datatypes
+ * @param src
+ * @param tag
+ * @param pairedWith see \ref pairings
+ * @param comm
+ * @param request see \ref requests
+ * @return
+ */
 int AMPI_Irecv (void* buf, 
 		int count, 
 		MPI_Datatype datatype, 
@@ -168,6 +283,17 @@ int AMPI_Irecv (void* buf,
 		MPI_Comm comm, 
 		AMPI_Request* request);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param buf
+ * @param count
+ * @param datatype see \ref datatypes
+ * @param dest
+ * @param tag
+ * @param pairedWith see \ref pairings
+ * @param comm
+ * @return
+ */
 int AMPI_Bsend(void *buf, 
 	       int count, 
 	       MPI_Datatype datatype, 
@@ -176,6 +302,17 @@ int AMPI_Bsend(void *buf,
 	       AMPI_PairedWith pairedWith, 
 	       MPI_Comm comm);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param buf
+ * @param count
+ * @param datatype see \ref datatypes
+ * @param dest
+ * @param tag
+ * @param pairedWith see \ref pairings
+ * @param comm
+ * @return
+ */
 int AMPI_Rsend(void *buf, 
 	       int count, 
 	       MPI_Datatype datatype, 
@@ -184,12 +321,32 @@ int AMPI_Rsend(void *buf,
 	       AMPI_PairedWith pairedWith,
 	       MPI_Comm comm);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param buf
+ * @param count
+ * @param datatype see \ref datatypes
+ * @param root
+ * @param comm
+ * @return
+ */
 int AMPI_Bcast (void* buf,
 		int count,
 		MPI_Datatype datatype,
 		int root,
 		MPI_Comm comm);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param sbuf
+ * @param rbuf
+ * @param count
+ * @param datatype see \ref datatypes
+ * @param op
+ * @param root
+ * @param comm
+ * @return
+ */
 int AMPI_Reduce (void* sbuf, 
 		 void* rbuf, 
 		 int count, 
@@ -198,6 +355,16 @@ int AMPI_Reduce (void* sbuf,
 		 int root, 
 		 MPI_Comm comm);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param sbuf
+ * @param rbuf
+ * @param count
+ * @param datatype see \ref datatypes
+ * @param op
+ * @param comm
+ * @return
+ */
 int AMPI_Allreduce (void* sbuf,
                     void* rbuf,
                     int count,
@@ -212,16 +379,46 @@ int AMPI_Allreduce (void* sbuf,
 int AMPI_Wait(AMPI_Request *request, 
 	      MPI_Status *status);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param count
+ * @param requests see \ref requests
+ * @param statuses
+ * @return
+ */
 int AMPI_Waitall (int count, 
 		  AMPI_Request requests[], 
 		  MPI_Status statuses[]);
 
+/**
+ * @param count
+ * @param requests see \ref requests
+ * @param statuses
+ * @return
+ */
 int AMPI_Awaitall (int count, 
 		   AMPI_Request requests[], 
 		   MPI_Status statuses[]);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param comm
+ * @return
+ */
 int AMPI_Barrier(MPI_Comm comm);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param sendbuf
+ * @param sendcnt
+ * @param sendtype see \ref datatypes
+ * @param recvbuf
+ * @param recvcnt
+ * @param recvtype see \ref datatypes
+ * @param root
+ * @param comm
+ * @return
+ */
 int AMPI_Gather(void *sendbuf,
 		int sendcnt,
 		MPI_Datatype sendtype,
@@ -231,6 +428,18 @@ int AMPI_Gather(void *sendbuf,
 		int root,
 		MPI_Comm comm);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param sendbuf
+ * @param sendcnt
+ * @param sendtype see \ref datatypes
+ * @param recvbuf
+ * @param recvcnt
+ * @param recvtype see \ref datatypes
+ * @param root
+ * @param comm
+ * @return
+ */
 int AMPI_Scatter(void *sendbuf,
 		 int sendcnt,
 		 MPI_Datatype sendtype,
@@ -240,6 +449,17 @@ int AMPI_Scatter(void *sendbuf,
 		 int root, 
 		 MPI_Comm comm);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param sendbuf
+ * @param sendcount
+ * @param sendtype see \ref datatypes
+ * @param recvbuf
+ * @param recvcount
+ * @param recvtype see \ref datatypes
+ * @param comm
+ * @return
+ */
 int AMPI_Allgather(void *sendbuf,
                    int sendcount,
                    MPI_Datatype sendtype,
@@ -248,6 +468,19 @@ int AMPI_Allgather(void *sendbuf,
                    MPI_Datatype recvtype,
                    MPI_Comm comm);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param sendbuf
+ * @param sendcnt
+ * @param sendtype see \ref datatypes
+ * @param recvbuf
+ * @param recvcnts
+ * @param displs
+ * @param recvtype see \ref datatypes
+ * @param root
+ * @param comm
+ * @return
+ */
 int AMPI_Gatherv(void *sendbuf,
                  int sendcnt,
                  MPI_Datatype sendtype,
@@ -258,6 +491,19 @@ int AMPI_Gatherv(void *sendbuf,
                  int root,
                  MPI_Comm comm);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param sendbuf
+ * @param sendcnts
+ * @param displs
+ * @param sendtype see \ref datatypes
+ * @param recvbuf
+ * @param recvcnt
+ * @param recvtype see \ref datatypes
+ * @param root
+ * @param comm
+ * @return
+ */
 int AMPI_Scatterv(void *sendbuf,
                   int *sendcnts,
                   int *displs,
@@ -267,6 +513,18 @@ int AMPI_Scatterv(void *sendbuf,
                   MPI_Datatype recvtype,
                   int root, MPI_Comm comm);
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param sendbuf
+ * @param sendcnt
+ * @param sendtype see \ref datatypes
+ * @param recvbuf
+ * @param recvcnts
+ * @param displs
+ * @param recvtype see \ref datatypes
+ * @param comm
+ * @return
+ */
 int AMPI_Allgatherv(void *sendbuf,
                     int sendcnt,
                     MPI_Datatype sendtype,

@@ -21,8 +21,6 @@ AM_INIT_AUTOMAKE([foreign no-define])
 dnl Do not show compilation command by default
 AM_SILENT_RULES([yes])
 
-AC_PROG_CPP
-AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
