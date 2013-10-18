@@ -4,13 +4,14 @@
 /**
  * \file 
  * \ingroup UserInterfaceHeaders
+ * \brief definitions for an AMPI_Request which is an MPI_Request augmented with additional information
+ *
  * the request in the AMPI context need to be used to track extra information;
  * the extra information cannot be exposed in Fortran77 but there can be a 
  * Fortran90 equivalent and it can be exposed in C to allow source transformation 
  * tools to use TBR analysis on the tracked information.
  */ 
 
-#include "ampi/userIF/libConfig.h"
 #include "ampi/userIF/pairedWith.h"
 
 /** \ingroup UserInterfaceDeclarations
