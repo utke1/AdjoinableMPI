@@ -324,31 +324,27 @@ void ADTOOL_AMPI_push_request(MPI_Request request);
 typedef void (ADTOOL_AMPI_push_requestF) (MPI_Request);
 
 
-/*
+/**
  * Push a window request for one-sided communication using a specific window
  */
-
 void ADTOOL_AMPI_push_AMPI_WinRequest(AMPI_WinRequest *winRequest);
 typedef void (ADTOOL_AMPI_push_WinRequestF) (AMPI_WinRequest*);
 
-/*
+/**
  * Pop a window request for one-sided communication using a specific window
  */
-
 void ADTOOL_AMPI_pop_AMPI_WinRequest(AMPI_WinRequest *winRequest);
 typedef void (ADTOOL_AMPI_pop_WinRequestF) (AMPI_WinRequest*);
 
-/*
+/**
  * Push a window for one-sided communication using a specific window
  */
-
 void ADTOOL_AMPI_push_AMPI_Win(AMPI_Win *win);
 typedef void (ADTOOL_AMPI_push_AMPI_WinF) (AMPI_Win*);
 
-/*
+/**
  * Pop a window for one-sided communication using a specific window
  */
-
 void ADTOOL_AMPI_pop_AMPI_Win(AMPI_Win *win);
 typedef void (ADTOOL_AMPI_pop_AMPI_WinF) (AMPI_Win*);
 
