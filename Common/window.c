@@ -65,8 +65,10 @@ int AMPI_WIN_STACK_empty(AMPI_Win_stack *s) {
 }
 
 void AMPI_WIN_sync(AMPI_Win win) {
+  /*
   int size=win.req_stack->num_reqs;
   int i=0;
+  */
   /*printf("num_reqs: %d\n", size);*/
   /*for(i=0;i<size;i=i+1) {*/
   /*}*/
