@@ -12,6 +12,9 @@
 /** \ingroup UserInterfaceDeclarations
  * @{
  */
+/**
+ * the enumeration for communication pairings as explained in \ref pairings
+ */
 enum AMPI_PairedWith_E { 
   AMPI_RECV,
   AMPI_SEND,

@@ -47,11 +47,14 @@
  * \tableofcontents
  * \section Introduction
  * 
- * The Adjoinable MPI (AMPI) library provides a modified set if MPI subroutines 
- * that are constructed such that an adjoint in the context of algorithmic
- * differentiation (AD) can be computed. The library is designed to be supported
- * by a variety of AD tools and to enable also the computation of  (higher-order)
- * forward derivatives.
+ * The Adjoinable MPI (AMPI) library provides a modified set of MPI subroutines
+ * that are constructed such that:
+ *  - an adjoint in the context of algorithmic differentiation (AD) can be computed,
+ *  - it can be supported by a variety of AD tools,
+ *  - it enable also the computation of  (higher-order) forward derivatives,
+ *  - it provides an implementation for a straight pass-through to MPI such that the switch to AMPI can be made permanent
+ * without forcing compile dependencies on any AD tool.
+ *
  * There are principal recipes for the construction of the adjoint of 
  * a given communication, see \cite Utke2009TAM . 
  * The practical implementation of these recipes, however, faces the following 
@@ -68,50 +71,108 @@
  *    - association by name (e.g. Tapenade)
  * 
  * The above choices imply certain consequences on the complexity for implementing  
- * the adjoint action and this would imply differences in the AMPI design while
- * on the other hand there is a clear advantage to present a single, AD tool implementation independent
- * variant of the AMPI library to permit switching AD tools and a common understanding of the 
- * adjoining of MPI calls. 
- * Some overarching design decisions are discussed in \ref design. Concerns applicable to specific 
- * routines are covered in their respective sections.
- * We assume the reader is familiar with MPI and AD. 
+ * the adjoint (and forward derivative) action and this could imply differences in the AMPI design.
+ * However, from a user's perspective it is a clear advantage to present a <b>single, AD tool implementation independent
+ * AMPI library</b> such that switching AD tools is not hindered by AMPI while also promoting a common understanding of the
+ * differentiation through MPI calls.
+ * We assume the reader is familiar with MPI and AD concepts.
  *
- * \section sources Getting the source files
+ * \section sources Getting the library sources
  * 
- * The sources can be accessed throug the <a href="http://mercurial.mcs.anl.gov/ad/AdjoinableMPI/">AdjoinableMPI mercurial repository</a>. Bug tracking, feature requests 
+ * The sources can be accessed through the <a href="http://mercurial.mcs.anl.gov/ad/AdjoinableMPI/">AdjoinableMPI mercurial repository</a>. Bug tracking, feature requests
  * etc. are done via <a href="http://trac.mcs.anl.gov/projects/AdjoinableMPI">trac</a>.
- * In the following we assume the sources are installed in a directory 
+ * In the following we assume the sources are cloned (cf <a href="http://mercurial.selenic.com/">mercurial web site</a> to find out how to do it)
+ * into a directory
  * \code
  * AdjoinableMPI
  * \endcode
  * 
- * \section configure Configure,  Build, and Install 
+ * \section configure Library - Configure,  Build, and Install
  * 
- * Configuration, build, and install follows the typical GNU autotools chain. 
- * Assuming the installation is done into a directory called
+ * Configuration, build, and install follows the typical GNU autotools chain. Go to the source directory
+ * \code
+ * cd AdjoinableMPI
+ * \endcode
+ * If the sources were obtained from the mercurial repository, then one first needs to run the autotools via invoking
+ * \code
+ * ./autogen.sh
+ * \endcode
+ * In the typical autoconf fashion invoke
+ * \code
+ *  configure --prefix=<installation directory> ...
+ * \endcode
+ * in or outisde the source tree.
+ * The AD tool supporting AMPI should provide information which detailled AMPI
+ * configure settings are required of any.
+ * Follow with
+ * \code
+ *  make install
+ * \endcode
+ * after which in the installation directory one should find under <tt>\<installation directory\></tt> the following.
+ *  - header files: see also  \ref dirStruct
+ *  - libraries:
+ *    - libampiPlainC - for pass through to MPI, no AD functionality
+ *    - libampiCommon - implementation of AD functionality shared between all AD tools supporting AMPI
+ *    - libampiBookkeeping - implementation of AD functionality needed by some AD tools (see the AD tool documentation)
+ *    - libampiTape - implementation of AD functionality needed by some AD tools (see the AD tool documentation)
+ *
+ * Note, the following libraries are AMPI internal:
+ *  - libampiADtoolStubsOO - stubs for operator overloading AD tools not needed by the user
+ *  - libampiADtoolStubsST - stubs for source transformation AD tools not needed by the user
+ *
+ * \section mpiToAmpi Switching from MPI to Adjoinable MPI
+ *
+ * For a given MPI-parallelized source code the user will replace all calls to MPI_... routines with the respective  AMPI_...
+ * equivalent provided in \ref UserInterfaceDeclarations.
+ * To include the declarations replace
+ *  - in C/C++: includes of <tt>mpi.h</tt> with
+ *  \code
+ *  #include <ampi/ampi.h>
+ *  \endcode
+ *  - in Fortran: includes of <tt>mpif.h</tt> with
+ *  \code
+ *  #include <ampi/ampif.h>
+ *  \endcode
+ *
+ * respectively.
+ *
+ * Because in many cases certain MPI calls (e.g. for initialization and finalization) take place outside the scope of
+ * the original computatation and its AD-derivatives and therefore do not themselves become part of the AD process,
+ * see the explanations in \ref differentiableSection.
+ * Each routine in this documentation lists to the changes to the parameters
+ * relative to the MPI standard. These changes impact parameters specifying
+ *  - MPI_Datatype parameters, see \ref datatypes
+ *  - MPI_Request parameters, see \ref requests
+ *
+ * Some routines require new parameters specifying the pairing two-sided communications, see \ref pairings.
+ * Similarly to the various approaches (preprocessing, templating, using <tt>typedef</tt>)
+ * employed to effect a change to an active type for overloading-based AD tools, this switch
+ * from MPI to AMPI routines should be done as a one-time effort.
+ * Because  AMPI provides an implementation for a straight pass-through to MPI it is possible to make this switch
+ * permanent and retain builds that are completely independent of any AD tool and use AMPI as a thin wrapper library to AMPI.
+ *
+ * \section appCompile Application - compile and link
+ *
+ * After the switch described in \ref mpiToAmpi is done, the application should be recompiled with the include path addition
+ * \code
+ * -I<installation directory>/include
+ * \endcode
+ * and linked with the link path extension
  * \code 
- * /opt/AMPI_inst
+ * -L<installation directory>/lib[64]
  * \endcode 
- * then the user should add that directory to the preprocessor include path as
+ * Note, the name of the subdirectory (lib or lib64 ) depends on the system;
+ * the appropriate set of libraries, see \ref configure; the optional ones in square brackets depend on the AD tool:
  * \code
- * -I/opt/AMPI_inst/include
+ * -libampicommon [ -libampiBookkeeping -lampiTape ]
  * \endcode 
- * and include the top level header file 
- * as  
- * \code{.cpp}
- * #include "ampi/ampi.h"
- * \endcode
- * There is a simple pass-through-to-MPI library build without any AD tool involvement which, following the example above, weould be linked as 
+ * <b>OR</b> if instead of differentiation by AD a straight pass-through to MPI is desired, then
  * \code
- * -L /opt/AMPI_inst/lib -lampiPlainC
+ * -libampiPlainC
  * \endcode
+ * instead.
  * 
- * \section headers Library header files
- * In this section we discuss the directory structure of the implementation, 
- * the distinction between different subroutine variants in the context of 
- * the source code to be adjoined, and general assumptions on the communication patterns. 
- * 
- * \subsection dirStruct Directory and File Structure
+ * \section dirStruct Directory and File Structure
  * All locations discussed below are relative to the top level source directory. 
  * The top level header file to be included in place of the usual  "mpi.h" is located in  
  * ampi/ampi.h
@@ -133,11 +194,7 @@
  * A library that simply passes through all AMPI calls to their MPI counterparts for a test compilation and execution without any involvement of 
  * and AD tool is implemented in the source files in the <tt>PlainC</tt> directory.
  * 
- * \section mpiToAmpi Switching from MPI to Adjoinable MPI
- *
- *
- *
- * \section adjoinableSection Using subroutine variants NT vs non-NT relative to the adjoinable section
+ * \section differentiableSection Using subroutine variants NT vs non-NT relative to the differentiable section
  * 
  * The typical assumption of a program to be differentiated is that there is some top level routine <tt>head</tt> which does the numerical computation 
  * and communication which is called from some main <tt>driver</tt> routine. The <tt>driver</tt> routine would have to be manually adjusted to initiate 
@@ -151,8 +208,30 @@
  * For cases where these routines have to be called within the adjointed code section the variants without the <tt>_NT</tt> suffix will ensure the
  * correct adjoint behavior.
  * 
- * \section commPat General Assumptions and Notions on Communication Patterns
+ * \section general General Assumptions on types and Communication Patterns
+ *
+ * \subsection datatypes Datatype consistency
  * 
+ * Because the MPI standard passes buffers as <tt>void*</tt>  (aka choice) the information about the type of
+ * the buffer and in particular the distinction between active  and passive data (in the AD sense) must be
+ * conveyed via the <tt>datatype</tt> parameters and be consistent with the type of the buffer. To indicate buffers of
+ * active type the library predefines the following
+ * - for C/C++
+ *   - \ref AMPI_ADOUBLE  as the active variant of the passive MPI_DOUBLE
+ *   - \ref AMPI_AFLOAT as the active variant of the passive MPI_FLOAT
+ * - for Fortran
+ *   - \ref AMPI_ADOUBLE_PRECISION as the active variant of the passive MPI_DOUBLE_PRECISION
+ *   - \ref AMPI_AREAL as the active variant of the passive MPI_REAL
+ *
+ * Passive buffers can be used as parameters to the AMPI interfaces with respective passive data type values.
+ *
+ * \subsection requests Request Type
+ *
+ * Because additional information has to be attached to the MPI_Request instances  used in nonblocking communications, there
+ * is an expanded data structure to hold this information. Even though in some contexts (F77) this structure cannot be exposed
+ * to the user code the general approach is to declare variables that are to hold requests as \ref AMPI_Request (instead of
+ * MPI_Request).
+ *
  * \subsection pairings Pairings
  *
  * Following the explanations in \cite Utke2009TAM it is clear that context information about the 
