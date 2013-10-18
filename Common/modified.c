@@ -2048,18 +2048,19 @@ int BW_AMPI_Win_create( void *base,
     MPI_Info info,
     MPI_Comm comm,
     AMPI_Win *win
-    )
-{
+    ) {
+  return MPI_SUCCESS;
 }
 
 int FW_AMPI_Win_free( AMPI_Win *win ) {
   /*free(win->req_stack);*/
   /*(*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_FREE);*/
   /*return MPI_Win_free(&win->plainWindow); */
-  return 0;
+  return MPI_SUCCESS;
 }
 
 int BW_AMPI_Win_free( AMPI_Win *win ) {
+  return MPI_SUCCESS;
 }
 
 int FW_AMPI_Get( void *origin_addr,
@@ -2072,7 +2073,7 @@ int FW_AMPI_Get( void *origin_addr,
     AMPI_Win win
     ) 
 {  
-  int rc=0;
+  int rc=MPI_SUCCESS;
   double* mappedbuf=NULL;
   if((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(origin_datatype)==AMPI_ACTIVE) {
     mappedbuf=(*ourADTOOL_AMPI_FPCollection.rawData_fp)(origin_addr,&origin_count);
@@ -2115,8 +2116,8 @@ int BW_AMPI_Get( void *origin_addr,
     int target_count,
     MPI_Datatype target_datatype,
     AMPI_Win win
-    ) 
-{
+    ) {
+  return MPI_SUCCESS;
 }
 
 int FW_AMPI_Put( void *origin_addr,
@@ -2127,8 +2128,8 @@ int FW_AMPI_Put( void *origin_addr,
     int target_count,
     MPI_Datatype target_datatype,
     AMPI_Win win
-    ) 
-{
+    ) {
+  return MPI_SUCCESS;
 }
 
 int BW_AMPI_Put( void *origin_addr,
@@ -2139,8 +2140,8 @@ int BW_AMPI_Put( void *origin_addr,
     int target_count,
     MPI_Datatype target_datatype,
     AMPI_Win win
-    ) 
-{
+    ) {
+  return MPI_SUCCESS;
 }
 
 int FW_AMPI_Win_fence( int assert,
@@ -2148,7 +2149,7 @@ int FW_AMPI_Win_fence( int assert,
     )
 {
   AMPI_WinRequest winRequest;
-  int rc=0;
+  int rc=MPI_SUCCESS;
   int i=0;
   int num_reqs=0;
   rc=MPI_Win_fence( assert, win.plainWindow );
@@ -2172,7 +2173,7 @@ int BW_AMPI_Win_fence( int assert,
     )
 {
   AMPI_WinRequest winRequest;
-  int rc=0;
+  int rc=MPI_SUCCESS;
   int i=0;
   int num_reqs=0;
   (*ourADTOOL_AMPI_FPCollection.pop_AMPI_Win_fp)(&win);
@@ -2183,4 +2184,5 @@ int BW_AMPI_Win_fence( int assert,
     double *tmp=(double *) winRequest.origin_addr;
     printf("origin_addr: %f\n", tmp[0]);
   }
+  return rc;
 }
