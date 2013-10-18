@@ -535,7 +535,17 @@ int FW_AMPI_Win_create( void *base,
     AMPI_Win *win
     );
 
+int BW_AMPI_Win_create( void *base,
+    MPI_Aint size,
+    int disp_unit,
+    MPI_Info info,
+    MPI_Comm comm,
+    AMPI_Win *win
+    );
+
 int FW_AMPI_Win_free( AMPI_Win *win );
+
+int BW_AMPI_Win_free( AMPI_Win *win );
 
 int FW_AMPI_Get( void *origin_addr,
     int origin_count,
@@ -547,7 +557,40 @@ int FW_AMPI_Get( void *origin_addr,
     AMPI_Win win
     ); 
 
+int BW_AMPI_Get( void *origin_addr,
+    int origin_count,
+    MPI_Datatype origin_datatype,
+    int target_rank,
+    MPI_Aint target_disp,
+    int target_count,
+    MPI_Datatype target_datatype,
+    AMPI_Win win
+    ); 
+
+int FW_AMPI_Get( void *origin_addr,
+    int origin_count,
+    MPI_Datatype origin_datatype,
+    int target_rank,
+    MPI_Aint target_disp,
+    int target_count,
+    MPI_Datatype target_datatype,
+    AMPI_Win win
+    ); 
+
+int BW_AMPI_Put( void *origin_addr,
+    int origin_count,
+    MPI_Datatype origin_datatype,
+    int target_rank,
+    MPI_Aint target_disp,
+    int target_count,
+    MPI_Datatype target_datatype,
+    AMPI_Win win
+    ); 
+
 int FW_AMPI_Win_fence( int assert,
+    AMPI_Win win ); 
+
+int BW_AMPI_Win_fence( int assert,
     AMPI_Win win ); 
 
 

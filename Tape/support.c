@@ -94,3 +94,8 @@ void TAPE_AMPI_read_MPI_Op(MPI_Op* an_MPI_Op) { readBlob((void*)(an_MPI_Op),size
 void TAPE_AMPI_push_double(double a_double)  { writeBlob((void*)(&a_double),sizeof(double)); }
 void TAPE_AMPI_pop_double(double *a_double)  { popBlob((void*)(a_double),sizeof(double)); }
 void TAPE_AMPI_read_double(double* a_double) { readBlob((void*)(a_double),sizeof(double)); }
+
+void TAPE_AMPI_push_MPI_Win(MPI_Win an_MPI_Win)  { writeBlob((void*)(&an_MPI_Win),sizeof(MPI_Win)); }
+void TAPE_AMPI_pop_MPI_Win(MPI_Win *an_MPI_Win)  { popBlob((void*)(an_MPI_Win),sizeof(MPI_Win)); }
+void TAPE_AMPI_read_MPI_Win(MPI_Win * an_MPI_Win) { readBlob((void*)(an_MPI_Win),sizeof(MPI_Win)); }
+

@@ -45,6 +45,10 @@ void TAPE_AMPI_push_double(double a_double);
 void TAPE_AMPI_pop_double(double *a_double);
 void TAPE_AMPI_read_double(double* a_double);
 
+void TAPE_AMPI_push_MPI_Win(MPI_Win an_MPI_Win);
+void TAPE_AMPI_pop_MPI_Win(MPI_Win *an_MPI_Win);
+void TAPE_AMPI_read_MPI_Win(MPI_Win* an_MPI_Win);
+
 #if defined(__cplusplus)
 }
 #endif

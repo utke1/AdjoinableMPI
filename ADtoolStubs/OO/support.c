@@ -17,6 +17,8 @@ int AMPI_Init_NT(int* argc,
   ourADTOOL_AMPI_FPCollection.popReduceInfo_fp=&ADTOOL_AMPI_popReduceInfo; 
   ourADTOOL_AMPI_FPCollection.pushSRinfo_fp=&ADTOOL_AMPI_pushSRinfo;
   ourADTOOL_AMPI_FPCollection.popSRinfo_fp=&ADTOOL_AMPI_popSRinfo;
+  ourADTOOL_AMPI_FPCollection.pushOSinfo_fp=&ADTOOL_AMPI_pushOSinfo;
+  ourADTOOL_AMPI_FPCollection.popOSinfo_fp=&ADTOOL_AMPI_popOSinfo;
   ourADTOOL_AMPI_FPCollection.pushGSinfo_fp=&ADTOOL_AMPI_pushGSinfo;
   ourADTOOL_AMPI_FPCollection.popGScommSizeForRootOrNull_fp=&ADTOOL_AMPI_popGScommSizeForRootOrNull;
   ourADTOOL_AMPI_FPCollection.popGSinfo_fp=&ADTOOL_AMPI_popGSinfo;
@@ -26,6 +28,10 @@ int AMPI_Init_NT(int* argc,
   ourADTOOL_AMPI_FPCollection.pop_CallCode_fp=&ADTOOL_AMPI_pop_CallCode;
   ourADTOOL_AMPI_FPCollection.push_AMPI_Request_fp=&ADTOOL_AMPI_push_AMPI_Request;
   ourADTOOL_AMPI_FPCollection.pop_AMPI_Request_fp=&ADTOOL_AMPI_pop_AMPI_Request;
+  ourADTOOL_AMPI_FPCollection.push_AMPI_WinRequest_fp=&ADTOOL_AMPI_push_AMPI_WinRequest;
+  ourADTOOL_AMPI_FPCollection.pop_AMPI_WinRequest_fp=&ADTOOL_AMPI_pop_AMPI_WinRequest;
+  ourADTOOL_AMPI_FPCollection.push_AMPI_Win_fp=&ADTOOL_AMPI_push_AMPI_Win;
+  ourADTOOL_AMPI_FPCollection.pop_AMPI_Win_fp=&ADTOOL_AMPI_pop_AMPI_Win;
   ourADTOOL_AMPI_FPCollection.push_request_fp=&ADTOOL_AMPI_push_request;
   ourADTOOL_AMPI_FPCollection.pop_request_fp=&ADTOOL_AMPI_pop_request;
   ourADTOOL_AMPI_FPCollection.push_comm_fp=&ADTOOL_AMPI_push_comm;
@@ -133,6 +139,25 @@ void ADTOOL_AMPI_popSRinfo(void** buf,
 			   void **idx) { 
 }
 
+void ADTOOL_AMPI_pushOSinfo(void* buf, 
+			    int count,
+			    MPI_Datatype datatype, 
+			    int src, 
+			    int tag,
+			    AMPI_PairedWith pairedWith,
+			    MPI_Comm comm) { 
+}
+
+void ADTOOL_AMPI_popOSinfo(void** buf,
+			   int* count,
+			   MPI_Datatype* datatype, 
+			   int* src, 
+			   int* tag,
+			   AMPI_PairedWith* pairedWith,
+			   MPI_Comm* comm,
+			   void **idx) { 
+}
+
 void ADTOOL_AMPI_pushGSinfo(int commSizeForRootOrNull,
                             void *rbuf,
                             int rcnt,
@@ -192,6 +217,12 @@ void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest) {
 }
 
 void ADTOOL_AMPI_pop_AMPI_Request(struct AMPI_Request_S  *ampiRequest) { 
+}
+
+void ADTOOL_AMPI_push_AMPI_Win(AMPI_Win  *win) { 
+}
+
+void ADTOOL_AMPI_pop_AMPI_Win(AMPI_Win  *win) { 
 }
 
 void ADTOOL_AMPI_push_request(MPI_Request request) { 
