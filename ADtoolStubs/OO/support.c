@@ -368,7 +368,7 @@ MPI_Aint ADTOOL_AMPI_getWinSize(MPI_Aint size) {
 }
 
 #ifdef AMPI_FORTRANCOMPATIBLE
-  void adtool_ampi_fortransetuptypes_(MPI_Fint,MPI_Fint) {
+  void adtool_ampi_fortransetuptypes_(MPI_Fint* adouble,MPI_Fint* areal) {
   }
 #endif
 
