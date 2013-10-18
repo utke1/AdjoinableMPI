@@ -240,6 +240,12 @@ MPI_Request ADTOOL_AMPI_pop_request() {
   return 0;
 }
 
+void ADTOOL_AMPI_push_AMPI_WinRequest(AMPI_WinRequest *winRequest) {
+}
+
+void ADTOOL_AMPI_pop_AMPI_WinRequest(AMPI_WinRequest *winRequest) {
+}
+
 void ADTOOL_AMPI_push_comm(MPI_Comm comm) {
 }
 
@@ -540,4 +546,14 @@ AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype) {
 #endif
       ) return AMPI_ACTIVE;
   return AMPI_PASSIVE;
+}
+
+void *ADTOOL_AMPI_createWinMap(void *active_buf, MPI_Aint size){
+}
+
+void ADTOOL_AMPI_writeWinData(void *map, void *buf, MPI_Aint size){
+}
+
+MPI_Aint ADTOOL_AMPI_getWinSize(MPI_Aint size) {
+   return 0;
 }
