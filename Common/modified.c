@@ -973,6 +973,7 @@ int BW_AMPI_Allgather(void *sendbuf,
                                recvbuf , recvbuf, recvbuf);
   }
   (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
+  if (recvcounts) free((void*)recvcounts);
   return rc;
 }
 
@@ -1250,6 +1251,7 @@ int BW_AMPI_Scatterv(void *sendbuf,
     }
     (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   }
+  if (tempDispls) free((void*)tempDispls);
   if (tSendCntsFlag) free((void*)(tSendCnts));
   if (tDisplsFlag) free((void*)(tDispls));
   return rc;
