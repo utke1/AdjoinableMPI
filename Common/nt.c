@@ -8,6 +8,7 @@ struct ADTOOL_AMPI_FPCollection ourADTOOL_AMPI_FPCollection;
 int AMPI_Finalize_NT(void) {
   releaseDTypeData();
   releaseUOpData();
+  ADTOOL_AMPI_cleanupTypes();
   return MPI_Finalize();
 }
 

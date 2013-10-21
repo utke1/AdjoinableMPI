@@ -60,6 +60,7 @@ int AMPI_Init_NT(int* argc,
   ourADTOOL_AMPI_FPCollection.adjointEquals_fp=&ADTOOL_AMPI_adjointEquals;
   ourADTOOL_AMPI_FPCollection.adjointNullify_fp=&ADTOOL_AMPI_adjointNullify;
   ourADTOOL_AMPI_FPCollection.setupTypes_fp=&ADTOOL_AMPI_setupTypes;
+  ourADTOOL_AMPI_FPCollection.cleanupTypes_fp=&ADTOOL_AMPI_cleanupTypes;
   ourADTOOL_AMPI_FPCollection.FW_rawType_fp=&ADTOOL_AMPI_FW_rawType;
   ourADTOOL_AMPI_FPCollection.BW_rawType_fp=&ADTOOL_AMPI_BW_rawType;
   ourADTOOL_AMPI_FPCollection.createWinMap_fp=&ADTOOL_AMPI_createWinMap;
@@ -67,6 +68,7 @@ int AMPI_Init_NT(int* argc,
   ourADTOOL_AMPI_FPCollection.getWinSize_fp=&ADTOOL_AMPI_getWinSize;
 #ifdef AMPI_FORTRANCOMPATIBLE
   ourADTOOL_AMPI_FPCollection.fortransetuptypes__fp=&adtool_ampi_fortransetuptypes_;
+  ourADTOOL_AMPI_FPCollection.fortrancleanuptypes__fp=&adtool_ampi_fortrancleanuptypes_;
 #endif
   ourADTOOL_AMPI_FPCollection.isActiveType_fp=&ADTOOL_AMPI_isActiveType;
   return rc;
@@ -386,7 +388,15 @@ void ADTOOL_AMPI_setupTypes() {
   AMPI_ADOUBLE_PRECISION=MPI_Type_f2c(adouble);
   AMPI_AREAL=MPI_Type_f2c(areal);
 #endif
-};
+}
+
+#ifdef AMPI_FORTRANCOMPATIBLE
+  void adtool_ampi_fortrancleanuptypes_(MPI_Fint* adouble,MPI_Fint* areal) {
+  }
+#endif
+
+void ADTOOL_AMPI_cleanupTypes() {
+}
 
 MPI_Datatype ADTOOL_AMPI_FW_rawType(MPI_Datatype datatype) {
   return datatype;

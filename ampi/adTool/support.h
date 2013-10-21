@@ -550,10 +550,30 @@ void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Com
 typedef void (ADTOOL_AMPI_adjointNullifyF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*);
 
 /**
- * initialize predefined active types
+ * create predefined active types; to be cleaned up with \ref ADTOOL_AMPI_cleanupTypes
  */
 void ADTOOL_AMPI_setupTypes();
 typedef void (ADTOOL_AMPI_setupTypesF)();
+
+/**
+ * cleanup types created with \ref ADTOOL_AMPI_setupTypes
+ */
+void ADTOOL_AMPI_cleanupTypes();
+typedef void (ADTOOL_AMPI_cleanupTypesF)();
+
+#ifdef AMPI_FORTRANCOMPATIBLE
+/**
+ * Fortran routine to figure out what the proper types are on the Fortran side
+ * \param adouble returns the integer representation for the Fortran version of AMPI_ADOUBLE_PRECISION
+ * \param real returns the integer representation for the Fortran version of AMPI_AREAL
+ */
+void adtool_ampi_fortransetuptypes_(MPI_Fint* adouble, MPI_Fint* areal);
+typedef void (adtool_ampi_fortransetuptypes_F) (MPI_Fint*, MPI_Fint*);
+
+void adtool_ampi_fortrancleanuptypes_(MPI_Fint* adouble, MPI_Fint* areal);
+typedef void (adtool_ampi_fortrancleanuptypes_F) (MPI_Fint*, MPI_Fint*);
+
+#endif
 
 /**
  * Take datatype for forward mode, return datatype for transfer.
@@ -567,16 +587,6 @@ typedef MPI_Datatype (ADTOOL_AMPI_FW_rawTypeF) (MPI_Datatype);
 MPI_Datatype ADTOOL_AMPI_BW_rawType(MPI_Datatype datatype);
 typedef MPI_Datatype (ADTOOL_AMPI_BW_rawTypeF) (MPI_Datatype);
 
-#ifdef AMPI_FORTRANCOMPATIBLE
-/**
- * fortran routine to figure out what the proper types are on the fortran side
- * \param adouble returns the integer representation for the fortran version of AMPI_ADOUBLE_PRECISION
- * \param real returns the integer representation for the fortran version of AMPI_AREAL
- */
-void adtool_ampi_fortransetuptypes_(MPI_Fint* adouble, MPI_Fint* areal);
-typedef void (adtool_ampi_fortransetuptypes_F) (MPI_Fint*, MPI_Fint*);
-
-#endif
 
 /**
  * test types for activity
@@ -662,6 +672,7 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_adjointEqualsF *adjointEquals_fp;
   ADTOOL_AMPI_adjointNullifyF *adjointNullify_fp;
   ADTOOL_AMPI_setupTypesF *setupTypes_fp;
+  ADTOOL_AMPI_cleanupTypesF *cleanupTypes_fp;
   ADTOOL_AMPI_FW_rawTypeF *FW_rawType_fp;
   ADTOOL_AMPI_BW_rawTypeF *BW_rawType_fp;
   ADTOOL_AMPI_createWinMapF *createWinMap_fp;
@@ -669,6 +680,7 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_getWinSizeF *getWinSize_fp;
 #ifdef AMPI_FORTRANCOMPATIBLE
   adtool_ampi_fortransetuptypes_F *fortransetuptypes__fp;
+  adtool_ampi_fortrancleanuptypes_F *fortrancleanuptypes__fp;
 #endif
   ADTOOL_AMPI_isActiveTypeF *isActiveType_fp;
 };
