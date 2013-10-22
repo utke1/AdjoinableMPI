@@ -1848,6 +1848,7 @@ void releaseDTypeData() {
     free(dat->arrays_of_p_blocklengths[i]);
     free(dat->arrays_of_p_displacements[i]);
     free(dat->arrays_of_p_types[i]);
+    if (dat->packed_types[i]!=MPI_DATATYPE_NULL) MPI_Type_free(dat->packed_types+i);
   }
   free(dat->num_actives);
   free(dat->first_active_blocks);

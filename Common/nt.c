@@ -150,6 +150,7 @@ int AMPI_Type_create_struct_NT(int count,
 	       p_mapsize,
 	       newtype,
 	       &packed_type);
+  MPI_Type_free(&temp_packed_type);
   return rc;
 }
 
