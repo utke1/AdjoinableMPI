@@ -319,6 +319,7 @@ typedef void (ADTOOL_AMPI_pop_AMPI_RequestF) (struct AMPI_Request_S*);
  * to the request Id in BW sweep.
  * if we need to trace requests for a pure (operator overloading) trace evaluation
  * the Common implementation uses this to push the request 
+ * See \ref bookkeeping.
  */
 void ADTOOL_AMPI_push_request(MPI_Request request);
 typedef void (ADTOOL_AMPI_push_requestF) (MPI_Request);
@@ -349,7 +350,8 @@ void ADTOOL_AMPI_pop_AMPI_Win(AMPI_Win *win);
 typedef void (ADTOOL_AMPI_pop_AMPI_WinF) (AMPI_Win*);
 
 /**
- * the companion to \ref ADTOOL_AMPI_push_request
+ * the companion to \ref ADTOOL_AMPI_push_request.
+ * See \ref bookkeeping.
  */
 MPI_Request ADTOOL_AMPI_pop_request();
 typedef MPI_Request (ADTOOL_AMPI_pop_requestF) ();
@@ -506,7 +508,31 @@ void * ADTOOL_AMPI_copyActiveBuf(void* source, void* target, int count, MPI_Data
 typedef void* (ADTOOL_AMPI_copyActiveBufF) (void*, void*, int, MPI_Datatype, MPI_Comm);
 
 /**
- * Adjoint increment the values in adjointTarget.
+ * Adjoint of assignment target=source*target
+ */
+void ADTOOL_AMPI_adjointMultiply(int count, MPI_Datatype datatype, MPI_Comm comm,
+                                 void *source, void *adjointSource,
+                                 void* target, void* adjointTarget) ;
+typedef void (ADTOOL_AMPI_adjointMultiplyF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*);
+
+/**
+ * Adjoint of assignment target=MIN(source,target)
+ */
+void ADTOOL_AMPI_adjointMin(int count, MPI_Datatype datatype, MPI_Comm comm,
+                            void *source, void *adjointSource,
+                            void* target, void* adjointTarget) ;
+typedef void (ADTOOL_AMPI_adjointMinF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*);
+
+/**
+ * Adjoint of assignment target=MAX(source,target)
+ */
+void ADTOOL_AMPI_adjointMax(int count, MPI_Datatype datatype, MPI_Comm comm,
+                            void *source, void *adjointSource,
+                            void* target, void* adjointTarget) ;
+typedef void (ADTOOL_AMPI_adjointMaxF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*);
+
+/**
+ * Increment the values in adjointTarget.
  * \param adjointCount is the number of items in the buffer we will increment
  * \param datatype the data type of the buffer to be incremented
  * \param comm the communicator to be passed to MPI_Abort for failures
@@ -520,16 +546,16 @@ void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_C
 typedef void (ADTOOL_AMPI_adjointIncrementF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*);
 
 /**
- * Adjoint multiply the values in adjointTarget by source.
+ * Multiply the values in adjointTarget by source.
  */
-void ADTOOL_AMPI_adjointMultiply(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
-typedef void (ADTOOL_AMPI_adjointMultiplyF)(int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*);
+void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
+typedef void (ADTOOL_AMPI_multiplyAdjointF)(int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*);
 
 /**
- * Adjoint divide the values in adjointTarget by source.
+ * Divide the values in adjointTarget by source.
  */
-void ADTOOL_AMPI_adjointDivide(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
-typedef void (ADTOOL_AMPI_adjointDivideF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*);
+void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
+typedef void (ADTOOL_AMPI_divideAdjointF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*);
 
 /**
  * Return equality result between the values in adjointTarget and source.
@@ -596,6 +622,12 @@ typedef MPI_Datatype (ADTOOL_AMPI_BW_rawTypeF) (MPI_Datatype);
 AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype);
 typedef AMPI_Activity (ADTOOL_AMPI_isActiveTypeF) (MPI_Datatype);
 
+/** The global MPI_COMM_WORLD_D */
+MPI_Comm MPI_COMM_WORLD_D ;
+/** The function getting the shadow communicator used to separate from the
+ * communication graph of original variables */
+MPI_Comm ADTOOL_AMPI_getShadowComm(MPI_Comm comm) ;
+typedef MPI_Comm (ADTOOL_AMPI_getShadowCommF) (MPI_Comm) ;
 /**
  * Maps the active buffer on a mapped buffer for a MPI_Win
  */
@@ -616,6 +648,19 @@ typedef void (ADTOOL_AMPI_writeWinDataF) (void *map, void *buf, MPI_Aint size);
 
 MPI_Aint ADTOOL_AMPI_getWinSize(MPI_Aint size);
 typedef MPI_Aint (ADTOOL_AMPI_getWinSizeF) (MPI_Aint size);
+/** The functions that perform the tangent of standard reduction operations: */
+void ADTOOL_AMPI_tangentMultiply(int count, MPI_Datatype datatype, MPI_Comm comm,
+                                 void* target, void* tangentTarget,
+                                 void *source, void *tangentSource) ;
+typedef void (ADTOOL_AMPI_tangentMultiplyF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*) ;
+void ADTOOL_AMPI_tangentMin(int count, MPI_Datatype datatype, MPI_Comm comm,
+                            void* target, void* tangentTarget,
+                            void *source, void *tangentSource) ;
+typedef void (ADTOOL_AMPI_tangentMinF)      (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*) ;
+void ADTOOL_AMPI_tangentMax(int count, MPI_Datatype datatype, MPI_Comm comm,
+                            void* target, void* tangentTarget,
+                            void *source, void *tangentSource) ;
+typedef void (ADTOOL_AMPI_tangentMaxF)      (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*) ;
 
 
 struct ADTOOL_AMPI_FPCollection{
@@ -666,9 +711,12 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_allocateTempActiveBufF *allocateTempActiveBuf_fp;
   ADTOOL_AMPI_releaseTempActiveBufF *releaseTempActiveBuf_fp;
   ADTOOL_AMPI_copyActiveBufF *copyActiveBuf_fp;
+  ADTOOL_AMPI_adjointMultiplyF *adjointMultiply_fp ;
+  ADTOOL_AMPI_adjointMinF *adjointMin_fp ;
+  ADTOOL_AMPI_adjointMaxF *adjointMax_fp ;
   ADTOOL_AMPI_adjointIncrementF *adjointIncrement_fp;
-  ADTOOL_AMPI_adjointMultiplyF *adjointMultiply_fp;
-  ADTOOL_AMPI_adjointDivideF *adjointDivide_fp;
+  ADTOOL_AMPI_multiplyAdjointF *multiplyAdjoint_fp;
+  ADTOOL_AMPI_divideAdjointF *divideAdjoint_fp;
   ADTOOL_AMPI_adjointEqualsF *adjointEquals_fp;
   ADTOOL_AMPI_adjointNullifyF *adjointNullify_fp;
   ADTOOL_AMPI_setupTypesF *setupTypes_fp;
@@ -682,13 +730,25 @@ struct ADTOOL_AMPI_FPCollection{
   adtool_ampi_fortransetuptypes_F *fortransetuptypes__fp;
   adtool_ampi_fortrancleanuptypes_F *fortrancleanuptypes__fp;
 #endif
-  ADTOOL_AMPI_isActiveTypeF *isActiveType_fp;
+  ADTOOL_AMPI_isActiveTypeF *isActiveType_fp ;
+  ADTOOL_AMPI_getShadowCommF *getShadowComm_fp ;
+  ADTOOL_AMPI_tangentMultiplyF *tangentMultiply_fp ;
+  ADTOOL_AMPI_tangentMinF *tangentMin_fp ;
+  ADTOOL_AMPI_tangentMaxF *tangentMax_fp ;
 };
 
 /**
  * the single instance of ADTOOL_AMPI_FPCollection
  */
 extern struct ADTOOL_AMPI_FPCollection ourADTOOL_AMPI_FPCollection;
+
+/** The type required for TANGENT user-given reduction functions,
+ * that are passed e.g. to TLM_AMPI_Reduce in Tapenade-style diff AMPI code. */
+typedef void (TLM_userFunctionF) (void*, void*, void*, void*, int*, MPI_Datatype*, MPI_Datatype*) ;
+
+/** The type required for ADJOINT user-given reduction functions,
+ * that are passed e.g. to BW_AMPI_Reduce in Tapenade-style diff AMPI code. */
+typedef void (ADJ_userFunctionF) (void*, void*, void*, void*, int*, MPI_Datatype*, MPI_Datatype*) ;
 
 
 #if defined(__cplusplus)

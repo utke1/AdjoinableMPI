@@ -15,6 +15,7 @@ extern "C" {
 #include "ampi/userIF/pairedWith.h"
 #include "ampi/userIF/request.h"
 #include "ampi/userIF/window.h"
+#include "ampi/adTool/support.h"
 
 /** 
  * forward sweep variant of \ref AMPI_Recv 
@@ -51,6 +52,16 @@ int TLM_AMPI_Recv(void* buf,
                   AMPI_PairedWith pairedWith,
                   MPI_Comm comm,
                   MPI_Status* status);
+
+/** Tangent Receive, with separate shadow (e.g.tangent) buffer. */
+int TLS_AMPI_Recv(void* buf, void* shadowbuf,
+                  int count,
+                  MPI_Datatype datatype, MPI_Datatype shadowdatatype,
+                  int src,
+                  int tag,
+                  AMPI_PairedWith pairedWith,
+                  MPI_Comm comm,
+                  MPI_Status* status) ;
 
 /**
  * forward sweep variant of \ref AMPI_Irecv 
@@ -439,9 +450,9 @@ int TLM_AMPI_Bcast(void* buf,
                    MPI_Comm comm);
 
 /**
- * forward sweep variant of \ref AMPI_Reduce
+ * Adjoint forward sweep of \ref AMPI_Reduce. Bundled (Association-by-Address)
  */
-int FW_AMPI_Reduce(void* sbuf,
+int FWB_AMPI_Reduce(void* sbuf,
 		   void* rbuf,
 		   int count,
 		   MPI_Datatype datatype,
@@ -450,9 +461,21 @@ int FW_AMPI_Reduce(void* sbuf,
 		   MPI_Comm comm);
 
 /**
- * backward sweep variant of \ref AMPI_Reduce
+ * Adjoint forward sweep of \ref AMPI_Reduce. Shadowed (Association-by-Name)
  */
-int BW_AMPI_Reduce(void* sbuf,
+int FWS_AMPI_Reduce(void* sbuf,
+                    void* rbuf,
+                    int count,
+                    MPI_Datatype datatype,
+                    MPI_Op op,
+                    int root,
+                    MPI_Comm comm) ;
+
+
+/**
+ * Adjoint backward sweep of \ref AMPI_Reduce. Bundled (Association-by-Address)
+ */
+int BWB_AMPI_Reduce(void* sbuf,
 		   void* rbuf,
 		   int count,
 		   MPI_Datatype datatype,
@@ -461,15 +484,37 @@ int BW_AMPI_Reduce(void* sbuf,
 		   MPI_Comm comm);
 
 /**
- * TLM variant of \ref AMPI_Reduce
+ * Adjoint backward sweep of \ref AMPI_Reduce. Shadowed (Association-by-Name)
  */
-int TLM_AMPI_Reduce(void* sbuf,
+int BWS_AMPI_Reduce(void* sbuf, void* sbufb,
+		   void* rbuf, void* rbufb,
+		   int count,
+		   MPI_Datatype datatype, MPI_Datatype datatypeb,
+		   MPI_Op op, TLM_userFunctionF* uopd,
+                   int root,
+                   MPI_Comm comm) ;
+
+/**
+ * Tangent diff of \ref AMPI_Reduce. Bundled (Association-by-Address)
+ */
+int TLB_AMPI_Reduce(void* sbuf,
                     void* rbuf,
                     int count,
                     MPI_Datatype datatype,
                     MPI_Op op,
                     int root,
                     MPI_Comm comm);
+
+/**
+ * Tangent diff of \ref AMPI_Reduce. Shadowed (Association-by-Name)
+ */
+int TLS_AMPI_Reduce(void* sbuf, void* sbufd,
+                    void* rbuf, void* rbufd,
+                    int count,
+                    MPI_Datatype datatype, MPI_Datatype datatyped,
+                    MPI_Op op, TLM_userFunctionF* uopd,
+                    int root,
+                    MPI_Comm comm) ;
 
 /**
  * forward sweep variant of \ref AMPI_Allreduce

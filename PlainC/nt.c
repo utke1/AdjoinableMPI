@@ -24,3 +24,27 @@ int AMPI_Buffer_detach_NT(void *buffer,
   return MPI_Buffer_detach(buffer,
 			   size);
 }
+
+int AMPI_Op_create_NT(MPI_User_function *function,
+		      int commute,
+		      MPI_Op *op) {
+  int rc;
+  rc = MPI_Op_create(function,
+		     commute,
+		     op);
+  return rc;
+}
+
+int AMPI_Type_create_struct_NT(int count,
+			       int array_of_blocklengths[],
+			       MPI_Aint array_of_displacements[],
+			       MPI_Datatype array_of_types[],
+			       MPI_Datatype *newtype) {
+  int rc;
+  rc = MPI_Type_create_struct (count,
+			       array_of_blocklengths,
+			       array_of_displacements,
+			       array_of_types,
+			       newtype);
+  return rc;
+}

@@ -54,9 +54,12 @@ int AMPI_Init_NT(int* argc,
   ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp=&ADTOOL_AMPI_allocateTempActiveBuf;
   ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp=&ADTOOL_AMPI_releaseTempActiveBuf;
   ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp=&ADTOOL_AMPI_copyActiveBuf;
-  ourADTOOL_AMPI_FPCollection.adjointIncrement_fp=&ADTOOL_AMPI_adjointIncrement;
   ourADTOOL_AMPI_FPCollection.adjointMultiply_fp=&ADTOOL_AMPI_adjointMultiply;
-  ourADTOOL_AMPI_FPCollection.adjointDivide_fp=&ADTOOL_AMPI_adjointDivide;
+  ourADTOOL_AMPI_FPCollection.adjointMin_fp=&ADTOOL_AMPI_adjointMin;
+  ourADTOOL_AMPI_FPCollection.adjointMax_fp=&ADTOOL_AMPI_adjointMax;
+  ourADTOOL_AMPI_FPCollection.adjointIncrement_fp=&ADTOOL_AMPI_adjointIncrement;
+  ourADTOOL_AMPI_FPCollection.multiplyAdjoint_fp=&ADTOOL_AMPI_multiplyAdjoint;
+  ourADTOOL_AMPI_FPCollection.divideAdjoint_fp=&ADTOOL_AMPI_divideAdjoint;
   ourADTOOL_AMPI_FPCollection.adjointEquals_fp=&ADTOOL_AMPI_adjointEquals;
   ourADTOOL_AMPI_FPCollection.adjointNullify_fp=&ADTOOL_AMPI_adjointNullify;
   ourADTOOL_AMPI_FPCollection.setupTypes_fp=&ADTOOL_AMPI_setupTypes;
@@ -336,13 +339,31 @@ void * ADTOOL_AMPI_copyActiveBuf(void* source,
   return source;
 }
 
+/** This is the adjoint of assignment target=source*target */
+void ADTOOL_AMPI_adjointMultiply(int count, MPI_Datatype datatype, MPI_Comm comm,
+                                 void *source, void *adjointSource,
+                                 void* target, void* adjointTarget) {
+}
+
+/** This is the adjoint of assignment target=MIN(source,target) */
+void ADTOOL_AMPI_adjointMin(int count, MPI_Datatype datatype, MPI_Comm comm,
+                                 void *source, void *adjointSource,
+                                 void* target, void* adjointTarget) {
+}
+
+/** This is the adjoint of assignment target=MAX(source,target) */
+void ADTOOL_AMPI_adjointMax(int count, MPI_Datatype datatype, MPI_Comm comm,
+                                 void *source, void *adjointSource,
+                                 void* target, void* adjointTarget) {
+}
+
 void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) { 
 }
 
-void ADTOOL_AMPI_adjointMultiply(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) {
+void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) {
 }
 
-void ADTOOL_AMPI_adjointDivide(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) {
+void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) {
 }
 
 void ADTOOL_AMPI_adjointEquals(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source1, void *source2, void *idx) {
