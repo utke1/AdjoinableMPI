@@ -30,3 +30,5 @@ config/install-sh
 .cproject
 .project
 runConfigure.*
+Check/linkCompleteOO
+Check/linkCompleteST
