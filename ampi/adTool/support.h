@@ -538,9 +538,10 @@ typedef void (ADTOOL_AMPI_adjointMaxF) (int, MPI_Datatype, MPI_Comm, void*, void
  * \param comm the communicator to be passed to MPI_Abort for failures
  * \param target the adjoint buffer to be multiplied
  * \param source the value to multiply by.
+ * \param idx tape index for each element of the non contiguous buffer
  */
-void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source);
-typedef void (ADTOOL_AMPI_multiplyAdjointF)(int, MPI_Datatype, MPI_Comm, void*, void*);
+void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source, void* idx);
+typedef void (ADTOOL_AMPI_multiplyAdjointF)(int, MPI_Datatype, MPI_Comm, void*, void*, void*);
 
 /**
  * Divide the given buffer target, which holds an adjoint, with the given source value
@@ -549,9 +550,10 @@ typedef void (ADTOOL_AMPI_multiplyAdjointF)(int, MPI_Datatype, MPI_Comm, void*, 
  * \param comm the communicator to be passed to MPI_Abort for failures
  * \param target the adjoint buffer to be divided
  * \param source the value to divide by.
+ * \param idx tape index for each element of the non contiguous buffer
  */
-void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source);
-typedef void (ADTOOL_AMPI_divideAdjointF) (int, MPI_Datatype, MPI_Comm, void*, void*);
+void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source, void* idx);
+typedef void (ADTOOL_AMPI_divideAdjointF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*);
 
 /**
  * Check equality of the given buffers source1 and source2, which hold adjoints,
@@ -562,9 +564,10 @@ typedef void (ADTOOL_AMPI_divideAdjointF) (int, MPI_Datatype, MPI_Comm, void*, v
  * \param target the buffer that will hold the result (0==difference)
  * \param source1 the one buffer to compare
  * \param source2 the other buffer to compare
+ * \param idx tape index for each element of the non contiguous buffer
  */
-void ADTOOL_AMPI_equalAdjoints(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source1, void *source2);
-typedef void (ADTOOL_AMPI_equalAdjointsF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*);
+void ADTOOL_AMPI_equalAdjoints(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source1, void *source2, void* idx);
+typedef void (ADTOOL_AMPI_equalAdjointsF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*);
 
 /**
  * Increment the given buffer "target", which holds an adjoint variable,
@@ -574,9 +577,10 @@ typedef void (ADTOOL_AMPI_equalAdjointsF) (int, MPI_Datatype, MPI_Comm, void*, v
  * \param comm the communicator to be passed to MPI_Abort for failures
  * \param target the adjoint buffer to be incremented
  * \param source the adjoint value that must be added into the adjoint buffer.
+ * \param idx tape index for each element of the non contiguous buffer
  */
-void ADTOOL_AMPI_incrementAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source);
-typedef void (ADTOOL_AMPI_incrementAdjointF) (int, MPI_Datatype, MPI_Comm, void*, void*);
+  void ADTOOL_AMPI_incrementAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source, void* idx);
+  typedef void (ADTOOL_AMPI_incrementAdjointF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*);
 
 /**
  * Reset to zero the given buffer "target", which holds an adjoint variable.

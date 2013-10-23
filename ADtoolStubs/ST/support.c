@@ -582,7 +582,7 @@ void ADTOOL_AMPI_adjointMax(int count, MPI_Datatype datatype, MPI_Comm comm,
     MPI_Abort(comm, MPI_ERR_TYPE);
 }
 
-void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source) { 
+void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source, void *idx) { 
   if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
     double *vb = (double *)target ;
     double *nb = (double *)source ;
@@ -605,7 +605,7 @@ void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Co
     MPI_Abort(comm, MPI_ERR_TYPE);
 }
 
-void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source) { 
+void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source, void *idx) { 
   if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
     double *vb = (double *)target ;
     double *nb = (double *)source ;
@@ -628,7 +628,7 @@ void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm
     MPI_Abort(comm, MPI_ERR_TYPE);
 }
 
-void ADTOOL_AMPI_equalAdjoints(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source1, void *source2) { 
+void ADTOOL_AMPI_equalAdjoints(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source1, void *source2, void *idx) { 
   if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
     double *vb = (double *)target ;
     double *nb = (double *)source1 ;
@@ -659,7 +659,7 @@ void ADTOOL_AMPI_equalAdjoints(int adjointCount, MPI_Datatype datatype, MPI_Comm
  * Increment the given buffer "target", which holds an adjoint variable,
  * with the given additional adjoint value found in "source".
  */
-void ADTOOL_AMPI_incrementAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source) { 
+void ADTOOL_AMPI_incrementAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source, void *idx) { 
   if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
     double *vb = (double *)target ;
     double *nb = (double *)source ;
