@@ -2,6 +2,8 @@
 #include <assert.h>
 #include "ampi/adTool/support.h"
 
+MPI_Comm ADTOOL_AMPI_COMM_WORLD_SHADOW;
+
 int AMPI_Init_NT(int* argc,
 		 char*** argv) {
   int rc;

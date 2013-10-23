@@ -640,7 +640,7 @@ AMPI_Activity ADTOOL_AMPI_isActiveType(MPI_Datatype datatype);
 typedef AMPI_Activity (ADTOOL_AMPI_isActiveTypeF) (MPI_Datatype);
 
 /** The global MPI_COMM_WORLD_D */
-MPI_Comm MPI_COMM_WORLD_D ;
+extern MPI_Comm ADTOOL_AMPI_COMM_WORLD_SHADOW;
 /** The function getting the shadow communicator used to separate from the
  * communication graph of original variables */
 MPI_Comm ADTOOL_AMPI_getShadowComm(MPI_Comm comm) ;

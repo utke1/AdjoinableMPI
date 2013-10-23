@@ -1,7 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include "ampi/adTool/support.h"
+
+MPI_Comm ADTOOL_AMPI_COMM_WORLD_SHADOW;
 
 struct AMPI_Request_stack {
   struct AMPI_Request_stack *next_p;
@@ -20,7 +23,7 @@ struct AMPI_Request_stack {
 int AMPI_Init_NT(int* argc, char*** argv) {
   int rc = MPI_Init(argc, argv);
   ADTOOL_AMPI_setupTypes() ;
-  rc = MPI_Comm_dup(MPI_COMM_WORLD, &MPI_COMM_WORLD_D) ;
+  rc = MPI_Comm_dup(MPI_COMM_WORLD, &ADTOOL_AMPI_COMM_WORLD_SHADOW) ;
   ourADTOOL_AMPI_FPCollection.pushBcastInfo_fp=&ADTOOL_AMPI_pushBcastInfo;
   ourADTOOL_AMPI_FPCollection.popBcastInfo_fp=&ADTOOL_AMPI_popBcastInfo;
   ourADTOOL_AMPI_FPCollection.pushDoubleArray_fp=&ADTOOL_AMPI_pushDoubleArray;
@@ -263,7 +266,7 @@ MPI_Comm ADTOOL_AMPI_pop_comm() {
  * communication graph of original variables */
 MPI_Comm ADTOOL_AMPI_getShadowComm(MPI_Comm comm) {
   /* ----> Of course this must change if comm!=MPI_COMM_WORLD !! */
-  return MPI_COMM_WORLD_D ;
+  return ADTOOL_AMPI_COMM_WORLD_SHADOW ;
 }
 
 /** Returns the non-diff part of a communication buffer
