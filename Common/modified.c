@@ -276,11 +276,10 @@ int BW_AMPI_Irecv (void* buf,
     case AMPI_ISEND_WAIT: {
       rc=MPI_Wait(plainRequest,
 		  MPI_STATUS_IGNORE);
-      assert(ampiRequest->adjointBuf==buf);
       (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(ampiRequest->adjointCount,
                                                        ampiRequest->datatype,
                                                        ampiRequest->comm,
-                                                       buf);
+                                                       ampiRequest->adjointBuf);
       break ;
     }
     default:  
@@ -533,11 +532,10 @@ int BW_AMPI_Isend (void* buf,
     case AMPI_IRECV_WAIT: { 
       rc=MPI_Wait(plainRequest,
 		  MPI_STATUS_IGNORE);
-      assert(ampiRequest->adjointBuf==buf) ;
       (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(ampiRequest->adjointCount,
                                                          ampiRequest->datatype,
                                                          ampiRequest->comm,
-                                                         buf,
+                                                         ampiRequest->adjointBuf,
                                                          ampiRequest->adjointTempBuf,
                                                          ampiRequest->idx);
       (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(ampiRequest->adjointTempBuf);
