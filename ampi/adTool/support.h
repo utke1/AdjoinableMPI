@@ -532,48 +532,61 @@ void ADTOOL_AMPI_adjointMax(int count, MPI_Datatype datatype, MPI_Comm comm,
 typedef void (ADTOOL_AMPI_adjointMaxF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*);
 
 /**
- * Increment the values in adjointTarget.
+ * Multiply the given buffer target, which holds an adjoint, with the given source value
  * \param adjointCount is the number of items in the buffer we will increment
  * \param datatype the data type of the buffer to be incremented
  * \param comm the communicator to be passed to MPI_Abort for failures
- * \param target the buffer that comes from the fwd sweep.
- * \param adjointTarget the adjoint buffer to be incremented
- * \param checkAdjointTarget the adjoint buffer that comes from the bwd sweep. For runtime checking only.
+ * \param target the adjoint buffer to be multiplied
+ * \param source the value to multiply by.
+ */
+void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source);
+typedef void (ADTOOL_AMPI_multiplyAdjointF)(int, MPI_Datatype, MPI_Comm, void*, void*);
+
+/**
+ * Divide the given buffer target, which holds an adjoint, with the given source value
+ * \param adjointCount is the number of items in the buffer we will increment
+ * \param datatype the data type of the buffer to be incremented
+ * \param comm the communicator to be passed to MPI_Abort for failures
+ * \param target the adjoint buffer to be divided
+ * \param source the value to divide by.
+ */
+void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source);
+typedef void (ADTOOL_AMPI_divideAdjointF) (int, MPI_Datatype, MPI_Comm, void*, void*);
+
+/**
+ * Check equality of the given buffers source1 and source2, which hold adjoints,
+ * and return the result in the given target buffer.
+ * \param adjointCount is the number of items in the buffer we will increment
+ * \param datatype the data type of the buffer to be incremented
+ * \param comm the communicator to be passed to MPI_Abort for failures
+ * \param target the buffer that will hold the result (0==difference)
+ * \param source1 the one buffer to compare
+ * \param source2 the other buffer to compare
+ */
+void ADTOOL_AMPI_equalAdjoints(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source1, void *source2);
+typedef void (ADTOOL_AMPI_equalAdjointsF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*);
+
+/**
+ * Increment the given buffer "target", which holds an adjoint variable,
+ * with the given additional adjoint value found in "source".
+ * \param adjointCount is the number of items in the buffer we will increment
+ * \param datatype the data type of the buffer to be incremented
+ * \param comm the communicator to be passed to MPI_Abort for failures
+ * \param target the adjoint buffer to be incremented
  * \param source the adjoint value that must be added into the adjoint buffer.
- * \param idx tape index for each element of the non contiguous buffer
  */
-void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
-typedef void (ADTOOL_AMPI_adjointIncrementF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*);
+void ADTOOL_AMPI_incrementAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source);
+typedef void (ADTOOL_AMPI_incrementAdjointF) (int, MPI_Datatype, MPI_Comm, void*, void*);
 
 /**
- * Multiply the values in adjointTarget by source.
- */
-void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
-typedef void (ADTOOL_AMPI_multiplyAdjointF)(int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*);
-
-/**
- * Divide the values in adjointTarget by source.
- */
-void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx);
-typedef void (ADTOOL_AMPI_divideAdjointF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*);
-
-/**
- * Return equality result between the values in adjointTarget and source.
- */
-void ADTOOL_AMPI_adjointEquals(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source1, void *source2, void *idx);
-typedef void (ADTOOL_AMPI_adjointEqualsF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*, void*, void*);
-
-/**
- * Adjoint nullify the values in adjointTarget.
+ * Reset to zero the given buffer "target", which holds an adjoint variable.
  * \param adjointCount is the number of items in the buffer we will nullify
  * \param datatype the data type of the buffer to be nullified
  * \param comm the communicator to be passed to MPI_Abort for failures
- * \param target the buffer that comes from the fwd sweep.
- * \param adjointTarget the adjoint buffer to be nullified
- * \param checkAdjointTarget the adjoint buffer that comes from the bwd sweep. For runtime checking only.
+ * \param target the adjoint buffer to be nullified
  */ 
-void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget);
-typedef void (ADTOOL_AMPI_adjointNullifyF) (int, MPI_Datatype, MPI_Comm, void*, void*, void*);
+void ADTOOL_AMPI_nullifyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target);
+typedef void (ADTOOL_AMPI_nullifyAdjointF) (int, MPI_Datatype, MPI_Comm, void*);
 
 /**
  * create predefined active types; to be cleaned up with \ref ADTOOL_AMPI_cleanupTypes
@@ -714,11 +727,11 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_adjointMultiplyF *adjointMultiply_fp ;
   ADTOOL_AMPI_adjointMinF *adjointMin_fp ;
   ADTOOL_AMPI_adjointMaxF *adjointMax_fp ;
-  ADTOOL_AMPI_adjointIncrementF *adjointIncrement_fp;
   ADTOOL_AMPI_multiplyAdjointF *multiplyAdjoint_fp;
   ADTOOL_AMPI_divideAdjointF *divideAdjoint_fp;
-  ADTOOL_AMPI_adjointEqualsF *adjointEquals_fp;
-  ADTOOL_AMPI_adjointNullifyF *adjointNullify_fp;
+  ADTOOL_AMPI_equalAdjointsF *equalAdjoints_fp;
+  ADTOOL_AMPI_incrementAdjointF *incrementAdjoint_fp;
+  ADTOOL_AMPI_nullifyAdjointF *nullifyAdjoint_fp;
   ADTOOL_AMPI_setupTypesF *setupTypes_fp;
   ADTOOL_AMPI_cleanupTypesF *cleanupTypes_fp;
   ADTOOL_AMPI_FW_rawTypeF *FW_rawType_fp;

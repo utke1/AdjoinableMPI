@@ -61,11 +61,11 @@ int AMPI_Init_NT(int* argc, char*** argv) {
   ourADTOOL_AMPI_FPCollection.adjointMultiply_fp=&ADTOOL_AMPI_adjointMultiply;
   ourADTOOL_AMPI_FPCollection.adjointMin_fp=&ADTOOL_AMPI_adjointMin;
   ourADTOOL_AMPI_FPCollection.adjointMax_fp=&ADTOOL_AMPI_adjointMax;
-  ourADTOOL_AMPI_FPCollection.adjointIncrement_fp=&ADTOOL_AMPI_adjointIncrement;
   ourADTOOL_AMPI_FPCollection.multiplyAdjoint_fp=&ADTOOL_AMPI_multiplyAdjoint;
   ourADTOOL_AMPI_FPCollection.divideAdjoint_fp=&ADTOOL_AMPI_divideAdjoint;
-  ourADTOOL_AMPI_FPCollection.adjointEquals_fp=&ADTOOL_AMPI_adjointEquals;
-  ourADTOOL_AMPI_FPCollection.adjointNullify_fp=&ADTOOL_AMPI_adjointNullify;
+  ourADTOOL_AMPI_FPCollection.equalAdjoints_fp=&ADTOOL_AMPI_equalAdjoints;
+  ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp=&ADTOOL_AMPI_incrementAdjoint;
+  ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp=&ADTOOL_AMPI_nullifyAdjoint;
   ourADTOOL_AMPI_FPCollection.setupTypes_fp=&ADTOOL_AMPI_setupTypes;
   ourADTOOL_AMPI_FPCollection.cleanupTypes_fp=&ADTOOL_AMPI_cleanupTypes;
   ourADTOOL_AMPI_FPCollection.FW_rawType_fp=&ADTOOL_AMPI_FW_rawType;
@@ -374,7 +374,7 @@ void* ADTOOL_AMPI_allocateTempActiveBuf(int count,
 /*     ptr = malloc(count*sizeof(MPI_DOUBLE)); */
 /*   else if (datatype==MPI_FLOAT) */
 /*     ptr = malloc(count*sizeof(MPI_FLOAT)); */
-  int lb,extent ;
+  MPI_Aint lb,extent ;
   int rc = MPI_Type_get_extent(datatype, &lb, &extent) ;
   assert(rc==MPI_SUCCESS);
   void* ptr = NULL ;
@@ -394,7 +394,7 @@ void *ADTOOL_AMPI_copyActiveBuf(void* source,
                                 int count,
                                 MPI_Datatype datatype,
                                 MPI_Comm comm) {
-  int lb,extent ;
+  MPI_Aint lb,extent ;
   int rc = MPI_Type_get_extent(datatype, &lb, &extent) ;
   assert(rc==MPI_SUCCESS);
   memcpy(target, source, count*extent) ;
@@ -582,10 +582,9 @@ void ADTOOL_AMPI_adjointMax(int count, MPI_Datatype datatype, MPI_Comm comm,
     MPI_Abort(comm, MPI_ERR_TYPE);
 }
 
-void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) { 
-  assert(adjointTarget==checkAdjointTarget) ;
+void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source) { 
   if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
-    double *vb = (double *)adjointTarget ;
+    double *vb = (double *)target ;
     double *nb = (double *)source ;
     int i ;
     for (i=0 ; i<adjointCount ; ++i) {
@@ -594,7 +593,7 @@ void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Co
       ++nb ;
     }
   } else if (datatype==MPI_FLOAT) {
-    float *vb = (float *)adjointTarget ;
+    float *vb = (float *)target ;
     float *nb = (float *)source ;
     int i ;
     for (i=0 ; i<adjointCount ; ++i) {
@@ -606,10 +605,9 @@ void ADTOOL_AMPI_multiplyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Co
     MPI_Abort(comm, MPI_ERR_TYPE);
 }
 
-void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) { 
-  assert(adjointTarget==checkAdjointTarget) ;
+void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source) { 
   if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
-    double *vb = (double *)adjointTarget ;
+    double *vb = (double *)target ;
     double *nb = (double *)source ;
     int i ;
     for (i=0 ; i<adjointCount ; ++i) {
@@ -618,7 +616,7 @@ void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm
       ++nb ;
     }
   } else if (datatype==MPI_FLOAT) {
-    float *vb = (float *)adjointTarget ;
+    float *vb = (float *)target ;
     float *nb = (float *)source ;
     int i ;
     for (i=0 ; i<adjointCount ; ++i) {
@@ -630,10 +628,9 @@ void ADTOOL_AMPI_divideAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm
     MPI_Abort(comm, MPI_ERR_TYPE);
 }
 
-void ADTOOL_AMPI_adjointEquals(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source1, void *source2, void *idx) { 
-  assert(adjointTarget==checkAdjointTarget) ;
+void ADTOOL_AMPI_equalAdjoints(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source1, void *source2) { 
   if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
-    double *vb = (double *)adjointTarget ;
+    double *vb = (double *)target ;
     double *nb = (double *)source1 ;
     double *fb = (double *)source2 ;
     int i ;
@@ -644,7 +641,7 @@ void ADTOOL_AMPI_adjointEquals(int adjointCount, MPI_Datatype datatype, MPI_Comm
       ++fb ;
     }
   } else if (datatype==MPI_FLOAT) {
-    float *vb = (float *)adjointTarget ;
+    float *vb = (float *)target ;
     float *nb = (float *)source1 ;
     float *fb = (float *)source2 ;
     int i ;
@@ -658,14 +655,13 @@ void ADTOOL_AMPI_adjointEquals(int adjointCount, MPI_Datatype datatype, MPI_Comm
     MPI_Abort(comm, MPI_ERR_TYPE);
 }
 
-/** Increments the given buffer "adjointTarget", which holds an adjoint variable,
+/**
+ * Increment the given buffer "target", which holds an adjoint variable,
  * with the given additional adjoint value found in "source".
- * [llh] I'd rather call this function incrementAdjoint, because this is not the adjoint of an increment.
- * Also check on the fly that "adjointTarget" is indeed equal to the given "checkAdjointTarget" */
-void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget, void *source, void *idx) { 
-  assert(adjointTarget==checkAdjointTarget) ;
+ */
+void ADTOOL_AMPI_incrementAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void *source) { 
   if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
-    double *vb = (double *)adjointTarget ;
+    double *vb = (double *)target ;
     double *nb = (double *)source ;
     int i ;
     for (i=0 ; i<adjointCount ; ++i) {
@@ -674,7 +670,7 @@ void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_C
       ++nb ;
     }
   } else if (datatype==MPI_FLOAT) {
-    float *vb = (float *)adjointTarget ;
+    float *vb = (float *)target ;
     float *nb = (float *)source ;
     int i ;
     for (i=0 ; i<adjointCount ; ++i) {
@@ -686,20 +682,19 @@ void ADTOOL_AMPI_adjointIncrement(int adjointCount, MPI_Datatype datatype, MPI_C
     MPI_Abort(comm, MPI_ERR_TYPE);
 }
 
-/** Reset to zero the given buffer "adjointTarget", which holds an adjoint variable.
- * [llh] I'd rather call this function nullifyAdjoint, because this is not the adjoint of a nullify.
- * Also check on the fly that "adjointTarget" is indeed equal to the given "checkAdjointTarget" */
-void ADTOOL_AMPI_adjointNullify(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target, void* adjointTarget, void* checkAdjointTarget) { 
-  assert(adjointTarget==checkAdjointTarget) ;
+/**
+ * Reset to zero the given buffer "target", which holds an adjoint variable.
+ */
+void ADTOOL_AMPI_nullifyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target) {
   if (datatype==MPI_DOUBLE || datatype==MPI_DOUBLE_PRECISION) {
-    double *vb = (double *)adjointTarget ;
+    double *vb = (double *)target ;
     int i ;
     for (i=0 ; i<adjointCount ; ++i) {
       *vb = 0.0 ;
       ++vb ;
     }
   } else if (datatype==MPI_FLOAT) {
-    float *vb = (float *)adjointTarget ;
+    float *vb = (float *)target ;
     int i ;
     for (i=0 ; i<adjointCount ; ++i) {
       *vb = 0.0 ;
