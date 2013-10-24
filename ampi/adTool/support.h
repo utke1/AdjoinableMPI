@@ -679,6 +679,13 @@ void ADTOOL_AMPI_tangentMax(int count, MPI_Datatype datatype, MPI_Comm comm,
                             void *source, void *tangentSource) ;
 typedef void (ADTOOL_AMPI_tangentMaxF)      (int, MPI_Datatype, MPI_Comm, void*, void*, void*, void*) ;
 
+/**
+ * Push/Pop the contents of buffer somewhere
+ */
+void ADTOOL_AMPI_pushBuffer(int count, MPI_Datatype datatype, MPI_Comm comm, void* buffer) ;
+typedef void (ADTOOL_AMPI_pushBufferF) (int, MPI_Datatype, MPI_Comm, void*) ;
+void ADTOOL_AMPI_popBuffer(int count, MPI_Datatype datatype, MPI_Comm comm, void* buffer) ;
+typedef void (ADTOOL_AMPI_popBufferF) (int, MPI_Datatype, MPI_Comm, void*) ;
 
 struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_pushBcastInfoF *pushBcastInfo_fp;
@@ -752,6 +759,8 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_tangentMultiplyF *tangentMultiply_fp ;
   ADTOOL_AMPI_tangentMinF *tangentMin_fp ;
   ADTOOL_AMPI_tangentMaxF *tangentMax_fp ;
+  ADTOOL_AMPI_pushBufferF *pushBuffer_fp ;
+  ADTOOL_AMPI_popBufferF *popBuffer_fp ;
 };
 
 /**

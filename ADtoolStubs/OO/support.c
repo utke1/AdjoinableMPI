@@ -76,6 +76,8 @@ int AMPI_Init_NT(int* argc,
   ourADTOOL_AMPI_FPCollection.fortrancleanuptypes__fp=&adtool_ampi_fortrancleanuptypes_;
 #endif
   ourADTOOL_AMPI_FPCollection.isActiveType_fp=&ADTOOL_AMPI_isActiveType;
+  ourADTOOL_AMPI_FPCollection.pushBuffer_fp=&ADTOOL_AMPI_pushBuffer ;
+  ourADTOOL_AMPI_FPCollection.popBuffer_fp=&ADTOOL_AMPI_popBuffer ;
   return rc;
 }
 
@@ -372,6 +374,22 @@ void ADTOOL_AMPI_equalAdjoints(int adjointCount, MPI_Datatype datatype, MPI_Comm
 }
 
 void ADTOOL_AMPI_nullifyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Comm comm, void* target) { 
+}
+
+/**
+ * Push the contents of buffer somewhere
+ */
+void ADTOOL_AMPI_pushBuffer(int count, MPI_Datatype datatype, MPI_Comm comm,
+                            void* buffer) {
+  printf("Please provide implementation of ADTOOL_AMPI_pushBuffer()\n") ;
+}
+
+/**
+ * Pop the contents of buffer from somewhere
+ */
+void ADTOOL_AMPI_popBuffer(int count, MPI_Datatype datatype, MPI_Comm comm,
+                           void* buffer) {
+  printf("Please provide implementation of ADTOOL_AMPI_popBuffer()\n") ;
 }
 
 void ADTOOL_AMPI_writeData(void *buf,int *count) { }

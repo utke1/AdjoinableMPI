@@ -84,6 +84,8 @@ int AMPI_Init_NT(int* argc, char*** argv) {
   ourADTOOL_AMPI_FPCollection.tangentMultiply_fp=&ADTOOL_AMPI_tangentMultiply ;
   ourADTOOL_AMPI_FPCollection.tangentMin_fp=&ADTOOL_AMPI_tangentMin ;
   ourADTOOL_AMPI_FPCollection.tangentMax_fp=&ADTOOL_AMPI_tangentMax ;
+  ourADTOOL_AMPI_FPCollection.pushBuffer_fp=&ADTOOL_AMPI_pushBuffer ;
+  ourADTOOL_AMPI_FPCollection.popBuffer_fp=&ADTOOL_AMPI_popBuffer ;
   return rc ;
 }
 
@@ -705,6 +707,22 @@ void ADTOOL_AMPI_nullifyAdjoint(int adjointCount, MPI_Datatype datatype, MPI_Com
     }
   } else
     MPI_Abort(comm, MPI_ERR_TYPE);
+}
+
+/**
+ * Push the contents of buffer somewhere
+ */
+void ADTOOL_AMPI_pushBuffer(int count, MPI_Datatype datatype, MPI_Comm comm,
+                            void* buffer) {
+  printf("Please provide implementation of ADTOOL_AMPI_pushBuffer()\n") ;
+}
+
+/**
+ * Pop the contents of buffer from somewhere
+ */
+void ADTOOL_AMPI_popBuffer(int count, MPI_Datatype datatype, MPI_Comm comm,
+                           void* buffer) {
+  printf("Please provide implementation of ADTOOL_AMPI_popBuffer()\n") ;
 }
 
 void ADTOOL_AMPI_writeData(void *buf,int *count) {}
