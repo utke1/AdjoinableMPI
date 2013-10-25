@@ -53,7 +53,7 @@ typedef struct {
   void *base;
   MPI_Aint size;
   AMPI_Win_stack *req_stack;
-  MPI_Win plainWindow;
+  MPI_Win *plainWindow;
   int num_reqs;
 } AMPI_Win;
 

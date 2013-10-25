@@ -2342,7 +2342,8 @@ int FW_AMPI_Win_create( void *base,
   win->num_reqs=0;
   win->size=(ourADTOOL_AMPI_FPCollection.getWinSize_fp)(size);
   (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_CREATE);
-  return MPI_Win_create(win->map, win->size, disp_unit, info, comm, &win->plainWindow);
+  win->plainWindow= (MPI_Win*) malloc(sizeof(MPI_Win));
+  return MPI_Win_create(win->map, win->size, disp_unit, info, comm, win->plainWindow);
   /*return MPI_Win_create(base, size, disp_unit, info, comm,
    * &win->plainWindow);*/
 }
@@ -2394,7 +2395,7 @@ int FW_AMPI_Get( void *origin_addr,
       target_disp,
       target_count,
       target_datatype,
-      win.plainWindow
+      *win.plainWindow
       );
   AMPI_WinRequest winRequest;
   /* fill in the other info */
@@ -2457,7 +2458,9 @@ int FW_AMPI_Win_fence( int assert,
   int rc=MPI_SUCCESS;
   int i=0;
   int num_reqs=0;
-  rc=MPI_Win_fence( assert, win.plainWindow );
+  printf("FW win ptr: %p\n", win.plainWindow);
+  MPI_Win tmp=*win.plainWindow;
+  rc=MPI_Win_fence( assert, tmp);
   (ourADTOOL_AMPI_FPCollection.writeWinData_fp)(win.map,win.base,win.size);
 
   num_reqs=win.req_stack->num_reqs;
@@ -2467,9 +2470,11 @@ int FW_AMPI_Win_fence( int assert,
     (*ourADTOOL_AMPI_FPCollection.push_AMPI_WinRequest_fp)(&winRequest);
   }
   win.num_reqs=num_reqs;
+  printf("FW num_reqs: %d\n", win.num_reqs);
   win.req_stack->num_reqs=0;
   (*ourADTOOL_AMPI_FPCollection.push_AMPI_Win_fp)(&win);
   (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_FENCE);
+  rc=MPI_Win_fence( assert, *win.plainWindow );
   return rc;
 }
 
@@ -2483,7 +2488,9 @@ int BW_AMPI_Win_fence( int assert,
   int num_reqs=0;
   (*ourADTOOL_AMPI_FPCollection.pop_AMPI_Win_fp)(&win);
   num_reqs=win.num_reqs;
-  rc=MPI_Win_fence( assert, win.plainWindow );
+  printf("BW win ptr: %p\n", win.plainWindow);
+  rc=MPI_Win_fence( assert, *win.plainWindow );
+  printf("BW num_reqs: %d\n", num_reqs);
   for(i=num_reqs; i>0 ; i=i-1) {
     (*ourADTOOL_AMPI_FPCollection.pop_AMPI_WinRequest_fp)(&winRequest);
     double *tmp=(double *) winRequest.origin_addr;
