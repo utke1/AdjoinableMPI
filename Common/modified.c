@@ -396,7 +396,7 @@ int BW_AMPI_Send (void* buf,
                                                          mappedtype,
                                                          comm,
                                                          buf,
-                                                         tempBuf, &idx);
+                                                         tempBuf, idx);
       (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
       break;
     }
@@ -754,7 +754,7 @@ int BW_AMPI_Gather(void *sendbuf,
 						     sendtype,
 						     comm,
 						     sendbuf,
-						     tempBuf, &idx);
+						     tempBuf, idx);
   if (commSizeForRootOrNull) {
     MPI_Type_size(recvtype,&rTypeSize);
     for (i=0;i<commSizeForRootOrNull;++i) { 
@@ -870,7 +870,7 @@ int BW_AMPI_Scatter(void *sendbuf,
                                                          sendtype,
                                                          comm,
                                                          sendBufSegment,
-                                                         tempBufSeqment, &idx);
+                                                         tempBufSeqment, idx);
     }
   }
   if (commSizeForRootOrNull>0 && tempBuf)(*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
@@ -970,7 +970,7 @@ int BW_AMPI_Allgather(void *sendbuf,
                                                      sendtype,
                                                      comm,
                                                      sendbuf,
-                                                     tempBuf, &idx);
+                                                     tempBuf, idx);
   if (commSizeForRootOrNull) {
     MPI_Type_size(recvtype,&rTypeSize);
     (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(recvcount*commSizeForRootOrNull,
@@ -1100,7 +1100,7 @@ int BW_AMPI_Gatherv(void *sendbuf,
 						     sendtype,
 						     comm,
 						     sendbuf,
-						     tempBuf, &idx);
+						     tempBuf, idx);
   if (commSizeForRootOrNull) {
     MPI_Type_size(recvtype,&rTypeSize);
     for (i=0;i<commSizeForRootOrNull;++i) {
@@ -1243,7 +1243,7 @@ int BW_AMPI_Scatterv(void *sendbuf,
                                                            sendtype,
                                                            comm,
                                                            buf,
-                                                           sourceBuf, &idx);
+                                                           sourceBuf, idx);
       }
     }
     (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
@@ -1362,7 +1362,7 @@ int BW_AMPI_Allgatherv(void *sendbuf,
                                                      sendtype,
                                                      comm,
                                                      sendbuf,
-                                                     tempBuf, &idx);
+                                                     tempBuf, idx);
   MPI_Type_size(recvtype,&rTypeSize);
   for (i=0;i<commSizeForRootOrNull;++i) {
     void* buf=(char*)recvbuf+(rTypeSize*tDispls[i]); /* <----------  very iffy! */
@@ -1453,7 +1453,7 @@ int BW_AMPI_Bcast (void* buf,
   (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count, mappedtype, comm, buf);
   if (rank==root) {
     (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count, mappedtype, comm,
-                                                       buf, tempBuf, &idx);
+                                                       buf, tempBuf, idx);
   }
   (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   return rc;
@@ -1628,7 +1628,7 @@ int XXS_AMPI_Reduce(void* sbuf, void* sbufd, void* sbufb,
       if (!is_commutative && (root != 0)) {
         if (rank == 0) {
           rc = MPI_Recv(tmp_bufb, count, datatypeb, root, 11, comm, &status) ;
-          (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,rbufb,tmp_bufb, &idx) ;
+          (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,rbufb,tmp_bufb, idx) ;
         } else if (rank==root) {
           rc = MPI_Send(rbufb,count,datatypeb,0,11,comm) ;
           (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count,datatypeb,comm,rbufb);
@@ -1678,11 +1678,11 @@ int XXS_AMPI_Reduce(void* sbuf, void* sbufd, void* sbufb,
           source = ((relrank & (~mask)) + lroot) % comm_size;
           rc = MPI_Recv(tmp_bufb, count, datatype, source, 11, comm, &status);
           assert(rc==MPI_SUCCESS);
-          (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,rbufb,tmp_bufb, &idx) ;
+          (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,rbufb,tmp_bufb, idx) ;
         }
       }
       if ((rank != root) || (sbuf != MPI_IN_PLACE)) {
-        (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,sbufb,rbufb, &idx) ;
+        (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,sbufb,rbufb, idx) ;
         (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count,datatypeb,comm,rbufb);
       }
     }
@@ -1726,7 +1726,7 @@ int XXS_AMPI_Reduce(void* sbuf, void* sbufd, void* sbufb,
                                                         count, datatypeb, comm);
       rc=MPI_Bcast(tmp_bufb, count, datatypeb, root, comm) ;
       assert(rc==MPI_SUCCESS) ;
-      (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,sbufb,tmp_bufb, &idx) ;
+      (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,sbufb,tmp_bufb, idx) ;
       rc = MPI_SUCCESS ;
     }
     return rc;
@@ -1897,7 +1897,7 @@ int BWB_AMPI_Reduce (void* sbuf,
   if (rank==root) {
     (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count, mappedtype, comm, tempBuf);
     (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count, mappedtype, comm,
-                                                       tempBuf, rbuf, &idx);
+                                                       tempBuf, rbuf, idx);
     (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count, mappedtype, comm, rbuf);
   }
   rc=MPI_Bcast(tempBuf,
@@ -1933,7 +1933,7 @@ int BWB_AMPI_Reduce (void* sbuf,
   }
   else {}
   (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count, mappedtype, comm,
-                                                     sbuf, tempBuf, &idx);
+                                                     sbuf, tempBuf, idx);
   (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(reduceResultBuf);
   (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(prevValBuf);
@@ -2093,7 +2093,7 @@ int BW_AMPI_Allreduce (void* sbuf,
     assert(0); /* unimplemented */
   }
   (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count, mappedtype, comm,
-                                                     sbuf, tempBuf, &idx);
+                                                     sbuf, tempBuf, idx);
   (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count, mappedtype, comm, rbuf);
   (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(tempBuf);
   (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(reduceResultBuf);
@@ -2335,6 +2335,7 @@ int FW_AMPI_Win_create( void *base,
     AMPI_Win *win
     )
 {
+  int rc=0;
   win->req_stack=(AMPI_Win_stack *) malloc(sizeof(AMPI_Win_stack));
   AMPI_WIN_STACK_stack_init(win->req_stack);
   win->map=(ourADTOOL_AMPI_FPCollection.createWinMap_fp)(base,size);
@@ -2343,9 +2344,11 @@ int FW_AMPI_Win_create( void *base,
   win->size=(ourADTOOL_AMPI_FPCollection.getWinSize_fp)(size);
   (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_CREATE);
   win->plainWindow= (MPI_Win*) malloc(sizeof(MPI_Win));
-  return MPI_Win_create(win->map, win->size, disp_unit, info, comm, win->plainWindow);
+  rc=MPI_Win_create(win->map, win->size, disp_unit, info, comm, win->plainWindow);
+  BK_AMPI_put_AMPI_Win(win);
   /*return MPI_Win_create(base, size, disp_unit, info, comm,
    * &win->plainWindow);*/
+  return rc;
 }
 
 int BW_AMPI_Win_create( void *base,
@@ -2482,19 +2485,34 @@ int BW_AMPI_Win_fence( int assert,
     AMPI_Win win
     )
 {
-  AMPI_WinRequest winRequest;
+  AMPI_WinRequest *winRequest=(AMPI_WinRequest*) malloc(sizeof(AMPI_WinRequest));
   int rc=MPI_SUCCESS;
   int i=0;
   int num_reqs=0;
+  assert=0;
   (*ourADTOOL_AMPI_FPCollection.pop_AMPI_Win_fp)(&win);
   num_reqs=win.num_reqs;
   printf("BW win ptr: %p\n", win.plainWindow);
+  /*rc=MPI_Win_fence( assert, *win.plainWindow );*/
+  /*BK_AMPI_read_AMPI_Win(win);*/
   rc=MPI_Win_fence( assert, *win.plainWindow );
   printf("BW num_reqs: %d\n", num_reqs);
+  /*num_reqs=win.req_stack->num_reqs;*/
   for(i=num_reqs; i>0 ; i=i-1) {
-    (*ourADTOOL_AMPI_FPCollection.pop_AMPI_WinRequest_fp)(&winRequest);
-    double *tmp=(double *) winRequest.origin_addr;
-    printf("origin_addr: %f\n", tmp[0]);
+    (*ourADTOOL_AMPI_FPCollection.pop_AMPI_WinRequest_fp)(winRequest);
+    (*ourADTOOL_AMPI_FPCollection.setWinAdjointCountAndTempBuf_fp)(winRequest);
+    double *tmp=(double *) ((*ourADTOOL_AMPI_FPCollection.rawAdjointData_fp)(winRequest->adjointTempBuf));
+    printf("BW Put adj: %f\n", tmp[0]);
+    rc=MPI_Put( (*ourADTOOL_AMPI_FPCollection.rawAdjointData_fp)(winRequest->adjointTempBuf),
+	winRequest->origin_count,
+	winRequest->origin_datatype,
+	winRequest->target_rank,
+	winRequest->target_disp,
+	winRequest->target_count,
+	winRequest->target_datatype,
+	*win.plainWindow
+	);
+    AMPI_WIN_STACK_push(win.req_stack,*winRequest);
   }
   return rc;
 }

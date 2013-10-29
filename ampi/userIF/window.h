@@ -25,6 +25,9 @@ typedef struct {
   MPI_Aint target_disp;
   int target_count;
   MPI_Datatype target_datatype;
+  void *adjointTempBuf;
+  void *adjointBuf;
+  int adjointCount; 
   void *idx;
 } AMPI_WinRequest;
 

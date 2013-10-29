@@ -50,7 +50,8 @@ int AMPI_Init_NT(int* argc,
   ourADTOOL_AMPI_FPCollection.setBufForAdjoint_fp=&ADTOOL_AMPI_setBufForAdjoint;
   ourADTOOL_AMPI_FPCollection.getAdjointCount_fp=&ADTOOL_AMPI_getAdjointCount;
   ourADTOOL_AMPI_FPCollection.setAdjointCount_fp=&ADTOOL_AMPI_setAdjointCount;
-  ourADTOOL_AMPI_FPCollection.setAdjointCountAndTempBuf_fp=&ADTOOL_AMPI_setAdjointCountAndTempBuf;
+  ourADTOOL_AMPI_FPCollection.setWinAdjointCount_fp=&ADTOOL_AMPI_setWinAdjointCount;
+  ourADTOOL_AMPI_FPCollection.setWinAdjointCountAndTempBuf_fp=&ADTOOL_AMPI_setWinAdjointCountAndTempBuf;
   ourADTOOL_AMPI_FPCollection.allocateTempBuf_fp=&ADTOOL_AMPI_allocateTempBuf;
   ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp=&ADTOOL_AMPI_releaseAdjointTempBuf;
   ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp=&ADTOOL_AMPI_allocateTempActiveBuf;
@@ -297,6 +298,14 @@ void ADTOOL_AMPI_setAdjointCountAndTempBuf(struct AMPI_Request_S *ampiRequest) {
                                 ampiRequest->datatype,
                                 ampiRequest->comm) ;
   assert(ampiRequest->adjointTempBuf);
+}
+
+void ADTOOL_AMPI_setWinAdjointCount(AMPI_WinRequest *winRequest) { 
+}
+
+void ADTOOL_AMPI_setWinAdjointCountAndTempBuf(AMPI_WinRequest *winRequest) { 
+  ADTOOL_AMPI_setWinAdjointCount(winRequest);
+  assert(winRequest->adjointTempBuf);
 }
 
 void* ADTOOL_AMPI_allocateTempBuf(int adjointCount, MPI_Datatype datatype, MPI_Comm comm) {

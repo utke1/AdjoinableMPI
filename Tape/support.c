@@ -71,6 +71,10 @@ void TAPE_AMPI_push_int(int an_int)  { writeBlob((void*)(&an_int),sizeof(int)); 
 void TAPE_AMPI_pop_int(int *an_int)  { popBlob((void*)(an_int),sizeof(int)); }
 void TAPE_AMPI_read_int(int* an_int) { readBlob((void*)(an_int),sizeof(int)); }
 
+void TAPE_AMPI_push_MPI_Aint(MPI_Aint an_MPI_Aint)  { writeBlob((void*)(&an_MPI_Aint),sizeof(MPI_Aint)); }
+void TAPE_AMPI_pop_MPI_Aint(MPI_Aint *an_MPI_Aint)  { popBlob((void*)(an_MPI_Aint),sizeof(MPI_Aint)); }
+void TAPE_AMPI_read_MPI_Aint(MPI_Aint* an_MPI_Aint) { readBlob((void*)(an_MPI_Aint),sizeof(MPI_Aint)); }
+
 void TAPE_AMPI_push_ptr(void *an_int)  { writeBlob((void*)(&an_int),sizeof(void*)); }
 void TAPE_AMPI_pop_ptr(void **ptr)  { popBlob((void*)(ptr),sizeof(void*)); }
 void TAPE_AMPI_read_ptr(void **ptr) { readBlob((void*)(ptr),sizeof(void*)); }
