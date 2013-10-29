@@ -276,6 +276,23 @@
 /**
  * \page LibraryDevelopmentGuide Library Development Guide
  * \tableofcontents
+ * \section naming Naming Conventions - Code Organization
+ * Directories and libraries are organized as follows:
+ *  - user interface header files, see  \ref dirStruct; should not contain anything else (e.g. no internal helper functions)
+ *  - `PlainC` :  pass through to MPI implementations of the user interface; no reference to ADTOOL interfaces; to be renamed
+ *  - `Tape` : sequential access storage mechanism default implementation (implemented as doubly linked list) to enable forward/reverse
+ *  reading; may not reference ADTOOL or AMPI symbols/types; may reference MPI
+ *  - `Bookkeeping` : random access storage for AMPI_Requests (but possibly also other objects that could be opaque)
+ *  - `Common` : the AD enabled workhorse; here we have all the common functionality for MPI differentiation;
+ *
+ * Symbol prefixes:
+ *  - `AMPI_` to be used for anything in MPI replacing the `MPI_` prefix; not to be used for symbols outside of the user interface
+ *  - `TAPE_AMPI_` to be used for the `Tape` sequential access storage mechanism declared in ampi/tape/support.h
+ *  - `BK_AMPI_`:  `Bookkeeping`  random access storage mechanism declared in ampi/bookkeeping/support.h
+ *  - `ADTOOL_AMPI_` to be
+ *
+ *
+ *
  * \section nonblocking Nonblocking Communication and Fortran Compatibility
  * 
  * A central concern is the handling of non-blocking sends and receives in combination with their respective completion,
