@@ -2338,7 +2338,6 @@ int FW_AMPI_Win_create( void *base,
   int rc=0;
   win->req_stack=(AMPI_Win_stack *) malloc(sizeof(AMPI_Win_stack));
   AMPI_WIN_STACK_stack_init(win->req_stack);
-  AMPI_WinRequest winRequest;
   win->map=malloc(sizeof(void*));
   *win->map=(ourADTOOL_AMPI_FPCollection.createWinMap_fp)(base,size);
   win->plainWindow=(MPI_Win**) malloc(sizeof(MPI_Win*));
@@ -2510,7 +2509,6 @@ int BW_AMPI_Win_fence( int assert,
     )
 {
   AMPI_WinRequest winRequest;
-  AMPI_WinRequest bk_winRequest;
   int rc=MPI_SUCCESS;
   int i=0;
   int num_reqs=0;

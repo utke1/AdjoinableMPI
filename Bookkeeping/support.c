@@ -159,7 +159,7 @@ static void dropWinFromList(struct WinListItem* toBoDropped) {
 static struct WinListItem* findWinInList(MPI_Win *win) { 
   struct WinListItem* current_p=winListHead;
   while(current_p) { 
-    if (current_p->ampiWin.plainWindow==win) break;
+    if (*current_p->ampiWin.plainWindow==win) break;
     current_p=current_p->next_p;
   }
   assert(current_p);
