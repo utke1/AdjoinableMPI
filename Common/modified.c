@@ -2338,16 +2338,16 @@ int FW_AMPI_Win_create( void *base,
   int rc=0;
   win->req_stack=(AMPI_Win_stack *) malloc(sizeof(AMPI_Win_stack));
   AMPI_WIN_STACK_stack_init(win->req_stack);
+  AMPI_WinRequest winRequest;
   win->map=(ourADTOOL_AMPI_FPCollection.createWinMap_fp)(base,size);
   win->base=base;
   win->num_reqs=0;
+  win->idx=NULL;
   win->size=(ourADTOOL_AMPI_FPCollection.getWinSize_fp)(size);
   (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_CREATE);
   win->plainWindow= (MPI_Win*) malloc(sizeof(MPI_Win));
   rc=MPI_Win_create(win->map, win->size, disp_unit, info, comm, win->plainWindow);
   BK_AMPI_put_AMPI_Win(win);
-  /*return MPI_Win_create(base, size, disp_unit, info, comm,
-   * &win->plainWindow);*/
   return rc;
 }
 
@@ -2363,12 +2363,18 @@ int BW_AMPI_Win_create( void *base,
 
 int FW_AMPI_Win_free( AMPI_Win *win ) {
   /*free(win->req_stack);*/
-  /*(*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_FREE);*/
+  (*ourADTOOL_AMPI_FPCollection.push_AMPI_Win_fp)(win);
+  (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_FREE);
   /*return MPI_Win_free(&win->plainWindow); */
   return MPI_SUCCESS;
 }
 
 int BW_AMPI_Win_free( AMPI_Win *win ) {
+  AMPI_Win ampiWin;
+  (*ourADTOOL_AMPI_FPCollection.pop_AMPI_Win_fp)(&ampiWin);
+  double *map_=(double*) ampiWin.map;
+  if(ampiWin.size!=0)
+    map_[0]=0;
   return MPI_SUCCESS;
 }
 
@@ -2463,11 +2469,12 @@ int FW_AMPI_Win_fence( int assert,
   int num_reqs=0;
   printf("FW win ptr: %p\n", win.plainWindow);
   MPI_Win tmp=*win.plainWindow;
+  /*Sync window*/
   rc=MPI_Win_fence( assert, tmp);
   (ourADTOOL_AMPI_FPCollection.writeWinData_fp)(win.map,win.base,win.size);
 
   num_reqs=win.req_stack->num_reqs;
-  for(i=win.req_stack->num_reqs; i>0 ; i=i-1) {
+  for(i=num_reqs; i>0 ; i=i-1) {
     winRequest=AMPI_WIN_STACK_pop(win.req_stack);
     (*ourADTOOL_AMPI_FPCollection.writeData_fp)(winRequest.origin_addr,&winRequest.origin_count);
     (*ourADTOOL_AMPI_FPCollection.push_AMPI_WinRequest_fp)(&winRequest);
@@ -2486,18 +2493,53 @@ int BW_AMPI_Win_fence( int assert,
     )
 {
   AMPI_WinRequest *winRequest=(AMPI_WinRequest*) malloc(sizeof(AMPI_WinRequest));
+  AMPI_WinRequest bk_winRequest;
   int rc=MPI_SUCCESS;
   int i=0;
   int num_reqs=0;
   assert=0;
+
+  /* We pop the window from the tape. Here we save the MPI_Win for the adjoints */
+
   (*ourADTOOL_AMPI_FPCollection.pop_AMPI_Win_fp)(&win);
-  num_reqs=win.num_reqs;
   printf("BW win ptr: %p\n", win.plainWindow);
-  /*rc=MPI_Win_fence( assert, *win.plainWindow );*/
-  /*BK_AMPI_read_AMPI_Win(win);*/
+
+  /* First part is copying the adjoints. With booking we look up how many 1sided
+   * adjoint comms took place*/
+
   rc=MPI_Win_fence( assert, *win.plainWindow );
+  AMPI_Win bk_win;
+  BK_AMPI_read_AMPI_Win(win.plainWindow,&bk_win);
+  printf("BW bk_num_reqs: %ld\n", bk_win.req_stack->num_reqs);
+  printf("BW bk_win.size: %ld\n", bk_win.size);
+
+
+  /*(ourADTOOL_AMPI_FPCollection.writeWinData_fp)(win.map,win.base,win.size);*/
+  /*double *tmp=(double *) win.map;*/
+  double *tmp=(double *) win.map;
+
+  /* if window size is nonzero we sync the incoming adjoints in the window map
+   * and set the map to zero again */
+
+  if(win.size!=0) {
+    printf("BW Fence map: %f\n", tmp[0]);
+    (*ourADTOOL_AMPI_FPCollection.syncAdjointWin_fp)(&win);
+  }
+  num_reqs=bk_win.req_stack->num_reqs;
+
+  /* placeholder for adjoints that are receveived through get. have to copy them
+   * back here */
+
+  for(i=num_reqs; i>0 ; i=i-1) {
+    bk_winRequest=AMPI_WIN_STACK_pop(bk_win.req_stack);
+  }
+
+  /* We dispatch the next adjoint communications. These are popped from the
+   * tape.*/
+
+  rc=MPI_Win_fence( assert, *win.plainWindow );
+  num_reqs=win.num_reqs;
   printf("BW num_reqs: %d\n", num_reqs);
-  /*num_reqs=win.req_stack->num_reqs;*/
   for(i=num_reqs; i>0 ; i=i-1) {
     (*ourADTOOL_AMPI_FPCollection.pop_AMPI_WinRequest_fp)(winRequest);
     (*ourADTOOL_AMPI_FPCollection.setWinAdjointCountAndTempBuf_fp)(winRequest);
@@ -2512,7 +2554,10 @@ int BW_AMPI_Win_fence( int assert,
 	winRequest->target_datatype,
 	*win.plainWindow
 	);
-    AMPI_WIN_STACK_push(win.req_stack,*winRequest);
+
+    /*And we save the adjoint comms in our window that is in the bk system*/
+
+    AMPI_WIN_STACK_push(bk_win.req_stack,*winRequest);
   }
   return rc;
 }

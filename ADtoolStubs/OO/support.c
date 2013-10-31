@@ -72,6 +72,7 @@ int AMPI_Init_NT(int* argc,
   ourADTOOL_AMPI_FPCollection.createWinMap_fp=&ADTOOL_AMPI_createWinMap;
   ourADTOOL_AMPI_FPCollection.writeWinData_fp=&ADTOOL_AMPI_writeWinData;
   ourADTOOL_AMPI_FPCollection.getWinSize_fp=&ADTOOL_AMPI_getWinSize;
+  ourADTOOL_AMPI_FPCollection.syncAdjointWin_fp=&ADTOOL_AMPI_syncAdjointWin;
 #ifdef AMPI_FORTRANCOMPATIBLE
   ourADTOOL_AMPI_FPCollection.fortransetuptypes__fp=&adtool_ampi_fortransetuptypes_;
   ourADTOOL_AMPI_FPCollection.fortrancleanuptypes__fp=&adtool_ampi_fortrancleanuptypes_;
@@ -306,6 +307,9 @@ void ADTOOL_AMPI_setWinAdjointCount(AMPI_WinRequest *winRequest) {
 void ADTOOL_AMPI_setWinAdjointCountAndTempBuf(AMPI_WinRequest *winRequest) { 
   ADTOOL_AMPI_setWinAdjointCount(winRequest);
   assert(winRequest->adjointTempBuf);
+}
+
+void ADTOOL_AMPI_syncAdjointWin(AMPI_Win *win) { 
 }
 
 void* ADTOOL_AMPI_allocateTempBuf(int adjointCount, MPI_Datatype datatype, MPI_Comm comm) {

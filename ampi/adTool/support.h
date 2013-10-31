@@ -489,6 +489,15 @@ typedef void (ADTOOL_AMPI_setWinAdjointCountF) (AMPI_WinRequest *);
 void ADTOOL_AMPI_setWinAdjointCountAndTempBuf(AMPI_WinRequest *winRequest);
 typedef void (ADTOOL_AMPI_setWinAdjointCountAndTempBufF) (AMPI_WinRequest *);
 
+/**  
+ * synchronizes the window with incoming adjoints, applies the corresponding
+ * increments and nullifies the adjoints in the window.
+ * \param win is the AMPI_Win instance providing the window for the incoming
+ * adjoints
+ */
+void ADTOOL_AMPI_syncAdjointWin(AMPI_Win *win);
+typedef void (ADTOOL_AMPI_syncAdjointWinF) (AMPI_Win *);
+
 /**
  * Allocates a temporary buffer needed to receive adjoint
  * data before adding it to the adjoint variable
@@ -673,7 +682,9 @@ void ADTOOL_AMPI_writeWinData(void *map, void *buf, MPI_Aint size);
 typedef void (ADTOOL_AMPI_writeWinDataF) (void *map, void *buf, MPI_Aint size);
 
 /**
- * Gets the size of the mapped buffer for a window
+ * Gets the size of the mapped buffer for a window at its creation. It returns
+ * the size of the mapped window (may be equal to the active window).
+ * \param size of the active window.
  */
 
 MPI_Aint ADTOOL_AMPI_getWinSize(MPI_Aint size);
@@ -765,6 +776,7 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_createWinMapF *createWinMap_fp;
   ADTOOL_AMPI_writeWinDataF *writeWinData_fp;
   ADTOOL_AMPI_getWinSizeF *getWinSize_fp;
+  ADTOOL_AMPI_syncAdjointWinF *syncAdjointWin_fp;
 #ifdef AMPI_FORTRANCOMPATIBLE
   adtool_ampi_fortransetuptypes_F *fortransetuptypes__fp;
   adtool_ampi_fortrancleanuptypes_F *fortrancleanuptypes__fp;
