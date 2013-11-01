@@ -491,7 +491,7 @@ void ADTOOL_AMPI_setWinAdjointCount(AMPI_WinRequest  *winRequest);
 typedef void (ADTOOL_AMPI_setWinAdjointCountF) (AMPI_WinRequest *);
 
 /**  
- * calls \ref ADTOOL_AMPI_setAdjointCount and sets up a temporary buffer into which the adjoint data is received, see e.g. \ref BW_Win_fence
+ * calls \ref ADTOOL_AMPI_setAdjointCount and sets up a temporary buffer into which the adjoint data is received, see e.g. \ref BW_AMPI_Win_fence
  * \param winRequest is the request instance that is modified
  */
 void ADTOOL_AMPI_setWinAdjointCountAndTempBuf(AMPI_WinRequest *winRequest);
