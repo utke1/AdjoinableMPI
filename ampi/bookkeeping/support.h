@@ -10,6 +10,7 @@
 #define _AMPI_BOOKKEEPING_SUPPORT_H_
 
 #include "ampi/userIF/request.h"
+#include "ampi/userIF/window.h"
 
 /**
  * \file 
@@ -36,6 +37,30 @@ void BK_AMPI_get_AMPI_Request(MPI_Request *request, struct AMPI_Request_S  *ampi
  * the information is retained in the internal bookkeeping data
  */
 void BK_AMPI_read_AMPI_Request(MPI_Request *request, struct AMPI_Request_S  *ampiRequest, int traced);
+
+/**
+ * \file 
+ * methods needed for internal window bookkeeping
+ */ 
+
+/**
+ * \param ampiWin is added (by deep copy) to the internal bookkeeping using the already set valueu of member plainRequest as key
+ */
+void BK_AMPI_put_AMPI_Win(AMPI_Win  *ampiWin);
+
+/**
+ * \param win is used as key to look up the associated AMPI_Win instance which then is deep copied 
+ * \param ampiWin pointer to the structure into which the values are copied 
+ * the information is removed from the internal bookkeeping data
+ */
+void BK_AMPI_get_AMPI_Win(MPI_Win *win, AMPI_Win  *ampiWin);
+
+/**
+ * \param win is used as key to look up the associated AMPI_Win instance which then is deep copied 
+ * \param ampiWin pointer to the structure into which the values are copied 
+ * the information is retained in the internal bookkeeping data
+ */
+void BK_AMPI_read_AMPI_Win(MPI_Win *win, AMPI_Win  *ampiWin);
 
 #endif
 

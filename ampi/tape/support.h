@@ -29,6 +29,10 @@ void TAPE_AMPI_push_int(int an_int);
 void TAPE_AMPI_pop_int(int *an_int);
 void TAPE_AMPI_read_int(int* an_int);
 
+void TAPE_AMPI_push_MPI_Aint(MPI_Aint an_MPI_Aint);
+void TAPE_AMPI_pop_MPI_Aint(MPI_Aint *an_MPI_Aint);
+void TAPE_AMPI_read_MPI_Aint(MPI_Aint* an_MPI_Aint);
+
 void TAPE_AMPI_push_ptr(void *ptr);
 void TAPE_AMPI_pop_ptr(void **ptr);
 void TAPE_AMPI_read_ptr(void **ptr);

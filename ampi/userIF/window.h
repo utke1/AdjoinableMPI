@@ -33,6 +33,9 @@ typedef struct {
   MPI_Aint target_disp;
   int target_count;
   MPI_Datatype target_datatype;
+  void *adjointTempBuf;
+  void *adjointBuf;
+  int adjointCount; 
   void *idx;
 } AMPI_WinRequest;
 
@@ -57,12 +60,15 @@ int AMPI_WIN_STACK_empty(AMPI_Win_stack *s);
  */
 
 typedef struct {
-  void *map;
+  void **map;
   void *base;
+  void *idx;
   MPI_Aint size;
   AMPI_Win_stack *req_stack;
-  MPI_Win *plainWindow;
+  MPI_Win **plainWindow;
   int num_reqs;
+  MPI_Comm comm;
+  MPI_Aint disp;
 } AMPI_Win;
 
 /** @} */
