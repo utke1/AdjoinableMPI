@@ -1,3 +1,9 @@
+dnl ##########################################################
+dnl # This file is part of the AdjoinableMPI library         #
+dnl # released under the MIT License.                        #
+dnl # The full COPYRIGHT notice can be found in the top      #
+dnl # level directory of the AdjoinableMPI distribution.     #
+dnl ########################################################## 
 dnl Process this file with autoconf to produce a configure script.
 
 dnl Disable caching: 

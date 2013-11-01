@@ -1,3 +1,9 @@
+##########################################################
+# This file is part of the AdjoinableMPI library         #
+# released under the MIT License.                        #
+# The full COPYRIGHT notice can be found in the top      #
+# level directory of the AdjoinableMPI distribution.     #
+########################################################## 
 AC_DEFUN([MPI_CONF],
 [
 AC_PREREQ(2.59)
