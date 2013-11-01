@@ -1,3 +1,11 @@
+/*
+##########################################################
+# This file is part of the AdjoinableMPI library         #
+# released under the MIT License.                        #
+# The full COPYRIGHT notice can be found in the top      #
+# level directory of the AdjoinableMPI distribution.     #
+########################################################## 
+*/
 /* Basic AMPI C library used for overloading and source transformation. All MPI routines
  * are subdivided into their forward _f and backward _b counterpart. The forward routines
  * are called during the forward/taping run. The backward routines are called during the

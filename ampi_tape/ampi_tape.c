@@ -1,3 +1,11 @@
+/*
+##########################################################
+# This file is part of the AdjoinableMPI library         #
+# released under the MIT License.                        #
+# The full COPYRIGHT notice can be found in the top      #
+# level directory of the AdjoinableMPI distribution.     #
+########################################################## 
+*/
 /* Generic AMPI C tape. Don't touch this. The code is always mirrored with the AMPI repo.
  * Changing code here will result in merge conflicts.
  *
