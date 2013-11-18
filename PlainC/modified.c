@@ -47,12 +47,13 @@ int AMPI_Send(void* buf,
 	      AMPI_PairedWith pairedWith,
 	      MPI_Comm comm) {
   if (!(
-	pairedWith==AMPI_RECV 
+	pairedWith==AMPI_TO_RECV 
 	|| 
-	pairedWith==AMPI_IRECV_WAIT
+	pairedWith==AMPI_TO_IRECV_WAIT
 	||
-	pairedWith==AMPI_IRECV_WAITALL
+	pairedWith==AMPI_TO_IRECV_WAITALL
 	)) MPI_Abort(comm, MPI_ERR_ARG);
+  /* [llh] TODO: pass (pairedWith;AMPI_FROM_SEND) for verification on the receiver side */
   return MPI_Send(buf,
 		  count,
 		  datatype,
@@ -69,16 +70,17 @@ int AMPI_Recv(void* buf,
 	      AMPI_PairedWith pairedWith,
 	      MPI_Comm comm,
 	      MPI_Status* status) { 
+  /* [llh] TODO: verify with the (pairedWith;AMPI_FROM_SEND) passed by the sender side */
   if (!(
-	pairedWith==AMPI_SEND 
+	pairedWith==AMPI_FROM_SEND 
 	|| 
-	pairedWith==AMPI_BSEND 
+	pairedWith==AMPI_FROM_BSEND 
 	||
-	pairedWith==AMPI_RSEND 
+	pairedWith==AMPI_FROM_RSEND 
 	||
-	pairedWith==AMPI_ISEND_WAIT
+	pairedWith==AMPI_FROM_ISEND_WAIT
 	||
-	pairedWith==AMPI_ISEND_WAITALL
+	pairedWith==AMPI_FROM_ISEND_WAITALL
 	)) MPI_Abort(comm, MPI_ERR_ARG);
   return MPI_Recv(buf,
 		  count,
@@ -98,11 +100,11 @@ int AMPI_Isend (void* buf,
 		MPI_Comm comm, 
 		AMPI_Request* request) { 
   if (!(
-	pairedWith==AMPI_RECV 
+	pairedWith==AMPI_TO_RECV 
 	|| 
-	pairedWith==AMPI_IRECV_WAIT
+	pairedWith==AMPI_TO_IRECV_WAIT
 	||
-	pairedWith==AMPI_IRECV_WAITALL
+	pairedWith==AMPI_TO_IRECV_WAITALL
 	)) MPI_Abort(comm, MPI_ERR_ARG);
   return MPI_Isend(buf,
 		   count,
@@ -127,15 +129,15 @@ int AMPI_Irecv (void* buf,
 		MPI_Comm comm, 
 		AMPI_Request* request) { 
   if (!(
-	pairedWith==AMPI_SEND 
+	pairedWith==AMPI_FROM_SEND 
 	|| 
-	pairedWith==AMPI_BSEND 
+	pairedWith==AMPI_FROM_BSEND 
 	||
-	pairedWith==AMPI_RSEND 
+	pairedWith==AMPI_FROM_RSEND 
 	||
-	pairedWith==AMPI_ISEND_WAIT
+	pairedWith==AMPI_FROM_ISEND_WAIT
 	||
-	pairedWith==AMPI_ISEND_WAITALL
+	pairedWith==AMPI_FROM_ISEND_WAITALL
 	)) MPI_Abort(comm, MPI_ERR_ARG);
   return MPI_Irecv(buf,
 		   count,
@@ -159,9 +161,9 @@ int AMPI_Bsend(void *buf,
 	       AMPI_PairedWith pairedWith,
 	       MPI_Comm comm) { 
   if (!(
-	pairedWith==AMPI_RECV 
+	pairedWith==AMPI_TO_RECV 
 	|| 
-	pairedWith==AMPI_IRECV_WAIT
+	pairedWith==AMPI_TO_IRECV_WAIT
 	)) MPI_Abort(comm, MPI_ERR_ARG);
   return MPI_Bsend(buf,
 		   count,
@@ -179,9 +181,9 @@ int AMPI_Rsend(void *buf,
 	       AMPI_PairedWith pairedWith,
 	       MPI_Comm comm) { 
   if (!(
-	pairedWith==AMPI_RECV 
+	pairedWith==AMPI_TO_RECV 
 	|| 
-	pairedWith==AMPI_IRECV_WAIT
+	pairedWith==AMPI_TO_IRECV_WAIT
 	)) MPI_Abort(comm, MPI_ERR_ARG);
   return MPI_Rsend(buf,
 		   count,

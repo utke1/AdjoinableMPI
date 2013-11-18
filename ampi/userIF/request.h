@@ -105,6 +105,11 @@ struct AMPI_Request_S {
   MPI_Request tracedRequest;
 
   /**
+   * the "plain" request returned by the shadow MPI_Isend or MPI_Irecv resp (TLS mode); 
+   */  
+  MPI_Request shadowRequest;
+
+  /**
    * \ref AMPI_Isend / \ref AMPI_Irecv sets this
    */ 
   enum AMPI_Request_origin_E origin;

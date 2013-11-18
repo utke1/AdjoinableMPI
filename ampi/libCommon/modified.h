@@ -61,7 +61,9 @@ int TLM_AMPI_Recv(void* buf,
                   MPI_Comm comm,
                   MPI_Status* status);
 
-/** Tangent Receive, with separate shadow (e.g.tangent) buffer. */
+/**
+ * Tangent Recv, with separate shadow (i.e. tangent) buffer.
+ */
 int TLS_AMPI_Recv(void* buf, void* shadowbuf,
                   int count,
                   MPI_Datatype datatype, MPI_Datatype shadowdatatype,
@@ -108,6 +110,18 @@ int TLM_AMPI_Irecv (void* buf,
                     AMPI_Request* request);
 
 /**
+ * Tangent Irecv, with separate shadow (i.e. tangent) buffer.
+ */
+int TLS_AMPI_Irecv (void* buf, void* shadowbuf,
+                    int count,
+                    MPI_Datatype datatype, MPI_Datatype shadowdatatype,
+                    int source,
+                    int tag,
+                    AMPI_PairedWith pairedWith,
+                    MPI_Comm comm,
+                    AMPI_Request* request) ;
+
+/**
  * forward sweep variant of \ref AMPI_Send
  */
 int FW_AMPI_Send (void* buf, 
@@ -135,6 +149,17 @@ int BW_AMPI_Send (void* buf,
 int TLM_AMPI_Send (void* buf,
                    int count,
                    MPI_Datatype datatype,
+                   int dest,
+                   int tag,
+                   AMPI_PairedWith pairedWith,
+                   MPI_Comm comm);
+
+/**
+ * Tangent Send, with separate shadow (i.e. tangent) buffer.
+ */
+int TLS_AMPI_Send (void* buf,  void* shadowbuf,
+                   int count,
+                   MPI_Datatype datatype, MPI_Datatype shadowdatatype,
                    int dest,
                    int tag,
                    AMPI_PairedWith pairedWith,
@@ -177,6 +202,18 @@ int TLM_AMPI_Isend (void* buf,
                     AMPI_Request* request);
 
 /**
+ * Tangent Isend, with separate shadow (i.e. tangent) buffer.
+ */
+int TLS_AMPI_Isend (void* buf, void* shadowbuf,
+                    int count,
+                    MPI_Datatype datatype, MPI_Datatype shadowdatatype,
+                    int dest,
+                    int tag,
+                    AMPI_PairedWith pairedWith,
+                    MPI_Comm comm,
+                    AMPI_Request* request);
+
+/**
  * forward sweep variant of \ref AMPI_Wait 
  */
 int FW_AMPI_Wait(AMPI_Request *request, 
@@ -195,6 +232,12 @@ int TLM_AMPI_Wait(AMPI_Request *request,
                  MPI_Status *status);
 
 /**
+ * Tangent Wait, with separate shadow (i.e. tangent) buffer.
+ */
+int TLS_AMPI_Wait(AMPI_Request *request,
+                  MPI_Status *status);
+
+/**
  * forward sweep variant of \ref AMPI_Barrier
  */
 int FW_AMPI_Barrier(MPI_Comm comm);
@@ -208,6 +251,11 @@ int BW_AMPI_Barrier(MPI_Comm comm);
  * TLM variant of \ref AMPI_Barrier
  */
 int TLM_AMPI_Barrier(MPI_Comm comm);
+
+/**
+ * TLS variant of \ref AMPI_Barrier
+ */
+int TLS_AMPI_Barrier(MPI_Comm comm);
 
 /**
  * forward sweep variant of \ref AMPI_Gather

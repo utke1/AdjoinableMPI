@@ -68,6 +68,12 @@ int AMPI_Type_free_NT(MPI_Datatype *datatype);
 
 int AMPI_Op_free_NT(MPI_Op *op);
 
+
+#ifdef AMPI_FORTRANCOMPATIBLE
+/** Must be defined in the fortranSupport.F of the particular AD tool */
+void adtool_ampi_fortransetuptypes_(MPI_Fint* adouble, MPI_Fint* areal);
+#endif
+
 /** @} */
 
 #endif

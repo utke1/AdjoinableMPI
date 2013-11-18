@@ -6,13 +6,13 @@
 # level directory of the AdjoinableMPI distribution.     #
 ########################################################## 
 */
+
 #include <mpi.h>
-#include "ampi/userIF/nt.h"
 
 int AMPI_Init_NT(int* argc, 
 	      char*** argv) { 
-  return MPI_Init(argc,
-		  argv);
+  int rc = MPI_Init(argc, argv);
+  return rc ;
 }
 
 int AMPI_Finalize_NT(void) { 

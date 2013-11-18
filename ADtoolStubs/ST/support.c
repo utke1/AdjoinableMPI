@@ -81,9 +81,6 @@ int AMPI_Init_NT(int* argc, char*** argv) {
   ourADTOOL_AMPI_FPCollection.cleanupTypes_fp=&ADTOOL_AMPI_cleanupTypes;
   ourADTOOL_AMPI_FPCollection.FW_rawType_fp=&ADTOOL_AMPI_FW_rawType;
   ourADTOOL_AMPI_FPCollection.BW_rawType_fp=&ADTOOL_AMPI_BW_rawType;
-#ifdef AMPI_FORTRANCOMPATIBLE
-  ourADTOOL_AMPI_FPCollection.fortrancleanuptypes__fp=&adtool_ampi_fortrancleanuptypes_;
-#endif
   ourADTOOL_AMPI_FPCollection.isActiveType_fp=&ADTOOL_AMPI_isActiveType;
   ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp=&ADTOOL_AMPI_allocateTempActiveBuf;
   ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp=&ADTOOL_AMPI_releaseTempActiveBuf;
@@ -94,6 +91,10 @@ int AMPI_Init_NT(int* argc, char*** argv) {
   ourADTOOL_AMPI_FPCollection.tangentMax_fp=&ADTOOL_AMPI_tangentMax ;
   ourADTOOL_AMPI_FPCollection.pushBuffer_fp=&ADTOOL_AMPI_pushBuffer ;
   ourADTOOL_AMPI_FPCollection.popBuffer_fp=&ADTOOL_AMPI_popBuffer ;
+#ifdef AMPI_FORTRANCOMPATIBLE
+  ourADTOOL_AMPI_FPCollection.fortransetuptypes__fp=&adtool_ampi_fortransetuptypes_;
+  ourADTOOL_AMPI_FPCollection.fortrancleanuptypes__fp=&adtool_ampi_fortrancleanuptypes_;
+#endif
   return rc ;
 }
 
@@ -215,10 +216,10 @@ void ADTOOL_AMPI_popGSVinfo(int commSizeForRootOrNull,
                             MPI_Comm *comm) {
 }
 
-void ADTOOL_AMPI_push_CallCode(enum AMPI_PairedWith_E thisCall) { 
+void ADTOOL_AMPI_push_CallCode(enum AMPI_CallCode_E thisCall) { 
 }
 
-void ADTOOL_AMPI_pop_CallCode(enum AMPI_PairedWith_E *thisCall) { 
+void ADTOOL_AMPI_pop_CallCode(enum AMPI_CallCode_E *thisCall) { 
 }
 
 void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest) { 

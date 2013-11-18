@@ -24,6 +24,26 @@
  * the enumeration for communication pairings as explained in \ref pairings
  */
 enum AMPI_PairedWith_E { 
+  AMPI_TO_RECV,
+  AMPI_FROM_SEND,
+  AMPI_TO_IRECV_WAIT,
+  AMPI_TO_IRECV_WAITALL,
+  AMPI_FROM_ISEND_WAIT,
+  AMPI_FROM_ISEND_WAITALL,
+  AMPI_FROM_BSEND,
+  AMPI_FROM_RSEND,
+};
+
+#ifdef AMPI_FORTRANCOMPATIBLE
+typedef int AMPI_PairedWith;
+#else 
+typedef enum AMPI_PairedWith_E AMPI_PairedWith;
+#endif 
+
+/**
+ * the enumeration for call codes as explained in \ref pairings
+ */
+enum AMPI_CallCode_E { 
   AMPI_RECV,
   AMPI_SEND,
   AMPI_IRECV_WAIT,
@@ -53,9 +73,9 @@ enum AMPI_PairedWith_E {
 };
 
 #ifdef AMPI_FORTRANCOMPATIBLE
-typedef int AMPI_PairedWith;
+typedef int AMPI_CallCode;
 #else 
-typedef enum AMPI_PairedWith_E AMPI_PairedWith;
+typedef enum AMPI_CallCode_E AMPI_CallCode;
 #endif 
 /** @} */
 

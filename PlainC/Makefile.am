@@ -13,3 +13,7 @@ modified.c \
 nt.c \
 passThrough.c \
 st.c
+
+if ISFORTRANCOMPATIBLE
+libampiPlainC_la_SOURCES += ampi_f2c.c
+endif

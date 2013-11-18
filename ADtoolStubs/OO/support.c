@@ -226,10 +226,10 @@ void ADTOOL_AMPI_popGSVinfo(int commSizeForRootOrNull,
                             MPI_Comm *comm) {
 }
 
-void ADTOOL_AMPI_push_CallCode(enum AMPI_PairedWith_E thisCall) { 
+void ADTOOL_AMPI_push_CallCode(enum AMPI_CallCode_E thisCall) { 
 }
 
-void ADTOOL_AMPI_pop_CallCode(enum AMPI_PairedWith_E *thisCall) { 
+void ADTOOL_AMPI_pop_CallCode(enum AMPI_CallCode_E *thisCall) { 
 }
 
 void ADTOOL_AMPI_push_AMPI_Request(struct AMPI_Request_S  *ampiRequest) { 
