@@ -1824,7 +1824,7 @@ int PEDESTRIAN_AMPI_Reduce(void* sbuf, void* sbufd, void* sbufb,
                   (*ourADTOOL_AMPI_FPCollection.adjointMax_fp)
                     (count, datatype, comm, tmp_buf, tmp_bufb, rbuf, rbufb) ;
                 } else {
-                  printf(__FILE__ ": adjoint AMPI reduction not yet implemented for std op==%x\n",op) ;
+                  printf(__FILE__ ": adjoint AMPI reduction not yet implemented for std op==%i\n",op) ;
                 }
               }
             }
