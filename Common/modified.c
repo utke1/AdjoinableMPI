@@ -1645,20 +1645,15 @@ int PEDESTRIAN_AMPI_Reduce(void* sbuf, void* sbufd, void* sbufb,
                     MPI_Comm comm) {
   if (count == 0) return MPI_SUCCESS;
   int rc, rank ;
-  void *idx=NULL;
   MPI_Comm_rank(comm,&rank) ;
+  void *idx=NULL; /* only for compatibility in incrementAdjoint_fp(..., idx) */
   int reduceTgt = (sbufd!=NULL) ;
   int reduceAdj = (sbufb!=NULL) ;
   MPI_Comm shadowcomm = comm ;
   if (reduceTgt)
     shadowcomm = (*ourADTOOL_AMPI_FPCollection.getShadowComm_fp)(comm) ;
+
   if (uopd || uopb || op!=MPI_SUM) {
-    int comm_size ;
-    int mask, relrank, source, lroot;
-    MPI_Status status;
-    void *tmp_buf=NULL, *tmp_bufd=NULL, *tmp_bufb=NULL ;
-    int saveBreak = 0 ;
-    MPI_Comm_size(comm,&comm_size);
 
     int uop_idx = userDefinedOpIdx(op);
     userDefinedOpData* uopdata = (isUserDefinedOp(uop_idx)?getUOpData():NULL) ;
@@ -1668,199 +1663,249 @@ int PEDESTRIAN_AMPI_Reduce(void* sbuf, void* sbufd, void* sbufb,
       if (reduceAdj) assert(uopb) ;
     }
 
+    void *exch_buf=NULL ;
+    int switched = 0 ;
+
+    void *obuf=NULL, *obufd=NULL ;
+
     int dt_idx = derivedTypeIdx(datatype);
     MPI_Aint lb = (isDerivedType(dt_idx)?getDTypeData()->lbs[dt_idx]:0) ;
-    tmp_buf =
+    int dt_idxd = 0 ;
+    MPI_Aint lbd = 0 ;
+    obuf =
       (*ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp)(count,datatype,comm);
-    tmp_buf = (void*)((char*)tmp_buf - lb);
-    if (rank != root) {
-      rbuf = (*ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp)(count,datatype,comm);
-      rbuf = (void*)((char*)rbuf - lb);
-    }
-
+    obuf = (void*)((char*)obuf - lb);
     if (reduceTgt) {
-      int dt_idxd = derivedTypeIdx(datatyped);
-      MPI_Aint lbd = (isDerivedType(dt_idxd)?getDTypeData()->lbs[dt_idxd]:0) ;
-      tmp_bufd =
+      dt_idxd = derivedTypeIdx(datatyped);
+      lbd = (isDerivedType(dt_idxd)?getDTypeData()->lbs[dt_idxd]:0) ;
+      obufd =
         (*ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp)(count,datatyped,shadowcomm);
-      tmp_bufd = (void*)((char*)tmp_bufd - lbd);
-      if (rank != root) {
-        rbufd = (*ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp)(count,datatyped,shadowcomm);
-        rbufd = (void*)((char*)rbufd - lbd);
-      }
+      obufd = (void*)((char*)obufd - lbd);
     }
 
-    if ((rank != root) || (sbuf != MPI_IN_PLACE)) {
+    if (sbuf==MPI_IN_PLACE) {
+      if (rank != root) {
+        exch_buf = rbuf ;
+        rbuf = (*ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp)(count,datatype,comm);
+        rbuf = (void*)((char*)rbuf - lb);
+        (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(exch_buf, rbuf, count, datatype, comm);
+        if (reduceTgt) {
+          exch_buf = rbufd ;
+          rbufd = (*ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp)(count,datatyped,shadowcomm);
+          rbufd = (void*)((char*)rbufd - lbd);
+          (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(exch_buf, rbufd, count, datatyped, shadowcomm);
+        }
+      }
+    } else {  /* Standard case: sbuf != MPI_IN_PLACE */
+      if (rank != root) {
+        rbuf = (*ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp)(count,datatype,comm);
+        rbuf = (void*)((char*)rbuf - lb);
+        if (reduceTgt) {
+          rbufd = (*ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp)(count,datatyped,shadowcomm);
+          rbufd = (void*)((char*)rbufd - lbd);
+        }
+      }
       (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(sbuf, rbuf, count, datatype, comm);
       if (reduceTgt)
         (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(sbufd, rbufd, count, datatyped, shadowcomm);
     }
-    mask = 0x1;
-    if (is_commutative)
-      lroot = root;
-    else
-      lroot = 0;
-    relrank = (rank - lroot + comm_size) % comm_size;
+
+    MPI_Status status;
+    int comm_size ;
+    MPI_Comm_size(comm,&comm_size);
+    int other, action ;
+    int maskup = 0xffffffff ;
+    int mask   = 0x1;
+
     while (mask < comm_size) {
-      if ((mask & relrank) == 0) {
-	source = (relrank | mask);
-	if (source < comm_size) {
-	  source = (source + lroot) % comm_size;
-	  rc = MPI_Recv(tmp_buf, count, datatype, source,
-			 11, comm, &status);
-	  assert(rc==MPI_SUCCESS);
-          if (reduceTgt) {
-            rc = MPI_Recv(tmp_bufd, count, datatyped, source,
-                          11, shadowcomm, &status);
-            assert(rc==MPI_SUCCESS);
-          }
-          if (reduceAdj) {
-            /* Save tmp_buf and rbuf for future use in the adjoint sweep */
-            (*ourADTOOL_AMPI_FPCollection.pushBuffer_fp)(count,datatype,comm,rbuf) ;
-            (*ourADTOOL_AMPI_FPCollection.pushBuffer_fp)(count,datatype,comm,tmp_buf) ;
-          }
-	  if (is_commutative) {
-            if (isUserDefinedOp(uop_idx)) {
-              if (reduceTgt)
-                (*uopd)(tmp_buf, tmp_bufd, rbuf, rbufd, &count, &datatype, &datatyped);
-              else
-                (*(uopdata->functions[uop_idx]))(tmp_buf, rbuf, &count, &datatype) ;
-            } else {
-              if (op==MPI_PROD) {
-                (*ourADTOOL_AMPI_FPCollection.tangentMultiply_fp)
-                  (count, datatype, comm, tmp_buf, tmp_bufd, rbuf, rbufd) ;
-              } else if (op==MPI_MIN) {
-                (*ourADTOOL_AMPI_FPCollection.tangentMin_fp)
-                  (count, datatype, comm, tmp_buf, tmp_bufd, rbuf, rbufd) ;
-              } else if (op==MPI_MAX) {
-                (*ourADTOOL_AMPI_FPCollection.tangentMax_fp)
-                  (count, datatype, comm, tmp_buf, tmp_bufd, rbuf, rbufd) ;
-              } else {
-                printf(__FILE__ ": tangent AMPI reduction not yet implemented for std op==%i\n",uop_idx) ;
-              }
-            }
-	  }
-	  else {
-            if (reduceTgt)
-              (*uopd)(rbuf, rbufd, tmp_buf, tmp_bufd, &count, &datatype, &datatyped);
-            else
-              (*(uopdata->functions[uop_idx]))(rbuf, tmp_buf, &count, &datatype) ;
-            (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(tmp_buf, rbuf, count, datatype, comm);
- 	    if (reduceTgt)
-              (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(tmp_bufd, rbufd, count, datatyped, shadowcomm);
-	  }
-	}
+     if ((rank&mask) == 0) { /* Typical action is RECV */
+        other = (rank==root?root&maskup:rank) | mask ;
+        if (other >= comm_size)
+          action = 0/*NOACTION*/ ;
+        else if ((other&maskup) == (root&maskup)) {
+          other = root ;
+          action = 1/*SEND*/ ;
+        } else {
+          action = -1/*RECV*/ ;
+        }
+      } else { /* mask&rank == 1: Typical action is SEND */
+        other = (rank==root?root&maskup:rank) & ~mask ;
+        if ((other&maskup) == (root&maskup)) other = root ;
+        if (rank==root)
+          action = -1/*RECV*/ ;
+        else
+          action = 1/*SEND*/ ;
       }
-      else {
-	source = ((relrank & (~mask)) + lroot) % comm_size;
-	rc = MPI_Send(rbuf, count, datatype, source, 11, comm);
-	assert(rc==MPI_SUCCESS);
+      maskup = maskup & ~mask ;
+      mask<<=1;
+
+      if (action==1/*SEND*/) {
+        /* TODO Not sure this "(..., 11, comm)" is correct. Would better use shadowcomm ? */
+        rc = MPI_Send(rbuf, count, datatype, other, 11, comm) ;
+        assert(rc==MPI_SUCCESS);
         if (reduceTgt) {
-          rc = MPI_Send(rbufd, count, datatyped, source, 11, shadowcomm);
+          rc = MPI_Send(rbufd, count, datatyped, other, 11, shadowcomm) ;
           assert(rc==MPI_SUCCESS);
         }
-        saveBreak = 1;
 	break;
-      }
-      mask<<=1;
-    }
-    if (!is_commutative && (root != 0)) {
-      if (rank == 0) {
-        rc = MPI_Send(rbuf, count, datatype, root, 11, comm);
-      } else if (rank==root) {
-        rc = MPI_Recv(rbuf, count, datatype, 0, 11, comm, &status);
-      }
-      assert(rc==MPI_SUCCESS);
-      if (reduceTgt) {
-        if (rank == 0)
-          rc = MPI_Send(rbufd, count, datatyped, root, 11, shadowcomm);
-        else if (rank==root)
-          rc = MPI_Recv(rbufd, count, datatyped, 0, 11, shadowcomm, &status);
+      } else if (action==-1/*RECV*/) {
+        rc = MPI_Recv(obuf, count, datatype, other, 11, comm, &status);
         assert(rc==MPI_SUCCESS);
+        if (reduceTgt) {
+          rc = MPI_Recv(obufd, count, datatyped, other, 11, shadowcomm, &status);
+          assert(rc==MPI_SUCCESS);
+        }
+        if (reduceAdj) {
+          /* Save obuf and rbuf for future use in the adjoint sweep */
+          (*ourADTOOL_AMPI_FPCollection.pushBuffer_fp)(count,datatype,comm,rbuf) ;
+          (*ourADTOOL_AMPI_FPCollection.pushBuffer_fp)(count,datatype,comm,obuf) ;
+        }
+        if (is_commutative || (other<rank)) {
+          if (isUserDefinedOp(uop_idx)) {
+            if (reduceTgt)
+              (*uopd)(obuf, obufd, rbuf, rbufd, &count, &datatype, &datatyped);
+            else
+              (*(uopdata->functions[uop_idx]))(obuf, rbuf, &count, &datatype) ;
+          } else {
+            if (op==MPI_PROD) {
+              (*ourADTOOL_AMPI_FPCollection.tangentMultiply_fp)
+                (count, datatype, comm, obuf, obufd, rbuf, rbufd) ;
+            } else if (op==MPI_MIN) {
+              (*ourADTOOL_AMPI_FPCollection.tangentMin_fp)
+                (count, datatype, comm, obuf, obufd, rbuf, rbufd) ;
+            } else if (op==MPI_MAX) {
+              (*ourADTOOL_AMPI_FPCollection.tangentMax_fp)
+                (count, datatype, comm, obuf, obufd, rbuf, rbufd) ;
+            } else {
+              printf(__FILE__ ": tangent AMPI reduction not yet implemented for std op==%i\n",uop_idx) ;
+            }
+          }
+        } else {
+          if (reduceTgt)
+            (*uopd)(rbuf, rbufd, obuf, obufd, &count, &datatype, &datatyped);
+          else
+            (*(uopdata->functions[uop_idx]))(rbuf, obuf, &count, &datatype) ;
+          exch_buf = obuf ; obuf = rbuf ; rbuf = exch_buf ;
+          if (reduceTgt) {
+            exch_buf = obufd ; obufd = rbufd ; rbufd = exch_buf ;
+          }
+          switched = ~switched ;
+        }
       }
     }
+    if (switched) {
+      if (!reduceAdj) { /* Adjoint mode does not need to return a correct rbuf */
+        exch_buf = obuf ; obuf = rbuf ; rbuf = exch_buf ;
+        if (rank==root)
+          (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(obuf, rbuf, count, datatype, comm) ;
+      }
+      if (reduceTgt) {
+        exch_buf = obufd ; obufd = rbufd ; rbufd = exch_buf ;
+        if (rank==root)
+          (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(obufd, rbufd, count, datatyped, shadowcomm) ;
+      }
+    }
+
     if (reduceAdj) {
+      void *rbufb_initial=NULL ;
       int dt_idxb = derivedTypeIdx(datatypeb);
       MPI_Aint lbb = (isDerivedType(dt_idxb)?getDTypeData()->lbs[dt_idxb]:0) ;
-      tmp_bufb =
+      void *obufb =
         (*ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp)(count,datatypeb,comm);
-      tmp_bufb = (void*)((char*)tmp_bufb - lbb);
+      obufb = (void*)((char*)obufb - lbb);
+      (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count,datatypeb,comm,obufb);
       if (rank != root) {
+        rbufb_initial = rbufb ; 
         rbufb = (*ourADTOOL_AMPI_FPCollection.allocateTempActiveBuf_fp)(count,datatypeb,comm);
         rbufb = (void*)((char*)rbufb - lbb);
+        (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count,datatypeb,comm,rbufb);
       }
-      if (!is_commutative && (root != 0)) {
-        if (rank == 0) {
-          rc = MPI_Recv(tmp_bufb, count, datatypeb, root, 11, comm, &status) ;
-          (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,rbufb,tmp_bufb, idx) ;
-        } else if (rank==root) {
-          rc = MPI_Send(rbufb,count,datatypeb,0,11,comm) ;
-          (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count,datatypeb,comm,rbufb);
-        }
-        assert(rc==MPI_SUCCESS);
+      if (switched && rank==root) {
+        (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(rbufb, obufb, count, datatypeb, comm) ;
+        (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count,datatypeb,comm,rbufb);
+        exch_buf = obufb ; obufb = rbufb ; rbufb = exch_buf ;
       }
-      if (saveBreak) {mask<<=1; saveBreak=0;}
       while (mask!=0x1) {
         mask>>=1 ;
-        if ((mask & relrank) == 0) {
-          source = (relrank | mask);
-          if (source < comm_size) {
-            source = (source + lroot) % comm_size;
-            /* Retrieve tmp_buf and rbuf for the adjoint call */
-            (*ourADTOOL_AMPI_FPCollection.popBuffer_fp)(count,datatype,comm,tmp_buf) ;
+        maskup = maskup | mask ;
+        if ((rank&mask) == 0) { /* Typical action fw is RECV */
+          other = (rank==root?root&maskup:rank) | mask ;
+          if (other >= comm_size)
+            action = 0/*NOACTION*/ ;
+          else if ((other&maskup) == (root&maskup)) {
+            other = root ;
+            action = 1/* fw SEND*/ ;
+          } else {
+            action = -1/* fw RECV*/ ;
+          }
+        } else { /* mask&rank == 1: Typical action is SEND */
+          other = (rank==root?root&maskup:rank) & ~mask ;
+          if ((other&maskup) == (root&maskup)) other = root ;
+          if (rank==root)
+            action = -1/* fw RECV*/ ;
+          else
+            action = 1/* fw SEND*/ ;
+        }
+
+        if (action==1/* fw SEND*/) {
+          rc = MPI_Recv(obufb, count, datatypeb, other, 11, comm, &status);
+          assert(rc==MPI_SUCCESS);
+          (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,rbufb,obufb, idx) ;
+        } else if (action==-1/* fw RECV*/) {
+          if (is_commutative || (other<rank)) {
+            /* Retrieve obuf and rbuf for the adjoint call */
+            (*ourADTOOL_AMPI_FPCollection.popBuffer_fp)(count,datatype,comm,obuf) ;
             (*ourADTOOL_AMPI_FPCollection.popBuffer_fp)(count,datatype,comm,rbuf) ;
-            if (is_commutative) {
-              (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count,datatypeb,comm,tmp_bufb);
-              if (isUserDefinedOp(uop_idx)) {
-                (*uopb)(tmp_buf, tmp_bufb, rbuf, rbufb, &count, &datatype, &datatypeb) ;
+            (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count,datatypeb,comm,obufb);
+            if (isUserDefinedOp(uop_idx)) {
+              (*uopb)(obuf, obufb, rbuf, rbufb, &count, &datatype, &datatypeb) ;
+            } else {
+              if (op==MPI_PROD) {
+                (*ourADTOOL_AMPI_FPCollection.adjointMultiply_fp)
+                  (count, datatype, comm, obuf, obufb, rbuf, rbufb) ;
+              } else if (op==MPI_MIN) {
+                (*ourADTOOL_AMPI_FPCollection.adjointMin_fp)
+                  (count, datatype, comm, obuf, obufb, rbuf, rbufb) ;
+              } else if (op==MPI_MAX) {
+                (*ourADTOOL_AMPI_FPCollection.adjointMax_fp)
+                  (count, datatype, comm, obuf, obufb, rbuf, rbufb) ;
               } else {
-                if (op==MPI_PROD) {
-                  (*ourADTOOL_AMPI_FPCollection.adjointMultiply_fp)
-                    (count, datatype, comm, tmp_buf, tmp_bufb, rbuf, rbufb) ;
-                } else if (op==MPI_MIN) {
-                  (*ourADTOOL_AMPI_FPCollection.adjointMin_fp)
-                    (count, datatype, comm, tmp_buf, tmp_bufb, rbuf, rbufb) ;
-                } else if (op==MPI_MAX) {
-                  (*ourADTOOL_AMPI_FPCollection.adjointMax_fp)
-                    (count, datatype, comm, tmp_buf, tmp_bufb, rbuf, rbufb) ;
-                } else {
-                  printf(__FILE__ ": adjoint AMPI reduction not yet implemented for std op==%i\n",op) ;
-                }
+                printf(__FILE__ ": adjoint AMPI reduction not yet implemented for std op==%i\n",op) ;
               }
             }
-            else {
-              (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(rbufb,tmp_bufb, count, datatypeb, comm);
-              (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count,datatypeb,comm,rbufb);
-              /* [llh] TODO: retrieve the good rbuf and tmp_buf.*/
-              (*uopb)(rbuf, rbufb, tmp_buf, tmp_bufb, &count, &datatype, &datatypeb) ;
-            }
-            rc = MPI_Send(tmp_bufb, count, datatypeb, source, 11, comm);
-            assert(rc==MPI_SUCCESS);
+          } else {
+            exch_buf = obuf ; obuf = rbuf ; rbuf = exch_buf ;
+            exch_buf = obufb ; obufb = rbufb ; rbufb = exch_buf ;
+            /* Retrieve obuf and rbuf for the adjoint call */
+            (*ourADTOOL_AMPI_FPCollection.popBuffer_fp)(count,datatype,comm,obuf) ;
+            (*ourADTOOL_AMPI_FPCollection.popBuffer_fp)(count,datatype,comm,rbuf) ;
+            (*uopb)(rbuf, rbufb, obuf, obufb, &count, &datatype, &datatypeb) ;
           }
-        }
-        else {
-          source = ((relrank & (~mask)) + lroot) % comm_size;
-          rc = MPI_Recv(tmp_bufb, count, datatype, source, 11, comm, &status);
+          rc = MPI_Send(obufb, count, datatypeb, other, 11, comm);
           assert(rc==MPI_SUCCESS);
-          (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,rbufb,tmp_bufb, idx) ;
         }
+        (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count,datatypeb,comm,obufb);
       }
-      if ((rank != root) || (sbuf != MPI_IN_PLACE)) {
+      if (sbuf==MPI_IN_PLACE) {
+        if (rank != root) {
+          (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,rbufb_initial,rbufb, idx) ;
+        }
+      } else {
         (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,sbufb,rbufb, idx) ;
         (*ourADTOOL_AMPI_FPCollection.nullifyAdjoint_fp)(count,datatypeb,comm,rbufb);
       }
+      if (rank!=root) (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(rbufb,count,datatypeb);
+      (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(obufb,count,datatypeb);
     }
-    (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(tmp_buf,count,datatype);
-    if (reduceTgt) (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(tmp_bufd,count,datatyped);
-    if (reduceAdj) (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(tmp_bufb,count,datatypeb);
-    if (rank != root) {
+
+    (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(obuf,count,datatype);
+    if (reduceTgt) (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(obufd,count,datatyped);
+    if (rank!=root) {
       (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(rbuf,count,datatype);
       if (reduceTgt) (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(rbufd,count,datatyped);
-      if (reduceAdj) (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(rbufb,count,datatypeb);
     }
     return MPI_SUCCESS;
-  }
-  else {  /* i.e. op==MPI_SUM */
+  } else {  /* i.e. op==MPI_SUM and no user-given derivative */
     if (!reduceAdj) {
       rc=MPI_Reduce(sbuf,
                     rbuf,
@@ -1891,6 +1936,7 @@ int PEDESTRIAN_AMPI_Reduce(void* sbuf, void* sbufd, void* sbufb,
       rc=MPI_Bcast(tmp_bufb, count, datatypeb, root, comm) ;
       assert(rc==MPI_SUCCESS) ;
       (*ourADTOOL_AMPI_FPCollection.incrementAdjoint_fp)(count,datatypeb,comm,sbufb,tmp_bufb, idx) ;
+      (*ourADTOOL_AMPI_FPCollection.releaseTempActiveBuf_fp)(tmp_bufb,count,datatypeb);
       rc = MPI_SUCCESS ;
     }
     return rc;

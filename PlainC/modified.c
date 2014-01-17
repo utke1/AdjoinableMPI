@@ -205,6 +205,7 @@ int AMPI_Bcast (void* buf,
                    comm);
 }
 
+
 int AMPI_Reduce (void* sbuf, 
 		 void* rbuf, 
 		 int count, 
@@ -212,6 +213,9 @@ int AMPI_Reduce (void* sbuf,
 		 MPI_Op op, 
 		 int root, 
 		 MPI_Comm comm) { 
+  /* [llh] It would be nice here to call our PEDESTRIAN_AMPI_Reduce(),
+   * just to test that our AMPI's reduction algorithm
+   * gives the same result as the one of this MPI */
   return MPI_Reduce(sbuf,
 		    rbuf,
 		    count,

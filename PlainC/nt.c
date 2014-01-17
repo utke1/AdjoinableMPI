@@ -43,6 +43,10 @@ int AMPI_Op_create_NT(MPI_User_function *function,
   return rc;
 }
 
+int AMPI_Op_free_NT(MPI_Op *op) {
+  return MPI_Op_free(op);
+}
+
 int AMPI_Type_create_struct_NT(int count,
 			       int array_of_blocklengths[],
 			       MPI_Aint array_of_displacements[],
