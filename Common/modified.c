@@ -1636,11 +1636,14 @@ int TLM_AMPI_Bcast(void* buf,
   return rc;
 }
 
+/** Set split_mode to 1 to obtain split FW and BW adjoint reduce.
+ * Set split_mode to 0 and pass non-NULL sbufb to obtain joint adjoint reduce. */
 int PEDESTRIAN_AMPI_Reduce(void* sbuf, void* sbufd, void* sbufb,
                     void* rbuf, void* rbufd, void* rbufb,
                     int count,
                     MPI_Datatype datatype, MPI_Datatype datatyped, MPI_Datatype datatypeb,
                     MPI_Op op, TLM_userFunctionF* uopd, ADJ_userFunctionF* uopb,
+                    int split_mode,
                     int root,
                     MPI_Comm comm) {
   if (count == 0) return MPI_SUCCESS;
@@ -1717,8 +1720,9 @@ int PEDESTRIAN_AMPI_Reduce(void* sbuf, void* sbufd, void* sbufb,
     int maskup = 0xffffffff ;
     int mask   = 0x1;
 
-    while (mask < comm_size) {
-     if ((rank&mask) == 0) { /* Typical action is RECV */
+    if (!(reduceAdj&&split_mode)) {
+     while (mask < comm_size) {
+      if ((rank&mask) == 0) { /* Typical action is RECV */
         other = (rank==root?root&maskup:rank) | mask ;
         if (other >= comm_size)
           action = 0/*NOACTION*/ ;
@@ -1755,7 +1759,7 @@ int PEDESTRIAN_AMPI_Reduce(void* sbuf, void* sbufd, void* sbufb,
           rc = MPI_Recv(obufd, count, datatyped, other, 11, shadowcomm, &status);
           assert(rc==MPI_SUCCESS);
         }
-        if (reduceAdj) {
+        if (reduceAdj || split_mode) {
           /* Save obuf and rbuf for future use in the adjoint sweep */
           (*ourADTOOL_AMPI_FPCollection.pushBuffer_fp)(count,datatype,comm,rbuf) ;
           (*ourADTOOL_AMPI_FPCollection.pushBuffer_fp)(count,datatype,comm,obuf) ;
@@ -1792,9 +1796,10 @@ int PEDESTRIAN_AMPI_Reduce(void* sbuf, void* sbufd, void* sbufb,
           switched = ~switched ;
         }
       }
-    }
-    if (switched) {
-      if (!reduceAdj) { /* Adjoint mode does not need to return a correct rbuf */
+     }
+
+     if (switched) {
+      if (!reduceAdj) { /* Adjoint joint mode does not need to return a correct rbuf */
         exch_buf = obuf ; obuf = rbuf ; rbuf = exch_buf ;
         if (rank==root)
           (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(obuf, rbuf, count, datatype, comm) ;
@@ -1803,6 +1808,20 @@ int PEDESTRIAN_AMPI_Reduce(void* sbuf, void* sbufd, void* sbufb,
         exch_buf = obufd ; obufd = rbufd ; rbufd = exch_buf ;
         if (rank==root)
           (*ourADTOOL_AMPI_FPCollection.copyActiveBuf_fp)(obufd, rbufd, count, datatyped, shadowcomm) ;
+      }
+     }
+
+    }
+
+    if (split_mode) {
+      if (!reduceAdj) {
+        (*ourADTOOL_AMPI_FPCollection.pushBuffer_fp)(1,MPI_INT,comm,&switched) ;
+        (*ourADTOOL_AMPI_FPCollection.pushBuffer_fp)(1,MPI_INT,comm,&maskup) ;
+        (*ourADTOOL_AMPI_FPCollection.pushBuffer_fp)(1,MPI_INT,comm,&mask) ;
+      } else {
+        (*ourADTOOL_AMPI_FPCollection.popBuffer_fp)(1,MPI_INT,comm,&mask) ;
+        (*ourADTOOL_AMPI_FPCollection.popBuffer_fp)(1,MPI_INT,comm,&maskup) ;
+        (*ourADTOOL_AMPI_FPCollection.popBuffer_fp)(1,MPI_INT,comm,&switched) ;
       }
     }
 
@@ -2069,6 +2088,7 @@ int FWS_AMPI_Reduce(void* sbuf,
                          count,
                          datatype, datatype, datatype, 
                          op, NULL, NULL,
+                         1,
                          root,
                          comm) ;
 }
@@ -2163,6 +2183,7 @@ int BWS_AMPI_Reduce(void* sbuf, void* sbufb,
                          count,
                          datatype, datatype, datatypeb,
                          op, NULL, uopb,
+                         1,
                          root,
                          comm) ;
 }
@@ -2199,6 +2220,7 @@ int TLS_AMPI_Reduce(void* sbuf, void* sbufd,
                          count,
                          datatype, datatyped, datatype,
                          op, uopd, NULL,
+                         0,
                          root,
                          comm) ;
 }
