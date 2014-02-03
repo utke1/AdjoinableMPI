@@ -543,9 +543,16 @@ int AMPI_Allgatherv(void *sendbuf,
                     MPI_Comm comm);
 
 /**
- * One-sided MPI 
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param base
+ * @param size
+ * @param disp_unit
+ * @param info
+ * @param comm
+ * @param win active window
+ *
+ * @return 
  */
-
 int AMPI_Win_create( void *base,
 		     MPI_Aint size,
 		     int disp_unit,
@@ -553,12 +560,60 @@ int AMPI_Win_create( void *base,
 		     MPI_Comm comm,
 		     AMPI_Win *win );
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param assert
+ * @param win active window
+ *
+ * @return 
+ */
 int AMPI_Win_fence( int assert,
                     AMPI_Win win );
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param win active window
+ *
+ * @return 
+ */
 int AMPI_Win_free( AMPI_Win *win );
 
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param origin_addr
+ * @param origin_count
+ * @param origin_datatype see \ref datatypes
+ * @param target_rank
+ * @param target_disp
+ * @param target_count
+ * @param target_datatype see \ref datatypes
+ * @param win active window
+ *
+ * @return 
+ */
 int AMPI_Get( void *origin_addr,
+	      int origin_count,
+	      MPI_Datatype origin_datatype, 
+	      int target_rank,
+	      MPI_Aint target_disp,
+	      int target_count,
+	      MPI_Datatype target_datatype,
+	      AMPI_Win win );
+
+/**
+ * all parameters as in the MPI standard with exceptions as listed
+ * @param origin_addr
+ * @param origin_count
+ * @param origin_datatype see \ref datatypes
+ * @param target_rank
+ * @param target_disp
+ * @param target_count
+ * @param target_datatype see \ref datatypes
+ * @param win active window
+ *
+ * @return 
+ */
+int AMPI_Put( void *origin_addr,
 	      int origin_count,
 	      MPI_Datatype origin_datatype, 
 	      int target_rank,
