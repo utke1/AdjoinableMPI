@@ -33,10 +33,13 @@
  * differentiation (AD) can be computed. The library is designed to be supported
  * by a variety of AD tools and to enable also the computation of  (higher-order)
  * forward derivatives.
- * \authors Laurent Hascoet
- * \authors Uwe Naumann
- * \authors Michel Schanen
- * \authors Jean Utke 
+ * \authors Laurent Hascoet (currently at INRIA Sophia-Antipolis; <a href="http://fr.linkedin.com/pub/laurent-hascoët/86/821/a04">LinkedIn</a>)
+ * \authors Michel Schanen (currently at RWTH Aachen; <a href="http://www.stce.rwth-aachen.de/people/Michel.Schanen.html">home page</a>)
+ * \authors Jean Utke (until March 2014 at Argonne National Laboratory; <a href="http://www.linkedin.com/pub/jean-utke/5/645/7a">LinkedIn</a>)
+ *
+ * Contributions informing the approach implemented here were made by the authors of \cite Utke2009TAM . 
+ * Significant contributions were made by
+ *  - Anton Bovin (summer student at Argonne National Laboratory in 2013;<a href="http://www.linkedin.com/pub/anton-bovin/86/b1b/847">LinkedIn</a>)  
  *
  * <b>Please refer to the \ref UserGuide for information regarding the use of the library in a given application.</b>
  *
