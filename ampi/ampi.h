@@ -33,16 +33,16 @@
  * differentiation (AD) can be computed. The library is designed to be supported
  * by a variety of AD tools and to enable also the computation of  (higher-order)
  * forward derivatives.
- * \authors Laurent Hascoet 
+ * \authors <b>Laurent Hasco&euml;t</b> 
  * (currently at INRIA Sophia-Antipolis; <a href="http://fr.linkedin.com/pub/laurent-hascoët/86/821/a04">LinkedIn</a> - <a href="mailto:Laurent.Hascoet@sophia.inria.fr?subject=AMPI">e-mail</a>)
- * \authors Michel Schanen 
+ * \authors <b>Michel Schanen</b> 
  * (currently at RWTH Aachen; <a href="http://www.stce.rwth-aachen.de/people/Michel.Schanen.html">home page</a> - <a href="mailto:schanen@stce.rwth-aachen.de?subject=AMPI">e-mail</a>)
- * \authors Jean Utke 
+ * \authors <b>Jean Utke</b> 
  * (until March 2014 at Argonne National Laboratory; <a href="http://www.linkedin.com/pub/jean-utke/5/645/7a">LinkedIn</a> - <a href="mailto:utkej1@gmail.com?subject=AMPI">e-mail</a>)
  *
- * Contributions informing the approach implemented here were made by the authors of \cite Utke2009TAM . 
+ * Contributions informing the approach implemented in AMPI were made by the co-authors of&nbsp;\cite Utke2009TAM  <b>P. Heimbach, C. Hill, U. Naummann</b>. 
  * 
- * Significant contributions were made by Anton Bovin (summer student at Argonne National Laboratory in 2013;<a href="http://www.linkedin.com/pub/anton-bovin/86/b1b/847">LinkedIn</a>).
+ * Significant contributions were made by <b>Anton Bovin</b> (summer student at Argonne National Laboratory in 2013;<a href="http://www.linkedin.com/pub/anton-bovin/86/b1b/847">LinkedIn</a>).
  *
  * <b>Please refer to the \ref UserGuide for information regarding the use of the library in a given application.</b>
  *
