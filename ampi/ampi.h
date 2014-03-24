@@ -33,13 +33,16 @@
  * differentiation (AD) can be computed. The library is designed to be supported
  * by a variety of AD tools and to enable also the computation of  (higher-order)
  * forward derivatives.
- * \authors Laurent Hascoet (currently at INRIA Sophia-Antipolis; <a href="http://fr.linkedin.com/pub/laurent-hascoët/86/821/a04">LinkedIn</a>)
- * \authors Michel Schanen (currently at RWTH Aachen; <a href="http://www.stce.rwth-aachen.de/people/Michel.Schanen.html">home page</a>)
- * \authors Jean Utke (until March 2014 at Argonne National Laboratory; <a href="http://www.linkedin.com/pub/jean-utke/5/645/7a">LinkedIn</a>)
+ * \authors Laurent Hascoet 
+ * (currently at INRIA Sophia-Antipolis; <a href="http://fr.linkedin.com/pub/laurent-hascoët/86/821/a04">LinkedIn</a> - <a href="mailto:Laurent.Hascoet@sophia.inria.fr?subject=AMPI">e-mail</a>)
+ * \authors Michel Schanen 
+ * (currently at RWTH Aachen; <a href="http://www.stce.rwth-aachen.de/people/Michel.Schanen.html">home page</a> - <a href="mailto:schanen@stce.rwth-aachen.de?subject=AMPI">e-mail</a>)
+ * \authors Jean Utke 
+ * (until March 2014 at Argonne National Laboratory; <a href="http://www.linkedin.com/pub/jean-utke/5/645/7a">LinkedIn</a> - <a href="mailto:utkej1@gmail.com?subject=AMPI">e-mail</a>)
  *
  * Contributions informing the approach implemented here were made by the authors of \cite Utke2009TAM . 
- * Significant contributions were made by
- *  - Anton Bovin (summer student at Argonne National Laboratory in 2013;<a href="http://www.linkedin.com/pub/anton-bovin/86/b1b/847">LinkedIn</a>)  
+ * 
+ * Significant contributions were made by Anton Bovin (summer student at Argonne National Laboratory in 2013;<a href="http://www.linkedin.com/pub/anton-bovin/86/b1b/847">LinkedIn</a>).
  *
  * <b>Please refer to the \ref UserGuide for information regarding the use of the library in a given application.</b>
  *
@@ -50,6 +53,7 @@
  * 
  *  - <a href="https://trac.mcs.anl.gov/projects/AdjoinableMPI/wiki">TRAC  page</a> for bugs and feature tracking
  *  - <a href="http://mercurial.mcs.anl.gov/ad/AdjoinableMPI/">mercurial repository</a> for source code and change history
+ *  - <a href="http://www.mcs.anl.gov/~utke/AdjoinableMPI/regression/tests.shtml">regression tests</a> 
  *
  */
 
