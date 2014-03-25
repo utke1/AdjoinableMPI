@@ -51,7 +51,7 @@
  *
  * \section links Links to Ressources
  * 
- *  - <a href="https://trac.mcs.anl.gov/projects/AdjoinableMPI/wiki">TRAC  page</a> for bugs and feature tracking
+ *  - <a href="https://trac.mcs.anl.gov/projects/AdjoinableMPI/wiki">TRAC  page</a> for bug and feature tracking, links to presentations
  *  - <a href="http://mercurial.mcs.anl.gov/ad/AdjoinableMPI/">mercurial repository</a> for source code and change history
  *  - <a href="http://www.mcs.anl.gov/~utke/AdjoinableMPI/regression/tests.shtml">regression tests</a> 
  *
@@ -285,6 +285,7 @@
  *\code
  * hg clone http://mercurial.mcs.anl.gov/ad/AdjoinableMPIexamples
  * \endcode
+ * The daily regression tests based on these examples report the results on the page linked via the main page of this documentation.  
  *
  */
 
