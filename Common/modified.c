@@ -72,6 +72,7 @@ int FW_AMPI_Recv(void* buf,
       (*ourADTOOL_AMPI_FPCollection.writeData_fp)(buf,&count);
       if(tag==MPI_ANY_TAG) tag=myStatus.MPI_TAG;
       if(src==MPI_ANY_SOURCE) src=myStatus.MPI_SOURCE;
+      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_RECV);
       (*ourADTOOL_AMPI_FPCollection.pushSRinfo_fp)(buf,
 						   count,
 						   datatype,
@@ -79,7 +80,6 @@ int FW_AMPI_Recv(void* buf,
 						   tag,
 						   pairedWith,
 						   comm);
-      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_RECV);
     }
     if (status!=MPI_STATUS_IGNORE) *status=myStatus;
   }
@@ -397,6 +397,7 @@ int FW_AMPI_Send (void* buf,
 		comm);
     if (is_derived) (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(mappedbuf);
     if (rc==MPI_SUCCESS && ((*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(datatype)==AMPI_ACTIVE || is_derived)) {
+      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_SEND);
       (*ourADTOOL_AMPI_FPCollection.pushSRinfo_fp)(buf,
 						   count,
 						   datatype,
@@ -404,7 +405,6 @@ int FW_AMPI_Send (void* buf,
 						   tag,
 						   pairedWith,
 						   comm);
-      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_SEND);
     }
   }
   return rc;
@@ -700,8 +700,8 @@ int FW_AMPI_Wait(AMPI_Request *request,
     (*ourADTOOL_AMPI_FPCollection.writeData_fp)(ampiRequest->buf,&ampiRequest->count);
     if(ampiRequest->tag==MPI_ANY_TAG) ampiRequest->tag=status->MPI_TAG;
     if(ampiRequest->endPoint==MPI_ANY_SOURCE) ampiRequest->endPoint=status->MPI_SOURCE;
-    (*ourADTOOL_AMPI_FPCollection.push_AMPI_Request_fp)(ampiRequest);
     (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WAIT);
+    (*ourADTOOL_AMPI_FPCollection.push_AMPI_Request_fp)(ampiRequest);
   }
   return rc;
 }
@@ -861,6 +861,7 @@ int FW_AMPI_Gather(void *sendbuf,
 		  comm);
     if (rc==MPI_SUCCESS && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE) {
       if (myRank==root) (*ourADTOOL_AMPI_FPCollection.writeData_fp)(recvbuf,&recvcnt);
+      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_GATHER);
       (*ourADTOOL_AMPI_FPCollection.pushGSinfo_fp)(((myRank==root)?myCommSize:0),
 						   recvbuf,
 						   recvcnt,
@@ -870,7 +871,6 @@ int FW_AMPI_Gather(void *sendbuf,
 						   sendtype,
 						   root,
 						   comm);
-      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_GATHER);
     }
   }
   return rc;
@@ -978,6 +978,7 @@ int FW_AMPI_Scatter(void *sendbuf,
                    comm);
     if (rc==MPI_SUCCESS && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)==AMPI_ACTIVE) {
       (*ourADTOOL_AMPI_FPCollection.writeData_fp)(recvbuf,&recvcnt);
+      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_SCATTER);
       (*ourADTOOL_AMPI_FPCollection.pushGSinfo_fp)(((myRank==root)?myCommSize:0),
 						   sendbuf,
 						   sendcnt,
@@ -987,7 +988,6 @@ int FW_AMPI_Scatter(void *sendbuf,
 						   recvtype,
 						   root,
 						   comm);
-      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_SCATTER);
     }
   }
   return rc;
@@ -1083,6 +1083,7 @@ int FW_AMPI_Allgather(void *sendbuf,
                      comm);
     if (rc==MPI_SUCCESS && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE) {
       (*ourADTOOL_AMPI_FPCollection.writeData_fp)(recvbuf,&recvcount);
+      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_ALLGATHER);
       (*ourADTOOL_AMPI_FPCollection.pushGSinfo_fp)((myCommSize),
 						   recvbuf,
 						   recvcount,
@@ -1092,7 +1093,6 @@ int FW_AMPI_Allgather(void *sendbuf,
 						   sendtype,
 						   0,
 						   comm);
-      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_ALLGATHER);
     }
   }
   return rc;
@@ -1191,6 +1191,7 @@ int FW_AMPI_Gatherv(void *sendbuf,
                    comm);
     if (rc==MPI_SUCCESS && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE) {
       if (myRank==root) (*ourADTOOL_AMPI_FPCollection.writeDataV_fp)(recvbuf,recvcnts, displs);
+      (*ourADTOOL_AMPI_FPCollection.push_CallCodeReserve_fp)(AMPI_GATHERV,((myRank==root)?myCommSize:0)*2);
       (*ourADTOOL_AMPI_FPCollection.pushGSVinfo_fp)(((myRank==root)?myCommSize:0),
 						    recvbuf,
 						    recvcnts,
@@ -1201,7 +1202,6 @@ int FW_AMPI_Gatherv(void *sendbuf,
 						    sendtype,
 						    root,
 						    comm);
-      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_GATHERV);
     }
   }
   return rc;
@@ -1329,6 +1329,7 @@ int FW_AMPI_Scatterv(void *sendbuf,
                     comm);
     if (rc==MPI_SUCCESS && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(sendtype)==AMPI_ACTIVE) {
       (*ourADTOOL_AMPI_FPCollection.writeData_fp)(recvbuf,&recvcnt);
+      (*ourADTOOL_AMPI_FPCollection.push_CallCodeReserve_fp)(AMPI_SCATTERV,((myRank==root)?myCommSize:0)*2);
       (*ourADTOOL_AMPI_FPCollection.pushGSVinfo_fp)(((myRank==root)?myCommSize:0),
 						    sendbuf,
 						    sendcnts,
@@ -1339,7 +1340,6 @@ int FW_AMPI_Scatterv(void *sendbuf,
 						    recvtype,
 						    root,
 						    comm);
-      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_SCATTERV);
     }
   }
   return rc;
@@ -1462,6 +1462,7 @@ int FW_AMPI_Allgatherv(void *sendbuf,
                       comm);
     if (rc==MPI_SUCCESS && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(recvtype)==AMPI_ACTIVE) {
       (*ourADTOOL_AMPI_FPCollection.writeDataV_fp)(recvbuf,recvcnts, displs);
+      (*ourADTOOL_AMPI_FPCollection.push_CallCodeReserve_fp)(AMPI_ALLGATHERV,myCommSize*2);
       (*ourADTOOL_AMPI_FPCollection.pushGSVinfo_fp)(myCommSize,
 						    recvbuf,
 						    recvcnts,
@@ -1472,7 +1473,6 @@ int FW_AMPI_Allgatherv(void *sendbuf,
 						    sendtype,
 						    0,
 						    comm);
-      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_ALLGATHERV);
     }
   }
   return rc;
@@ -1580,12 +1580,12 @@ int FW_AMPI_Bcast (void* buf,
       (*ourADTOOL_AMPI_FPCollection.unpackDType_fp)(mappedbuf,buf,count,dt_idx);
       (*ourADTOOL_AMPI_FPCollection.releaseAdjointTempBuf_fp)(mappedbuf);
     }
+    (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_BCAST);
     (*ourADTOOL_AMPI_FPCollection.pushBcastInfo_fp)(buf,
 						    count,
 						    datatype,
 						    root,
 						    comm);
-    (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_BCAST);
   }
   return rc;
 }
@@ -2060,6 +2060,7 @@ int FWB_AMPI_Reduce (void* sbuf,
 		  root,
 		  comm);
     if (rc==MPI_SUCCESS && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(datatype)==AMPI_ACTIVE) {
+      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_REDUCE);
       (*ourADTOOL_AMPI_FPCollection.pushReduceInfo_fp)(sbuf,
 						       rbuf,
 						       rbuf,
@@ -2069,7 +2070,6 @@ int FWB_AMPI_Reduce (void* sbuf,
 						       op,
 						       root,
 						       comm);
-      (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_REDUCE);
     }
     return rc;
   }
@@ -2250,6 +2250,7 @@ int FW_AMPI_Allreduce (void* sbuf,
                    op,
                    comm);
   if (rc==MPI_SUCCESS && (*ourADTOOL_AMPI_FPCollection.isActiveType_fp)(datatype)==AMPI_ACTIVE) {
+    (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_ALLREDUCE);
     (*ourADTOOL_AMPI_FPCollection.pushReduceInfo_fp)(sbuf,
 						     rbuf,
 						     rbuf,
@@ -2259,7 +2260,6 @@ int FW_AMPI_Allreduce (void* sbuf,
 						     op,
 						     0,
 						     comm);
-    (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_ALLREDUCE);
   }
   return rc;
 }
@@ -2610,8 +2610,8 @@ int BW_AMPI_Win_create( void *base,
 
 int FW_AMPI_Win_free( AMPI_Win *win ) {
   free(*win->map);
-  (*ourADTOOL_AMPI_FPCollection.push_AMPI_Win_fp)(win);
   (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_FREE);
+  (*ourADTOOL_AMPI_FPCollection.push_AMPI_Win_fp)(win);
   return MPI_Win_free(*win->plainWindow);
 }
 
@@ -2724,6 +2724,7 @@ int FW_AMPI_Win_fence( int assert,
   (ourADTOOL_AMPI_FPCollection.writeWinData_fp)(*win.map,win.base,win.size);
 
   num_reqs=win.req_stack->num_reqs;
+  (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_FENCE);
   for(i=num_reqs; i>0 ; i=i-1) {
     winRequest=AMPI_WIN_STACK_pop(win.req_stack);
     (*ourADTOOL_AMPI_FPCollection.writeData_fp)(winRequest.origin_addr,&winRequest.origin_count);
@@ -2733,7 +2734,6 @@ int FW_AMPI_Win_fence( int assert,
   printf("FW num_reqs: %d\n", win.num_reqs);
   win.req_stack->num_reqs=0;
   (*ourADTOOL_AMPI_FPCollection.push_AMPI_Win_fp)(&win);
-  (*ourADTOOL_AMPI_FPCollection.push_CallCode_fp)(AMPI_WIN_FENCE);
   rc=MPI_Win_fence( assert, **win.plainWindow );
   return rc;
 }

@@ -293,6 +293,18 @@ void ADTOOL_AMPI_push_CallCode(enum AMPI_CallCode_E thisCall);
 typedef void (ADTOOL_AMPI_push_CallCodeF) (enum AMPI_CallCode_E);
 
 /**
+ * the implementation of pushing an operation code to the 
+ * to the AD-tool-internal stack for an operator overloading tool where a number
+ * of locations have to be reserved on the trace, currently only called in
+ * Scatterv and Gatherv;
+ * the source transformation implementation will leave this empty;
+ * this method is called in the respective <tt>FW_</tt>  variant 
+ * implemented in <tt>Common</tt>
+ */
+void ADTOOL_AMPI_push_CallCodeReserve(enum AMPI_CallCode_E thisCall, unsigned int);
+typedef void (ADTOOL_AMPI_push_CallCodeReserveF) (enum AMPI_CallCode_E, unsigned int);
+
+/**
  * the implementation of popping an operation code from the 
  * to the AD-tool-internal stack for an operator overloading tool;
  * See comments of \ref ADTOOL_AMPI_push_CallCode.
@@ -737,6 +749,7 @@ struct ADTOOL_AMPI_FPCollection{
   ADTOOL_AMPI_pushGSVinfoF *pushGSVinfo_fp;
   ADTOOL_AMPI_popGSVinfoF *popGSVinfo_fp;
   ADTOOL_AMPI_push_CallCodeF *push_CallCode_fp;
+  ADTOOL_AMPI_push_CallCodeReserveF *push_CallCodeReserve_fp;
   ADTOOL_AMPI_pop_CallCodeF *pop_CallCode_fp;
   ADTOOL_AMPI_push_AMPI_RequestF *push_AMPI_Request_fp;
   ADTOOL_AMPI_pop_AMPI_RequestF *pop_AMPI_Request_fp;
